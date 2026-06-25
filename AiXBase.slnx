@@ -1,0 +1,7 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Claude--dangerously-skip-permissions.cmd" />
+  </Folder>
+  <Project Path="AiXBase/AiXBase.shproj" />
+  <Project Path="ProductRequirementsDocuments/ProductRequirementsDocuments.shproj" />
+</Solution>

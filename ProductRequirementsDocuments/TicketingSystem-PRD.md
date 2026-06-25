@@ -450,8 +450,8 @@ Loop `Count` times: `Console.Write('\a')`. Intentionally synchronous so the user
 
 When setting up a fresh Ticketing database, skills must be called in this order:
 
-1. `XBase-Database-Initialize` — create `AiXBase/ticketing.db`
-2. `XBase-Database-Connect` — connection name `ticketing`
+1. `XBase-Database-Initialize` — create `AiXBase/ticketing/` database directory
+2. `XBase-Database-Connect` — `DatabaseName:"ticketing"`, connection name `ticketing`
 3. `XBase-Schema-TableCreate` × N — create all tables above
 4. `XBase-Index-Create` — at minimum: `Tickets.StatusId`, `Tickets.AssignedToUserId`, `Tickets.CreatedAt`
 5. `Ticketing-Status-Define` × N — seed default statuses: `Open`, `In Progress`, `Blocked`, `Closed`

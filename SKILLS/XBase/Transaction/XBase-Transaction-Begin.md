@@ -1,14 +1,13 @@
 # XBase-Transaction-Begin
 
-Begin an explicit database transaction on a connection.
+Begin a named transaction by creating a directory snapshot workspace.
 
 ## Inputs
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `ConnectionName` | string | yes | — | Open connection alias |
-| `TransactionName` | string | yes | — | Logical alias for this transaction, used by Commit/Rollback/Savepoint |
-| `IsolationLevel` | string | no | `IMMEDIATE` | `DEFERRED`, `IMMEDIATE`, or `EXCLUSIVE` |
+| `TransactionName` | string | yes | — | Logical alias for this transaction, used by Commit / Rollback / Savepoint |
 
 ## Outputs
 
@@ -22,21 +21,22 @@ Begin an explicit database transaction on a connection.
 
 ## Steps
 
-1. Validate `ConnectionName`
-2. Check no transaction with `TransactionName` is already active; if so, return `XBASE_TRANSACTION_NAME_IN_USE`
-3. Execute `BEGIN <IsolationLevel>`
-4. Register `TransactionName` mapped to `ConnectionName` for the session
-5. Return `StartedAt`
+1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
+2. Resolve `_txn_{TransactionName}/` inside the database directory
+3. If the `_txn_{TransactionName}/` directory already exists, return `XBASE_TRANSACTION_NAME_IN_USE`
+4. `Directory.CreateDirectory(_txn_{TransactionName}/)`
+5. Copy `_schema.json` into `_txn_{TransactionName}/_schema.json`
+6. Register `TransactionName → DatabasePath` mapping in the session
+7. Return `StartedAt`
 
-**Why `IMMEDIATE` default?** SQLite's deferred mode acquires a read lock on first read and upgrades to write on first write. If two transactions both start deferred and both try to write, one will fail with `SQLITE_BUSY`. `IMMEDIATE` acquires the write lock up front, preventing this class of conflict.
+**How transaction isolation works:** All writes during the transaction operate only on files inside `_txn_{TransactionName}/`. Table `.ndjson` files are copied lazily — only when a table is first modified. Reads within the transaction check the transaction workspace first; if the file is not there, the live directory is read. The live data files are not modified until `XBase-Transaction-Commit` moves the workspace files over them. `XBase-Transaction-Rollback` simply deletes the workspace directory, leaving live files untouched.
 
 ## Error Codes
 
 | Code | Condition |
 |---|---|
-| `XBASE_CONNECTION_INVALID` | Connection not open |
-| `XBASE_TRANSACTION_NAME_IN_USE` | A transaction with this alias is already active |
-| `XBASE_TRANSACTION_ISOLATION_INVALID` | Unknown isolation level |
+| `XBASE_CONNECTION_INVALID` | Connection alias not registered |
+| `XBASE_TRANSACTION_NAME_IN_USE` | `_txn_{TransactionName}/` directory already exists |
 
 ## Dependencies
 

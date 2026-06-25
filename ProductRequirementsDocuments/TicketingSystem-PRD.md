@@ -88,6 +88,14 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 | `Ticketing-Report-Generate` | Produce a full report for a date range |
 | `Ticketing-Report-Export` | Write report output to a file (CSV or JSON) |
 
+### Display and Notification
+
+| Skill | Description |
+|---|---|
+| `Ticketing-Display-Complete` | Emit BEL × 3 then render the full completion ASCII art banner to stdout |
+| `Ticketing-Display-Alert` | Emit BEL × 1 then render a compact alert banner for assignment or escalation events |
+| `Ticketing-Display-Bell` | Emit N BEL characters (ASCII 7, `\a`) to stdout — no banner |
+
 ---
 
 ## Skill Specifications
@@ -139,6 +147,28 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 
 ---
 
+### Ticketing-Ticket-Close
+
+**XBase Skills Called**
+- `XBase-Record-Select` (table: `Statuses`, find row where `IsTerminal = 1` and `Name = 'Closed'`)
+- `Ticketing-Status-Transition` (to terminal `Closed` status)
+- `XBase-Record-Update` (table: `Tickets`, set `ClosedAt`)
+
+**Display Skills Called** (after successful commit)
+- `Ticketing-Display-Complete`
+
+**Inputs**
+- `TicketId` (int)
+- `ClosedByUserId` (int)
+- `Comment` (string, optional) — closing note appended to history
+
+**Outputs**
+- `TicketId` (int)
+- `TicketNumber` (string)
+- `ClosedAt` (ISO-8601)
+
+---
+
 ### Ticketing-Status-Transition
 
 **XBase Skills Called**
@@ -148,6 +178,9 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 - `XBase-Record-Insert` (table: `TicketHistory`, action: `StatusChanged`)
 - `XBase-Transaction-Commit`
 
+**Display Skills Called** (after successful commit, only when `ToStatus.IsTerminal = 1`)
+- `Ticketing-Display-Complete`
+
 **Inputs**
 - `TicketId` (int)
 - `ToStatusId` (int)
@@ -155,7 +188,7 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 - `Comment` (string, optional)
 
 **Behavior**
-Rejects the transition if no matching row in `StatusTransitions(FromStatusId, ToStatusId)` exists, unless the user has admin role.
+Rejects the transition if no matching row in `StatusTransitions(FromStatusId, ToStatusId)` exists, unless the user has admin role. When the destination status is terminal (`IsTerminal = 1`), calls `Ticketing-Display-Complete` after the commit.
 
 ---
 
@@ -192,6 +225,128 @@ Rejects the transition if no matching row in `StatusTransitions(FromStatusId, To
 - `Summary` (object with aggregates per grouping)
 - `Tickets` (array, full detail within date range)
 - `GeneratedAt` (ISO-8601)
+
+---
+
+### Ticketing-Display-Complete
+
+Renders a full-screen ASCII art completion banner and rings the terminal bell three times. Called automatically by `Ticketing-Ticket-Close` and `Ticketing-Status-Transition` (terminal states only).
+
+**Inputs**
+- `TicketNumber` (string) — e.g. `TKT-0042`
+- `Summary` (string)
+- `ClosedByDisplayName` (string)
+- `ClosedAt` (ISO-8601)
+- `BellCount` (int, default `3`)
+- `UseUnicode` (bool, default `true`) — `false` emits the plain-ASCII fallback banner
+
+**Outputs**
+- `RenderedBanner` (string) — the full text written to stdout
+
+**Behavior**
+1. Emit `BellCount` × BEL character (`\a`, ASCII 7) — `Console.Write('\a')` per ring
+2. Write a blank line
+3. Write the banner (see templates below) with `TicketNumber`, `Summary`, `ClosedByDisplayName`, and `ClosedAt` interpolated
+4. Flush stdout
+
+---
+
+### Ticketing-Display-Alert
+
+Renders a compact single-line-border alert banner and rings the bell once. Called by `Ticketing-Ticket-Assign` and `Ticketing-Ticket-Escalate`.
+
+**Inputs**
+- `Event` (string) — e.g. `TICKET ASSIGNED`, `TICKET ESCALATED`
+- `TicketNumber` (string)
+- `Detail` (string) — one line of context, e.g. assigned-to name or new priority
+- `BellCount` (int, default `1`)
+- `UseUnicode` (bool, default `true`)
+
+**Outputs**
+- `RenderedBanner` (string)
+
+**Behavior**
+1. Emit `BellCount` × BEL
+2. Render the compact alert template (see below)
+3. Flush stdout
+
+---
+
+### Ticketing-Display-Bell
+
+Emits BEL characters only — no banner, no output beyond the control characters.
+
+**Inputs**
+- `Count` (int, default `1`, max `10`)
+
+**Outputs**
+- `EmittedCount` (int)
+
+**Behavior**
+Loop `Count` times: `Console.Write('\a')`. Intentionally synchronous so the user hears distinct rings rather than a burst.
+
+---
+
+## Display Templates
+
+### Completion Banner — Unicode (UseUnicode = true)
+
+```
+╔══════════════════════════════════════════════════════════════════════╗
+║                                                                      ║
+║   ██████╗ ██████╗ ███╗   ███╗██████╗ ██╗     ███████╗████████╗     ║
+║  ██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║     ██╔════╝╚══██╔══╝     ║
+║  ██║     ██║   ██║██╔████╔██║██████╔╝██║     █████╗     ██║        ║
+║  ██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██║     ██╔══╝     ██║        ║
+║  ╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ███████╗███████╗   ██║        ║
+║   ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝   ╚═╝        ║
+║                                                                      ║
+║  Ticket  : {TicketNumber}                                            ║
+║  Summary : {Summary}                                                 ║
+║  Closed  : {ClosedAt}                                                ║
+║  By      : {ClosedByDisplayName}                                     ║
+║                                                                      ║
+╚══════════════════════════════════════════════════════════════════════╝
+```
+
+### Completion Banner — Plain ASCII (UseUnicode = false)
+
+```
++======================================================================+
+|                                                                      |
+|   #####   #####  #     # #####  #       #######  #####  #######    |
+|  #     # #     # ##   ## #    # #       #       #     #    #        |
+|  #       #     # # # # # #    # #       #       #          #        |
+|  #       #     # #  #  # #####  #       #####    #####     #        |
+|  #       #     # #     # #      #       #             #    #        |
+|  #     # #     # #     # #      #       #       #     #    #        |
+|   #####   #####  #     # #      ####### #######  #####     #        |
+|                                                                      |
+|  Ticket  : {TicketNumber}                                            |
+|  Summary : {Summary}                                                 |
+|  Closed  : {ClosedAt}                                                |
+|  By      : {ClosedByDisplayName}                                     |
+|                                                                      |
++======================================================================+
+```
+
+### Alert Banner — Unicode (UseUnicode = true)
+
+```
+╔══════════════════════════════════════════════╗
+║  *** {Event} ***                             ║
+║  {TicketNumber}  {Detail}                    ║
+╚══════════════════════════════════════════════╝
+```
+
+### Alert Banner — Plain ASCII (UseUnicode = false)
+
+```
++------------------------------------------------+
+|  *** {Event} ***                               |
+|  {TicketNumber}  {Detail}                      |
++------------------------------------------------+
+```
 
 ---
 
@@ -318,6 +473,8 @@ All errors use the standard XBase envelope extended with a ticketing prefix:
 | `TICKETING_USER_INACTIVE` | User exists but is deactivated |
 | `TICKETING_AUTH_FAILED` | Credential hash did not match |
 | `TICKETING_COMMENT_NOT_FOUND` | Comment ID not found or soft-deleted |
+| `TICKETING_DISPLAY_STDOUT_UNAVAILABLE` | stdout cannot be written (redirected with no tty) |
+| `TICKETING_DISPLAY_BELL_COUNT_EXCEEDED` | BellCount > 10 |
 
 ---
 
@@ -330,3 +487,4 @@ All errors use the standard XBase envelope extended with a ticketing prefix:
 | Record CRUD | `XBase-Record-*` Skills |
 | Filtering / sorting | `XBase-Query-*` Skills |
 | Transactions | `XBase-Transaction-*` Skills |
+| Terminal bell + ASCII art | `Ticketing-Display-*` Skills (stdout + BEL character) |

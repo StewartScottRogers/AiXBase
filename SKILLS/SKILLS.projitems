@@ -28,6 +28,10 @@
     <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\User\" />
     <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Report\" />
     <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Display\" />
+    <!-- Wiki documentation -->
+    <None Include="$(MSBuildThisFileDirectory)SKILLS.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase\XBase.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)TicketingSystem\TicketingSystem.wiki.md" />
     <!-- XBase : Database -->
     <None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Initialize.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Connect.md" />

@@ -9,6 +9,25 @@
     <Import_RootNamespace>SKILLS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <!-- Folders -->
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\" />
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\Database\" />
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\Schema\" />
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\Record\" />
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\Query\" />
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\Index\" />
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\Transaction\" />
+    <Folder Include="$(MSBuildThisFileDirectory)XBase\Backup\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Comment\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Status\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Priority\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Category\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\User\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Report\" />
+    <Folder Include="$(MSBuildThisFileDirectory)TicketingSystem\Display\" />
     <!-- XBase : Database -->
     <None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Initialize.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Connect.md" />

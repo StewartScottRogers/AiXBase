@@ -33,8 +33,7 @@ Soft-delete a ticket by setting `IsDeleted = 1`. The ticket remains in the datab
 
 | Code | Condition |
 |---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist |
-| `TICKETING_TICKET_ALREADY_DELETED` | Ticket already soft-deleted |
+| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is already soft-deleted |
 
 ## Dependencies
 

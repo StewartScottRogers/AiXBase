@@ -31,8 +31,8 @@ Create a named priority level with an ordinal weight for ordering.
 
 | Code | Condition |
 |---|---|
-| `TICKETING_PRIORITY_EXISTS` | A priority with that name already exists |
-| `TICKETING_PRIORITY_WEIGHT_IN_USE` | Another priority already has the same `Weight` |
+| `TICKETING_PRIORITY_NAME_DUPLICATE` | A priority with that name already exists |
+| `TICKETING_PRIORITY_VALUE_DUPLICATE` | Another priority already has the same `Weight` |
 
 ## Dependencies
 

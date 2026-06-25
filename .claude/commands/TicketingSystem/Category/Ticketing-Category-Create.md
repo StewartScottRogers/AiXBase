@@ -28,7 +28,7 @@ Define a category for classifying tickets (e.g. Bug, Feature, Question).
 
 | Code | Condition |
 |---|---|
-| `TICKETING_CATEGORY_EXISTS` | A category with that name already exists |
+| `TICKETING_CATEGORY_NAME_DUPLICATE` | A category with that name already exists |
 
 ## Dependencies
 

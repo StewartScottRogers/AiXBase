@@ -31,7 +31,7 @@ Create a named workflow status and optionally configure allowed transitions.
 
 | Code | Condition |
 |---|---|
-| `TICKETING_STATUS_EXISTS` | A status with that name already exists |
+| `TICKETING_STATUS_NAME_DUPLICATE` | A status with that name already exists |
 
 ## Dependencies
 

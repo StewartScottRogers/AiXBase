@@ -25,7 +25,7 @@ Create a user account in the ticketing store.
 ## Steps
 
 1. Validate `Username` format
-2. Check for an existing user with that `Username`; if found, return `TICKETING_USERNAME_TAKEN`
+2. Check for an existing user with that `Username`; if found, return `TICKETING_USER_USERNAME_DUPLICATE`
 3. `XBase-Record-Insert` → `Users` with `IsActive = 1`
 4. Return `UserId`, `Username`, `CreatedAt`
 
@@ -33,8 +33,8 @@ Create a user account in the ticketing store.
 
 | Code | Condition |
 |---|---|
-| `TICKETING_USERNAME_TAKEN` | Username is already registered |
-| `TICKETING_USERNAME_INVALID` | Username format does not meet requirements |
+| `TICKETING_USER_USERNAME_DUPLICATE` | Username is already registered |
+| `TICKETING_USER_USERNAME_INVALID` | Username format does not meet requirements |
 
 ## Dependencies
 

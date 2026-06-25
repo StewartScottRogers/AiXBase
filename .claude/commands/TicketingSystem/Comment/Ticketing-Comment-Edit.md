@@ -32,7 +32,7 @@ Update the body of an existing comment.
 | Code | Condition |
 |---|---|
 | `TICKETING_COMMENT_NOT_FOUND` | Comment does not exist or is deleted |
-| `TICKETING_PERMISSION_DENIED` | Editor is neither the author nor an admin |
+| `TICKETING_COMMENT_EDIT_FORBIDDEN` | Editor is neither the author nor an admin |
 
 ## Dependencies
 

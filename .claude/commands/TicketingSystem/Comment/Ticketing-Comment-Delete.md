@@ -31,7 +31,7 @@ Soft-delete a comment by setting `IsDeleted = 1`.
 | Code | Condition |
 |---|---|
 | `TICKETING_COMMENT_NOT_FOUND` | Comment does not exist or is already deleted |
-| `TICKETING_PERMISSION_DENIED` | Requester is neither the author nor an admin |
+| `TICKETING_COMMENT_DELETE_FORBIDDEN` | Requester is neither the author nor an admin |
 
 ## Dependencies
 

@@ -9,7 +9,7 @@ Associate a file reference with a ticket and record its metadata.
 | `TicketId` | int | yes | — | Ticket to attach the file to |
 | `UploadedByUserId` | int | yes | — | User adding the attachment |
 | `FileName` | string | yes | — | Original file name |
-| `FilePath` | string | yes | — | Path relative to `data/attachments/` where the file is stored |
+| `FilePath` | string | yes | — | Path relative to `AiXBase/attachments/` where the file is stored |
 
 ## Outputs
 

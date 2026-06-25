@@ -29,7 +29,7 @@ Test IDs follow the pattern `TICK-<GROUP>-<NNN>` where group codes are:
 |---|---|
 | SQLite version | ≥ 3.40.0 |
 | XBase skills | All 28 XBase skills must pass their own test suite first |
-| `data/ticketing.db` | Freshly initialised with full Ticketing schema for each test group unless noted |
+| `AiXBase/ticketing.db` | Freshly initialised with full Ticketing schema for each test group unless noted |
 | Seed data | At least 1 admin user (`admin`, hashed password), all seed statuses, all seed priorities present |
 | Disk space | ≥ 5 GB for performance and stress suites |
 | stdout | Writable (for Display group tests) |
@@ -686,7 +686,7 @@ Tickets are numbered `TKT-{N}` where N is zero-padded to at minimum 4 digits: `T
 
 ## Performance Benchmarks
 
-All benchmarks use a dedicated `data/perf-ticketing.db` with the full schema. Median of 3 runs must meet the target.
+All benchmarks use a dedicated `AiXBase/perf-ticketing.db` with the full schema. Median of 3 runs must meet the target.
 
 ### Ticket Throughput
 
@@ -770,7 +770,7 @@ All benchmarks use a dedicated `data/perf-ticketing.db` with the full schema. Me
 | `TICK-SEC-004` | SQL injection via Username (Authenticate) | `Username:"admin'--"` | Returns `TICKETING_AUTH_FAILED`; no bypass |
 | `TICK-SEC-005` | SQL injection via Tag name | `Tag:"'; DROP TABLE TicketTags--"` | Returns `TICKETING_TAG_NAME_REQUIRED` or validation error; no DROP |
 | `TICK-SEC-006` | SQL injection via FileName | `FileName:"'; DELETE FROM Attachments--"` | Stored as literal or validation error; no DELETE |
-| `TICK-SEC-007` | Path traversal in FilePath (Attachment) | `FilePath:"../../Windows/System32/hosts"` | Validation error or stored as literal (if path is metadata-only); no actual file written outside `data/` |
+| `TICK-SEC-007` | Path traversal in FilePath (Attachment) | `FilePath:"../../Windows/System32/hosts"` | Validation error or stored as literal (if path is metadata-only); no actual file written outside `AiXBase/` |
 | `TICK-SEC-008` | Auth timing — existence oracle | Compare response time for non-existent vs wrong-password user | Within ±100 ms; no statistical distinguishability |
 | `TICK-SEC-009` | Password in API response | Register + authenticate | `Password` and `PasswordHash` absent from all response objects |
 | `TICK-SEC-010` | Session token entropy | 1 000 consecutive tokens for same user | No two identical; passes birthday-paradox check for 128-bit token space |

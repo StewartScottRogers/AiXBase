@@ -32,9 +32,9 @@ Every table created through XBase automatically receives these columns:
 SQLite in WAL mode creates two sidecar files alongside the `.db`:
 
 ```
-data/myapp.db
-data/myapp.db-shm
-data/myapp.db-wal
+AiXBase/myapp.db
+AiXBase/myapp.db-shm
+AiXBase/myapp.db-wal
 ```
 
 `XBase-Database-Drop` removes all three. Never delete sidecars manually while a connection is open.
@@ -45,8 +45,8 @@ data/myapp.db-wal
 
 ```
 # 1. Create and open a database
-/XBase-Database-Initialize  DatabasePath:"data/myapp.db"
-/XBase-Database-Connect     DatabasePath:"data/myapp.db"  ConnectionName:"main"
+/XBase-Database-Initialize  DatabasePath:"AiXBase/myapp.db"
+/XBase-Database-Connect     DatabasePath:"AiXBase/myapp.db"  ConnectionName:"main"
 
 # 2. Create a table
 /XBase-Schema-TableCreate
@@ -150,7 +150,7 @@ Pass `TransactionName` to any Record or Query skill to run it inside an open tra
 
 | Skill | Purpose |
 |---|---|
-| `XBase-Backup-Create` | Hot-backup a live database to `data/backups/`; filename includes timestamp and optional label |
+| `XBase-Backup-Create` | Hot-backup a live database to `AiXBase/backups/`; filename includes timestamp and optional label |
 | `XBase-Backup-Restore` | Restore a backup over a target database (`ConfirmRestore: true` required; optionally creates a pre-restore snapshot) |
 | `XBase-Backup-Verify` | Open the backup read-only and run `PRAGMA integrity_check`; does not require an active connection |
 

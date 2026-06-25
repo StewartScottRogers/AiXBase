@@ -6,7 +6,7 @@ Open an existing SQLite database file and register a named connection handle for
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `DatabasePath` | string | yes | — | Path to the `.db` file (absolute or relative to `data/`) |
+| `DatabasePath` | string | yes | — | Path to the `.db` file (absolute or relative to `AiXBase/`) |
 | `ConnectionName` | string | yes | — | Logical alias used by all subsequent skills to identify this connection |
 
 ## Outputs

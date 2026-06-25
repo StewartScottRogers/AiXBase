@@ -10,7 +10,7 @@ XBase is a skill-based, file-backed database engine implemented exclusively thro
 
 Example: `XBase-Record-Create`, `XBase-Transaction-Rollback`
 
-Storage engine: SQLite (local `.db` file under `data/`).
+Storage engine: SQLite (local `.db` file under `AiXBase/`).
 
 ---
 
@@ -88,7 +88,7 @@ Storage engine: SQLite (local `.db` file under `data/`).
 ### XBase-Database-Initialize
 
 **Inputs**
-- `DatabasePath` (string) — relative path under `data/` for the new `.db` file
+- `DatabasePath` (string) — relative path under `AiXBase/` for the new `.db` file
 - `OverwriteIfExists` (bool, default `false`)
 
 **Outputs**

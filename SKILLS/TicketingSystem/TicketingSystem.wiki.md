@@ -8,7 +8,7 @@ A full helpdesk ticketing system implemented as AI Skills, built entirely on top
 
 | Layer | Technology |
 |---|---|
-| Storage | SQLite via XBase skills (`data/ticketing.db`) |
+| Storage | SQLite via XBase skills (`AiXBase/ticketing.db`) |
 | Schema | 11 tables (see below) |
 | Audit trail | `TicketHistory` table; every state change appends a row |
 | Authentication | Session tokens stored in `Sessions`; generic error for all auth failures |
@@ -40,8 +40,8 @@ Tickets are assigned sequential numbers: `TKT-0001`, `TKT-0002`, … The sequenc
 
 ```
 # 1. Initialise the database (XBase prerequisite)
-/XBase-Database-Initialize  DatabasePath:"data/ticketing.db"
-/XBase-Database-Connect     DatabasePath:"data/ticketing.db"  ConnectionName:"ticketing"
+/XBase-Database-Initialize  DatabasePath:"AiXBase/ticketing.db"
+/XBase-Database-Connect     DatabasePath:"AiXBase/ticketing.db"  ConnectionName:"ticketing"
 
 # 2. Create the schema (run XBase-Schema-TableCreate for each of the 11 tables)
 

@@ -6,7 +6,7 @@ Create a new SQLite database file and configure it with standard pragmas.
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `DatabasePath` | string | yes | — | Relative path under `data/` for the new `.db` file |
+| `DatabasePath` | string | yes | — | Relative path under `AiXBase/` for the new `.db` file |
 | `OverwriteIfExists` | bool | no | `false` | Delete and recreate if the file already exists |
 
 ## Outputs
@@ -21,7 +21,7 @@ Create a new SQLite database file and configure it with standard pragmas.
 
 ## Steps
 
-1. Resolve `DatabasePath` against the project `data/` directory to an absolute path
+1. Resolve `DatabasePath` against the project `AiXBase/` directory to an absolute path
 2. If the file already exists and `OverwriteIfExists` is `false`, return `XBASE_DATABASE_EXISTS`
 3. If the file already exists and `OverwriteIfExists` is `true`, delete it
 4. Create the SQLite file at the resolved path
@@ -34,7 +34,7 @@ Create a new SQLite database file and configure it with standard pragmas.
 | Code | Condition |
 |---|---|
 | `XBASE_DATABASE_EXISTS` | File already exists and `OverwriteIfExists` is `false` |
-| `XBASE_DATABASE_PATH_INVALID` | Path escapes `data/` or contains illegal characters |
+| `XBASE_DATABASE_PATH_INVALID` | Path escapes `AiXBase/` or contains illegal characters |
 
 ## Dependencies
 

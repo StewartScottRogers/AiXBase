@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Runtime data directories (SQLite databases, backups, reports, attachments)
+AiXBase/
+data/

@@ -9,7 +9,7 @@ A distributable collection of AI Skill files for [Claude Code](https://claude.ai
 A skill is a self-contained `.md` file that instructs Claude Code to perform a single, well-defined operation. Skills are invoked as slash commands:
 
 ```
-/XBase-Database-Initialize DatabasePath:"data/myapp.db"
+/XBase-Database-Initialize DatabasePath:"AiXBase/myapp.db"
 /XBase-Record-Insert TableName:"Users" Rows:[{"Name":"Alice"}]
 /Ticketing-Ticket-Create Summary:"Login page crashes on mobile"
 ```

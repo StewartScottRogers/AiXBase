@@ -29,7 +29,7 @@ Test IDs follow the pattern `XBASE-<GROUP>-<NNN>` where group codes are:
 | Available disk space | ≥ 10 GB for performance and stress suites |
 | RAM | ≥ 4 GB |
 | OS | Windows 10+ or Linux (kernel ≥ 5.15) |
-| `data/` directory | Writable, on a local drive (not network share) for baseline perf tests |
+| `AiXBase/` directory | Writable, on a local drive (not network share) for baseline perf tests |
 | Clock | System clock must be stable; no large jumps during test run |
 
 ---
@@ -69,7 +69,7 @@ IsDeleted   INTEGER DEFAULT 0
 
 ## Test Execution Standards
 
-- Each test must set up its own state (create a fresh `data/test-<ID>.db`) and tear it down on completion
+- Each test must set up its own state (create a fresh `AiXBase/test-<ID>.db`) and tear it down on completion
 - Tests within a group may share a single database only when explicitly noted
 - A test **fails** if: wrong output, wrong error code, unhandled exception, or execution time exceeds the stated limit
 - Performance tests must be repeated 3 times; the **median** value must meet the target
@@ -87,9 +87,9 @@ IsDeleted   INTEGER DEFAULT 0
 | `XBASE-DB-002` | Path in nested non-existent directories | `DatabasePath: "test/a/b/c/init.db"` | Directories created automatically; file exists |
 | `XBASE-DB-003` | File already exists, OverwriteIfExists false | Pre-create the file | Returns `XBASE_DATABASE_EXISTS`; original file unchanged |
 | `XBASE-DB-004` | File already exists, OverwriteIfExists true | Pre-create file with known content | Returns `Success: true`; original content gone; new file is valid SQLite |
-| `XBASE-DB-005` | Path escapes `data/` via traversal | `DatabasePath: "../outside.db"` | Returns `XBASE_DATABASE_PATH_INVALID` |
+| `XBASE-DB-005` | Path escapes `AiXBase/` via traversal | `DatabasePath: "../outside.db"` | Returns `XBASE_DATABASE_PATH_INVALID` |
 | `XBASE-DB-006` | Path with spaces and Unicode | `DatabasePath: "test/my db 测试.db"` | Returns `Success: true`; file created at path with spaces/Unicode |
-| `XBASE-DB-007` | Absolute path outside `data/` | `DatabasePath: "C:/Windows/Temp/evil.db"` | Returns `XBASE_DATABASE_PATH_INVALID` |
+| `XBASE-DB-007` | Absolute path outside `AiXBase/` | `DatabasePath: "C:/Windows/Temp/evil.db"` | Returns `XBASE_DATABASE_PATH_INVALID` |
 | `XBASE-DB-008` | Empty string path | `DatabasePath: ""` | Returns `XBASE_DATABASE_PATH_INVALID` |
 | `XBASE-DB-009` | Path exceeding 260 chars (Windows MAX_PATH) | 261-char path | Returns `XBASE_DATABASE_PATH_INVALID` or OS-level error wrapped in skill error envelope |
 | `XBASE-DB-010` | Verify WAL sidecar files created | Normal init | After first write, `.db-shm` and `.db-wal` exist alongside `.db` |
@@ -532,11 +532,11 @@ IsDeleted   INTEGER DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-BAK-001` | Happy path | Open connection, no label | File in `data/backups/`; name matches `<db>_<timestamp>.db` |
+| `XBASE-BAK-001` | Happy path | Open connection, no label | File in `AiXBase/backups/`; name matches `<db>_<timestamp>.db` |
 | `XBASE-BAK-002` | With label | `BackupLabel:"pre-migration"` | Filename ends with `_pre-migration.db` |
 | `XBASE-BAK-003` | Backup is valid SQLite | After backup | `PRAGMA integrity_check` on backup returns `ok` |
 | `XBASE-BAK-004` | Backup during active transaction | Transaction open with uncommitted writes | Backup reflects committed state only (not uncommitted writes) |
-| `XBASE-BAK-005` | `data/backups/` auto-created | Directory does not exist | Directory created; backup written |
+| `XBASE-BAK-005` | `AiXBase/backups/` auto-created | Directory does not exist | Directory created; backup written |
 | `XBASE-BAK-006` | Two backups same second | Called twice within same second | Unique filenames (suffix counter or milliseconds) |
 | `XBASE-BAK-007` | Connection invalid | Closed connection | Returns `XBASE_CONNECTION_INVALID` |
 | `XBASE-BAK-008` | Backup of XL-tier database | 1M-row database | Completes; backup file size within 10% of source |
@@ -574,7 +574,7 @@ IsDeleted   INTEGER DEFAULT 0
 
 ## Performance Benchmarks
 
-All benchmarks use a dedicated `data/perf.db`, freshly initialised with WAL mode. Median of 3 runs must meet target. Transactions are used where noted.
+All benchmarks use a dedicated `AiXBase/perf.db`, freshly initialised with WAL mode. Median of 3 runs must meet target. Transactions are used where noted.
 
 ### Insert Throughput
 
@@ -674,7 +674,7 @@ All benchmarks use a dedicated `data/perf.db`, freshly initialised with WAL mode
 | `XBASE-SEC-004` | SQL injection via `Value` in Filter | `Value:"' OR '1'='1"` with `Operator:"="` | Treated as literal string via parameterised query; no injection |
 | `XBASE-SEC-005` | SQL injection via `XBase-Query-Execute` `Parameters` | `Parameters:["1; DROP TABLE Users"]` | Bound as string literal; no extra statement executed |
 | `XBASE-SEC-006` | Path traversal in `DatabasePath` | `DatabasePath:"../../etc/passwd"` | Returns `XBASE_DATABASE_PATH_INVALID` |
-| `XBASE-SEC-007` | Path traversal in `BackupPath` | `BackupPath:"../../Windows/System32/evil.db"` | Returns error; no file written outside `data/` |
+| `XBASE-SEC-007` | Path traversal in `BackupPath` | `BackupPath:"../../Windows/System32/evil.db"` | Returns error; no file written outside `AiXBase/` |
 | `XBASE-SEC-008` | Null byte in path | `DatabasePath:"test\x00evil.db"` | Returns `XBASE_DATABASE_PATH_INVALID`; null byte stripped or rejected |
 | `XBASE-SEC-009` | Null byte in column value | `Value:"hello\x00world"` | Stored and retrieved as-is (SQLite supports embedded nulls in TEXT); no truncation |
 | `XBASE-SEC-010` | Homoglyph attack in table name | `TableName:"Uѕerѕ"` (Cyrillic `ѕ`) | Treated as a different table name from `Users`; no unintended access |
@@ -699,6 +699,6 @@ A build of XBase is considered **release-ready** when:
 
 5. **Error envelope conformance** — every error path returns the standard envelope `{ Success: false, ErrorCode: "XBASE_…", Message: "…", SkillName: "…" }` with no stack traces or internal paths leaked in `Message`.
 
-6. **WAL cleanup** — after every test, `data/backups/` and `data/` contain no orphaned `.db-shm` or `.db-wal` files from prior runs.
+6. **WAL cleanup** — after every test, `AiXBase/backups/` and `AiXBase/` contain no orphaned `.db-shm` or `.db-wal` files from prior runs.
 
 7. **Regression gate** — re-running the full suite after any skill file change must produce no new failures.

@@ -20,7 +20,7 @@ List or fetch attachment metadata for a ticket.
       "AttachmentId": 5,
       "TicketId": 42,
       "FileName": "screenshot.png",
-      "FilePath": "data/attachments/tkt42/screenshot.png",
+      "FilePath": "AiXBase/attachments/tkt42/screenshot.png",
       "UploadedBy": "Alice",
       "UploadedAt": "..."
     }

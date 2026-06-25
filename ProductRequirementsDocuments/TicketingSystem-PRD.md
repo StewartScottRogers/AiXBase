@@ -439,7 +439,7 @@ Loop `Count` times: `Console.Write('\a')`. Intentionally synchronous so the user
 | `Id` | INTEGER PK | |
 | `TicketId` | INTEGER FK | |
 | `FileName` | TEXT NOT NULL | |
-| `FilePath` | TEXT NOT NULL | path relative to `data/attachments/` |
+| `FilePath` | TEXT NOT NULL | path relative to `AiXBase/attachments/` |
 | `UploadedByUserId` | INTEGER FK | |
 | `UploadedAt` | TEXT | |
 | `IsDeleted` | INTEGER | |
@@ -450,7 +450,7 @@ Loop `Count` times: `Console.Write('\a')`. Intentionally synchronous so the user
 
 When setting up a fresh Ticketing database, skills must be called in this order:
 
-1. `XBase-Database-Initialize` — create `data/ticketing.db`
+1. `XBase-Database-Initialize` — create `AiXBase/ticketing.db`
 2. `XBase-Database-Connect` — connection name `ticketing`
 3. `XBase-Schema-TableCreate` × N — create all tables above
 4. `XBase-Index-Create` — at minimum: `Tickets.StatusId`, `Tickets.AssignedToUserId`, `Tickets.CreatedAt`

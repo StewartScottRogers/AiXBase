@@ -8,14 +8,14 @@ Write a generated report to a file in CSV or JSON format.
 |---|---|---|---|---|
 | `Report` | object | yes | — | Output from `Ticketing-Report-Generate` |
 | `Format` | string | no | `JSON` | `JSON` or `CSV` |
-| `OutputPath` | string | no | — | File path relative to `data/reports/`; auto-generated if omitted |
+| `OutputPath` | string | no | — | File path relative to `AiXBase/reports/`; auto-generated if omitted |
 
 ## Outputs
 
 ```json
 {
   "Success": true,
-  "OutputPath": "data/reports/report_20260625T143201.json",
+  "OutputPath": "AiXBase/reports/report_20260625T143201.json",
   "Format": "JSON",
   "ExportedAt": "<ISO-8601>"
 }
@@ -23,7 +23,7 @@ Write a generated report to a file in CSV or JSON format.
 
 ## Steps
 
-1. Ensure `data/reports/` directory exists
+1. Ensure `AiXBase/reports/` directory exists
 2. If `OutputPath` omitted, generate filename: `report_<YYYYMMDDTHHmmss>.<ext>`
 3. Serialize `Report` to the requested format:
    - JSON: pretty-printed with 2-space indent

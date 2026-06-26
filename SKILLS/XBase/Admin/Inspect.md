@@ -1,12 +1,12 @@
-# XBase-Admin-this
+# XBase-Admin-Inspect
 
 Inspect and display the current state of one or all XBase databases.
 
 ## Usage
 
 ```
-/this                          — survey all databases
-/this <DatabaseName>           — detailed view of one database
+/inspect                          — survey all databases
+/inspect <DatabaseName>           — detailed view of one database
 ```
 
 ---

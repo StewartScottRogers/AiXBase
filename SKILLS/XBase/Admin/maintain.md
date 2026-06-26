@@ -1,11 +1,11 @@
-# XBase-Admin-that
+# XBase-Admin-Maintain
 
 Perform a maintenance operation on a target XBase database.
 
 ## Usage
 
 ```
-/that <DatabaseName> [operation]
+/maintain <DatabaseName> [operation]
 ```
 
 `operation` defaults to `report` when omitted.

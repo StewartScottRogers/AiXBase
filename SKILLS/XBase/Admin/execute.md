@@ -1,11 +1,11 @@
-# XBase-Admin-do
+# XBase-Admin-Execute
 
 Execute any XBase database operation described in natural language.
 
 ## Usage
 
 ```
-/do <plain-English description of what you want to do>
+/execute <plain-English description of what you want to do>
 ```
 
 Provide a plain-English description. This command parses the intent, collects any missing parameters, maps the request to the appropriate XBase skill(s), executes them, and returns a human-readable summary.

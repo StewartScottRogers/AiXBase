@@ -1,6 +1,8 @@
 # XBase-Query-Sort
 
-Build an ORDER BY expression for use with `XBase-Record-Select`.
+Build a sort specification object for use with `XBase-Record-Select` or
+`XBase-Query-Execute`. No file I/O occurs — pure compilation. The resulting object is
+applied in memory by the executing skill.
 
 ## Inputs
 
@@ -21,17 +23,20 @@ Build an ORDER BY expression for use with `XBase-Record-Select`.
 {
   "Success": true,
   "Sort": {
-    "sql": "CreatedAt DESC, Id ASC"
+    "Columns": [
+      { "Field": "CreatedAt", "Direction": "DESC" },
+      { "Field": "Id",        "Direction": "ASC"  }
+    ]
   }
 }
 ```
 
 ## Steps
 
-1. Validate each `Field` name
-2. Validate each `Direction` is `ASC` or `DESC`
-3. Concatenate into `Field1 DIR1, Field2 DIR2, ...`
-4. Return the compiled sort object
+1. Validate each `Field` name — alphanumeric + underscore only; return `XBASE_SORT_FIELD_INVALID` on failure
+2. Validate each `Direction` is `ASC` or `DESC`; return `XBASE_SORT_DIRECTION_INVALID` on failure
+3. Default `Direction` to `ASC` if omitted
+4. Return the compiled sort specification object
 
 ## Error Codes
 
@@ -42,4 +47,4 @@ Build an ORDER BY expression for use with `XBase-Record-Select`.
 
 ## Dependencies
 
-None — pure compilation, no database access.
+None — pure compilation, no file access.

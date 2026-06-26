@@ -1,6 +1,7 @@
 # XBase-Record-Upsert
 
-Insert a row, or update it in place if a key conflict is detected.
+Insert a row if no conflict is detected on the specified columns, or update the
+existing matching row in place if a conflict is found.
 
 ## Inputs
 
@@ -9,7 +10,7 @@ Insert a row, or update it in place if a key conflict is detected.
 | `ConnectionName` | string | yes | — | Open connection alias |
 | `TableName` | string | yes | — | Target table |
 | `Row` | object | yes | — | `{ ColumnName: value }` map for the row |
-| `ConflictColumns` | array | yes | — | Columns that define uniqueness for conflict detection |
+| `ConflictColumns` | array | yes | — | Column names that define uniqueness for conflict detection |
 | `TransactionName` | string | no | — | Execute within this named transaction |
 
 ## Outputs
@@ -26,12 +27,28 @@ Insert a row, or update it in place if a key conflict is detected.
 
 ## Steps
 
-1. Validate `ConnectionName`, `TableName`, and `ConflictColumns`
-2. Auto-set `CreatedAt` on insert path; auto-set `UpdatedAt` on both paths
-3. Build and execute:
-   `INSERT INTO <TableName> (...) VALUES (...) ON CONFLICT (<ConflictColumns>) DO UPDATE SET <non-conflict columns>`
-4. Determine whether a row was inserted or updated via `changes()` and `last_insert_rowid()`
-5. Return `Action` and `RowId`
+1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
+2. Resolve the active data directory (transaction workspace if `TransactionName` supplied; copy `.ndjson` lazily if needed)
+3. `File.ReadAllText(_schema.json)`; locate `TableName`; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
+4. Validate each column in `ConflictColumns` exists in the table definition; return `XBASE_SCHEMA_COLUMN_MISSING` on failure
+5. `File.ReadAllLines({TableName}.ndjson)`; parse each non-empty line as JSON
+6. Search for an existing non-deleted row where every `ConflictColumns` field value matches the corresponding `Row` value
+7. **No conflict (insert path):**
+   - Assign `Id` from `table.NextId`; increment `NextId`
+   - Set `CreatedAt` and `UpdatedAt` to current ISO-8601 timestamp; set `IsDeleted = 0`
+   - Enforce NOT NULL, UNIQUE (non-conflict columns), and FK constraints; return `XBASE_RECORD_CONSTRAINT_VIOLATION` on failure
+   - `File.AppendAllText({TableName}.ndjson, JSON.Serialize(row) + "\n")`
+   - Update `.ndx` files for all indexed columns
+   - Set `Action = "inserted"`, `RowId = new Id`
+8. **Conflict found (update path):**
+   - Apply all non-`ConflictColumns` values from `Row` to the matching row in memory
+   - Set `UpdatedAt` to current ISO-8601 timestamp
+   - Enforce constraints on updated fields
+   - `File.WriteAllLines({TableName}.ndjson, serializedRows)`
+   - Rebuild `.ndx` files for changed indexed columns
+   - Set `Action = "updated"`, `RowId = existing row Id`
+9. Write updated `_schema.json` if `NextId` changed
+10. Return `Action` and `RowId`
 
 ## Error Codes
 
@@ -41,6 +58,7 @@ Insert a row, or update it in place if a key conflict is detected.
 | `XBASE_SCHEMA_TABLE_NOT_FOUND` | Table does not exist |
 | `XBASE_SCHEMA_COLUMN_MISSING` | A conflict column does not exist |
 | `XBASE_RECORD_CONSTRAINT_VIOLATION` | Non-conflict constraint failed |
+| `XBASE_TRANSACTION_NOT_OPEN` | `TransactionName` supplied but workspace not found |
 
 ## Dependencies
 

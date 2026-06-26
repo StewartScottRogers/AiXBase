@@ -53,13 +53,15 @@ Copy only the skills you need. Skills that list dependencies require those depen
 
 ### Runtime prerequisite
 
-The XBase skills use SQLite. Install it if not already present:
+The XBase skills run on native file-system operations — no external database engine,
+libraries, or binaries are required. The only runtime dependency is a supported
+scripting environment, which `XBase-Runtime-Detect` identifies automatically:
 
-```
-winget install SQLite.SQLite        # Windows
-brew install sqlite                  # macOS
-sudo apt install sqlite3             # Debian/Ubuntu
-```
+- **Windows**: PowerShell 5+ (`powershell.exe`) or PowerShell 7+ (`pwsh`) — detected first
+- **macOS / Linux**: bash or zsh
+- **Any platform**: Python 3.6+ (stdlib only — no `pip` packages required)
+
+Run `/XBase-Runtime-Detect` once at the start of any session to establish the context.
 
 ---
 
@@ -81,7 +83,7 @@ sudo apt install sqlite3             # Debian/Ubuntu
 
 ### XBase
 
-A lightweight SQLite database engine accessed entirely through skills. 28 skills across 7 operation groups.
+A lightweight native file-based database engine accessed entirely through skills. 29 skills across 8 operation groups.
 
 See [XBase.wiki.md](XBase/XBase.wiki.md) for full documentation.
 
@@ -90,10 +92,11 @@ See [XBase.wiki.md](XBase/XBase.wiki.md) for full documentation.
 | Database | 4 | Lifecycle: initialize, connect, disconnect, drop |
 | Schema | 5 | Table and column DDL |
 | Record | 5 | CRUD + upsert |
-| Query | 5 | Filters, sorts, joins, aggregates, raw SQL |
+| Query | 5 | Filters, sorts, joins, aggregates (in-memory, no SQL) |
 | Index | 4 | Create, drop, rebuild, list indexes |
 | Transaction | 4 | Begin, commit, rollback, savepoints |
 | Backup | 3 | Create, restore, verify backups |
+| Runtime | 1 | Environment detection and script-generation context |
 
 ### Ticketing System
 
@@ -143,4 +146,4 @@ Comprehensive test criteria for both feature areas are maintained as PRDs:
 
 ## Distribution
 
-The `SKILLS/` folder is the GitHub ZIP distribution artifact. Its directory structure mirrors the skill naming convention exactly. Files are plain Markdown — no compiled output, no dependencies beyond SQLite at runtime.
+The `SKILLS/` folder is the GitHub ZIP distribution artifact. Its directory structure mirrors the skill naming convention exactly. Files are plain Markdown — no compiled output, no runtime dependencies beyond a scripting environment (PowerShell, bash, or Python).

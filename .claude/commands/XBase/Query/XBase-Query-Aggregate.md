@@ -1,16 +1,15 @@
 # XBase-Query-Aggregate
 
-Compute aggregate functions (COUNT, SUM, AVG, MIN, MAX) over a table or result set.
+Build an aggregate specification object for use with `XBase-Record-Select` or
+`XBase-Query-Execute`. No file I/O occurs — pure compilation. Aggregation is evaluated
+in memory against the matched row set by the executing skill.
 
 ## Inputs
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `ConnectionName` | string | yes | — | Open connection alias |
-| `TableName` | string | yes | — | Source table |
-| `Aggregates` | array | yes | — | Array of aggregate definitions (see below) |
-| `Filter` | object | no | — | Compiled filter from `XBase-Query-Filter` |
-| `GroupBy` | array | no | `[]` | Column names to group by |
+| `Aggregates` | array | yes | — | Array of aggregate definition objects (see below) |
+| `GroupBy` | array | no | `[]` | Column names to group rows by before aggregating |
 
 ### Aggregate Definition Object
 
@@ -18,36 +17,38 @@ Compute aggregate functions (COUNT, SUM, AVG, MIN, MAX) over a table or result s
 |---|---|---|---|
 | `Function` | string | yes | `COUNT`, `SUM`, `AVG`, `MIN`, or `MAX` |
 | `Column` | string | yes | Column to aggregate (`*` allowed for `COUNT`) |
-| `Alias` | string | no | Output field name in the result |
+| `Alias` | string | no | Output field name in the result row |
 
 ## Outputs
 
 ```json
 {
   "Success": true,
-  "Results": [
-    { "StatusName": "Open", "TicketCount": 14 },
-    { "StatusName": "Closed", "TicketCount": 52 }
-  ]
+  "Aggregate": {
+    "Functions": [
+      { "Function": "COUNT", "Column": "*",      "Alias": "Total"    },
+      { "Function": "AVG",   "Column": "Price",  "Alias": "AvgPrice" }
+    ],
+    "GroupBy": ["StatusName"]
+  }
 }
 ```
 
 ## Steps
 
-1. Validate `ConnectionName` and `TableName`
-2. Build `SELECT <aggregates> FROM <TableName> [WHERE <filter>] [GROUP BY <columns>]`
-3. Execute the query
-4. Return `Results` array
+1. Validate each `Function` is one of `COUNT`, `SUM`, `AVG`, `MIN`, `MAX`; return `XBASE_AGGREGATE_FUNCTION_UNKNOWN` on failure
+2. Validate each `Column` name — alphanumeric + underscore, or `*` for `COUNT` only
+3. Validate each `GroupBy` name — alphanumeric + underscore only
+4. Default `Alias` to `{Function}_{Column}` if not supplied (e.g. `COUNT_*` → `Count`, `SUM_Price` → `SumPrice`)
+5. Return the compiled aggregate specification object
 
 ## Error Codes
 
 | Code | Condition |
 |---|---|
-| `XBASE_CONNECTION_INVALID` | Connection not open |
-| `XBASE_SCHEMA_TABLE_NOT_FOUND` | Table does not exist |
-| `XBASE_AGGREGATE_FUNCTION_UNKNOWN` | Function not in allowed set |
+| `XBASE_AGGREGATE_FUNCTION_UNKNOWN` | Function not in the allowed set |
 
 ## Dependencies
 
-- `XBase-Database-Connect`
-- `XBase-Query-Filter` — optional
+None — pure compilation, no file access. Execution is performed by `XBase-Record-Select`
+or `XBase-Query-Execute`.

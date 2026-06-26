@@ -2,19 +2,24 @@
 
 ## Overview
 
-The XBase Administrative Console provides three composable slash commands for database administrators to inspect, operate, and maintain XBase databases through natural language — without needing to know the individual skill APIs.
+The XBase Administrative Console provides three composable commands for database administrators to inspect, operate, and maintain XBase databases through natural language — without needing to know the individual skill APIs.
 
-The console is implemented as three **`.proompt.md`** prompt files that orchestrate the existing 28 XBase skills. No new file I/O primitives are added; all operations delegate to the underlying skill layer.
+The console is implemented across two delivery surfaces, each orchestrating the existing 28 XBase skills. No new file I/O primitives are added; all operations delegate to the underlying skill layer.
+
+- **Distributable skills** (`SKILLS/XBase/Admin/`) — `execute.md`, `Inspect.md`, `maintain.md` — packaged with the XBase skill set for distribution
+- **Claude Code slash commands** (`.claude/commands/XBase/Admin/`) — `do.proompt.md`, `this.proompt.md`, `that.proompt.md` — registered locally for CLI use
+
+Both surfaces implement identical workflows. The slash commands use the shorter `/do`, `/this`, `/that` invocation names; the distributable skills use the longer `/execute`, `/Inspect`, `/maintain` names.
 
 ---
 
 ## Command Summary
 
-| File | Slash Command | Role |
-|---|---|---|
-| `do.proompt.md` | `/XBase/Admin/do` | **Execute** — run any XBase operation from a plain-English description |
-| `this.proompt.md` | `/XBase/Admin/this` | **Inspect** — display status, schema, record counts, and connection state |
-| `that.proompt.md` | `/XBase/Admin/that` | **Maintain** — rebuild indexes, verify integrity, backup, vacuum |
+| Role | SKILLS File | Slash Command | Description |
+|---|---|---|---|
+| **Execute** | `execute.md` | `/do` (`do.proompt.md`) | Run any XBase operation from a plain-English description |
+| **Inspect** | `Inspect.md` | `/this` (`this.proompt.md`) | Display status, schema, record counts, and connection state |
+| **Maintain** | `maintain.md` | `/that` (`that.proompt.md`) | Rebuild indexes, verify integrity, backup, vacuum |
 
 ---
 
@@ -169,14 +174,14 @@ Recommendation: Consider a backup (last was >12h ago)
 
 ```
 SKILLS/XBase/Admin/
-├── do.proompt.md       Natural-language XBase command executor
-├── this.proompt.md     Database inspector and status viewer
-└── that.proompt.md     Maintenance and health operations
+├── execute.md          Natural-language XBase command executor
+├── Inspect.md          Database inspector and status viewer
+└── maintain.md         Maintenance and health operations
 
 .claude/commands/XBase/Admin/
-├── do.proompt.md       (identical — registered as slash command)
-├── this.proompt.md
-└── that.proompt.md
+├── do.proompt.md       Slash command — same workflow as execute.md
+├── this.proompt.md     Slash command — same workflow as Inspect.md
+└── that.proompt.md     Slash command — same workflow as maintain.md
 ```
 
 ---

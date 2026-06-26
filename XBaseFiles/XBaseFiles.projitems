@@ -13,6 +13,6 @@
     <Content Include="$(MSBuildThisFileDirectory)**\*" Exclude="$(MSBuildThisFileDirectory)*.shproj;$(MSBuildThisFileDirectory)*.projitems;$(MSBuildThisFileDirectory)README.md" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)README.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBaseFiles.wiki.md" />
   </ItemGroup>
 </Project>

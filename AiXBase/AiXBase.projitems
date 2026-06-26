@@ -9,53 +9,5 @@
     <Import_RootNamespace>AiXBase</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Folders -->
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\" />
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Database\" />
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Schema\" />
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Record\" />
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Query\" />
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Index\" />
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Transaction\" />
-    <Folder Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Backup\" />
-    <!-- Wiki -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\XBase.wiki.md" />
-    <!-- XBase : Database -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Database\XBase-Database-Initialize.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Database\XBase-Database-Connect.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Database\XBase-Database-Disconnect.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Database\XBase-Database-Drop.md" />
-    <!-- XBase : Schema -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Schema\XBase-Schema-TableCreate.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Schema\XBase-Schema-TableAlter.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Schema\XBase-Schema-TableDrop.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Schema\XBase-Schema-TableList.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Schema\XBase-Schema-ColumnList.md" />
-    <!-- XBase : Record -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Record\XBase-Record-Insert.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Record\XBase-Record-Select.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Record\XBase-Record-Update.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Record\XBase-Record-Delete.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Record\XBase-Record-Upsert.md" />
-    <!-- XBase : Query -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Query\XBase-Query-Filter.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Query\XBase-Query-Sort.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Query\XBase-Query-Join.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Query\XBase-Query-Aggregate.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Query\XBase-Query-Execute.md" />
-    <!-- XBase : Index -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Index\XBase-Index-Create.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Index\XBase-Index-Drop.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Index\XBase-Index-Rebuild.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Index\XBase-Index-List.md" />
-    <!-- XBase : Transaction -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Transaction\XBase-Transaction-Begin.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Transaction\XBase-Transaction-Commit.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Transaction\XBase-Transaction-Rollback.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Transaction\XBase-Transaction-Savepoint.md" />
-    <!-- XBase : Backup -->
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Backup\XBase-Backup-Create.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Backup\XBase-Backup-Restore.md" />
-    <None Include="$(MSBuildThisFileDirectory)..\SKILLS\XBase\Backup\XBase-Backup-Verify.md" />
   </ItemGroup>
 </Project>

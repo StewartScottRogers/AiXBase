@@ -12,6 +12,7 @@ AiXBase is a .NET/C# project organized as a Visual Studio solution (`AiXBase.sln
 - `SKILLS/SKILLS.shproj` — all distributable AI skill files (the ZIP distribution root)
 - `AiTicketing/AiTicketing.shproj` — ticketing test/consumer project; imports `SKILLS.projitems` to see all skills
 - `ProductRequirementsDocuments/ProductRequirementsDocuments.shproj` — all PRDs and requirements docs go here
+- `XBaseFiles/XBaseFiles.shproj` � tracks all XBase database files; uses wildcard includes to automatically show files added by external applications
 - `AiXBase/` — runtime SQLite databases (not tracked in git)
 
 ## Running Claude Code
@@ -61,4 +62,5 @@ Every skill file follows the same format: Inputs table, JSON Outputs example, nu
 - No `.csproj` build heads exist yet — add them when implementing features and reference the shared projects
 - Every new file must be registered in `AiXBase.slnx` (root files) or the relevant `.projitems` (project files) — never leave VS out of sync with the file system
 - PRDs go in `ProductRequirementsDocuments/`; skill files go in `SKILLS/` under the appropriate feature + operation subfolder
+- `XBaseFiles/XBaseFiles.shproj` � tracks all XBase database files; uses wildcard includes to automatically show files added by external applications
 - The `AiXBase/` directory is gitignored; SQLite databases there are local runtime state only

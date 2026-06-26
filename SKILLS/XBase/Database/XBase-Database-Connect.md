@@ -6,7 +6,7 @@ Validate an existing database directory and register a named connection alias fo
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `DatabaseName` | string | yes | — | Name of the database directory under `AiXBase/` |
+| `DatabaseName` | string | yes | — | Name of the database directory under `XBaseFiles/` |
 | `ConnectionName` | string | yes | — | Logical alias used by all subsequent skills to identify this connection |
 
 ## Outputs
@@ -21,7 +21,7 @@ Validate an existing database directory and register a named connection alias fo
 
 ## Steps
 
-1. Resolve `AiXBase/{DatabaseName}/` to an absolute path
+1. Resolve `XBaseFiles/{DatabaseName}/` to an absolute path
 2. Verify the directory exists; if not, return `XBASE_DATABASE_NOT_FOUND`
 3. Read `_meta.json`; verify it is valid JSON and contains `XBaseVersion`; if not, return `XBASE_DATABASE_CORRUPT`
 4. Read `_schema.json`; verify it is valid JSON with `Tables` and `Indexes` arrays; if not, return `XBASE_DATABASE_CORRUPT`

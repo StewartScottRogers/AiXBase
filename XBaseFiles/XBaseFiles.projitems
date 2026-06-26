@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>e9f8b3c4-5d6a-4e7f-8a9b-0c1d2e3f4a5b</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>XBaseFiles</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Automatically include all files in subdirectories, excluding project files -->
+    <Content Include="$(MSBuildThisFileDirectory)**\*" Exclude="$(MSBuildThisFileDirectory)*.shproj;$(MSBuildThisFileDirectory)*.projitems;$(MSBuildThisFileDirectory)README.md" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)README.md" />
+  </ItemGroup>
+</Project>

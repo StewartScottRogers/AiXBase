@@ -5,4 +5,5 @@
   </Folder>
   <Project Path="ProductRequirementsDocuments/ProductRequirementsDocuments.shproj" />
   <Project Path="SKILLS/SKILLS.shproj" Id="cea07ac3-00f8-4496-a96f-b7f9dcf8d2d4" />
+  <Project Path="XBaseFiles/XBaseFiles.shproj" Id="e9f8b3c4-5d6a-4e7f-8a9b-0c1d2e3f4a5b" />
 </Solution>

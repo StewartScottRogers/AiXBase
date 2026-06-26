@@ -18,10 +18,12 @@ Example: `XBase-Record-Insert`, `XBase-Transaction-Rollback`
 
 ### Database = Directory
 
-A database is a **named directory** stored under `AiXBase/`. Every file inside that directory is owned exclusively by XBase and managed through the skills.
+A database is a **named directory** stored under `XBaseFiles/`. Every file inside that directory is owned exclusively by XBase and managed through the skills.
+
+**Note:** The `XBaseFiles/` directory is a Visual Studio Shared Project that automatically tracks all XBase database files using wildcard includes. Files added or modified by external applications will automatically appear in Solution Explorer without manual refresh.
 
 ```
-AiXBase/
+XBaseFiles/
 └── {DatabaseName}/
     ├── _meta.json                       Database metadata
     ├── _schema.json                     Table and index definitions
@@ -216,7 +218,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 
 | Skill | Description |
 |---|---|
-| `XBase-Backup-Create` | Copy the entire database directory to `AiXBase/backups/{name}_{timestamp}/` |
+| `XBase-Backup-Create` | Copy the entire database directory to `XBaseFiles/backups/{name}_{timestamp}/` |
 | `XBase-Backup-Restore` | Replace live database directory with a backup directory copy |
 | `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.ndjson` files; validate each JSON line |
 
@@ -227,7 +229,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 ### XBase-Database-Initialize
 
 **Inputs**
-- `DatabaseName` (string) — name of the database directory to create under `AiXBase/`
+- `DatabaseName` (string) — name of the database directory to create under `XBaseFiles/`
 - `OverwriteIfExists` (bool, default `false`)
 
 **Outputs**
@@ -235,7 +237,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 - `CreatedAt` (ISO-8601)
 
 **Steps**
-1. Resolve `AiXBase/{DatabaseName}/` to an absolute path
+1. Resolve `XBaseFiles/{DatabaseName}/` to an absolute path
 2. If the directory already exists and `OverwriteIfExists` is `false`, return `XBASE_DATABASE_EXISTS`
 3. If the directory already exists and `OverwriteIfExists` is `true`, delete it recursively
 4. `Directory.CreateDirectory(DatabasePath)`
@@ -248,7 +250,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 ### XBase-Database-Connect
 
 **Inputs**
-- `DatabaseName` (string) — name of the database directory under `AiXBase/`
+- `DatabaseName` (string) — name of the database directory under `XBaseFiles/`
 - `ConnectionName` (string) — logical alias for subsequent skill calls
 
 **Outputs**
@@ -256,7 +258,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 - `IsOpen` (bool)
 
 **Steps**
-1. Resolve `AiXBase/{DatabaseName}/` to an absolute path
+1. Resolve `XBaseFiles/{DatabaseName}/` to an absolute path
 2. Verify directory exists; if not, return `XBASE_DATABASE_NOT_FOUND`
 3. Read `_meta.json`; verify `XBaseVersion` field exists; if missing, return `XBASE_DATABASE_CORRUPT`
 4. Register `ConnectionName → DatabasePath` mapping in the session
@@ -464,9 +466,9 @@ For `UPDATE` / `DELETE`:
 **Steps**
 1. Validate `ConnectionName`
 2. Resolve source database directory
-3. Ensure `AiXBase/backups/` exists; create if not
+3. Ensure `XBaseFiles/backups/` exists; create if not
 4. Generate destination name: `{DatabaseName}_{YYYYMMDDTHHmmss}[_{BackupLabel}]`
-5. `Directory.Copy(source, AiXBase/backups/{dest}/)` — recursive file copy
+5. `Directory.Copy(source, XBaseFiles/backups/{dest}/)` — recursive file copy
 6. Return `BackupPath` and `CreatedAt`
 
 ---
@@ -557,7 +559,7 @@ Every skill returns a standard error envelope on failure:
 |---|---|
 | `XBASE_DATABASE_NOT_FOUND` | Database directory does not exist |
 | `XBASE_DATABASE_EXISTS` | Directory already exists and `OverwriteIfExists` is `false` |
-| `XBASE_DATABASE_PATH_INVALID` | Name escapes `AiXBase/` or contains illegal characters |
+| `XBASE_DATABASE_PATH_INVALID` | Name escapes `XBaseFiles/` or contains illegal characters |
 | `XBASE_DATABASE_CORRUPT` | `_meta.json` or `_schema.json` is missing or unparseable |
 | `XBASE_CONNECTION_INVALID` | `ConnectionName` not registered |
 | `XBASE_CONNECTION_NAME_IN_USE` | `ConnectionName` already registered |
@@ -592,7 +594,7 @@ Every skill returns a standard error envelope on failure:
 
 ## Dependencies
 
-- File system with read/write access to `AiXBase/`
+- File system with read/write access to `XBaseFiles/`
 - No external network dependencies
 - No third-party libraries
 - All skill inputs and outputs are serializable to JSON

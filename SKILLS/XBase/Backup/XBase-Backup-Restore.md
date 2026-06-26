@@ -6,7 +6,7 @@ Replace the live database directory with a copy from a backup directory.
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `BackupPath` | string | yes | — | Path to the backup directory (absolute or relative to `AiXBase/backups/`) |
+| `BackupPath` | string | yes | — | Path to the backup directory (absolute or relative to `XBaseFiles/backups/`) |
 | `TargetConnectionName` | string | yes | — | Registered connection whose database directory will be overwritten |
 | `CreateBackupBeforeRestore` | bool | no | `true` | Snapshot the current live database before overwriting |
 | `ConfirmRestore` | bool | yes | — | Must be `true`; guards against accidental data loss |
@@ -17,7 +17,7 @@ Replace the live database directory with a copy from a backup directory.
 {
   "Success": true,
   "RestoredFrom": "<BackupPath>",
-  "PreRestoreBackupPath": "AiXBase/backups/myapp_20260625T143900_pre-restore/",
+  "PreRestoreBackupPath": "XBaseFiles/backups/myapp_20260625T143900_pre-restore/",
   "RestoredAt": "<ISO-8601>"
 }
 ```

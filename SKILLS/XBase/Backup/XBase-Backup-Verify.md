@@ -6,7 +6,7 @@ Validate the integrity of a backup directory by reading its metadata and every N
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `BackupPath` | string | yes | — | Path to the backup directory (absolute or relative to `AiXBase/backups/`) |
+| `BackupPath` | string | yes | — | Path to the backup directory (absolute or relative to `XBaseFiles/backups/`) |
 
 ## Outputs
 

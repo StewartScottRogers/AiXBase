@@ -6,7 +6,7 @@ Create a new database directory with metadata and an empty schema.
 
 | Parameter | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `DatabaseName` | string | yes | — | Name of the directory to create under `AiXBase/` |
+| `DatabaseName` | string | yes | — | Name of the directory to create under `XBaseFiles/` |
 | `OverwriteIfExists` | bool | no | `false` | Delete and recreate if the directory already exists |
 
 ## Outputs
@@ -21,7 +21,7 @@ Create a new database directory with metadata and an empty schema.
 
 ## Steps
 
-1. Resolve `AiXBase/{DatabaseName}/` to an absolute path; reject if the name contains `..`, `/`, `\`, or null bytes — return `XBASE_DATABASE_PATH_INVALID`
+1. Resolve `XBaseFiles/{DatabaseName}/` to an absolute path; reject if the name contains `..`, `/`, `\`, or null bytes — return `XBASE_DATABASE_PATH_INVALID`
 2. If the directory already exists and `OverwriteIfExists` is `false`, return `XBASE_DATABASE_EXISTS`
 3. If the directory already exists and `OverwriteIfExists` is `true`, delete it recursively
 4. `Directory.CreateDirectory(DatabasePath)`

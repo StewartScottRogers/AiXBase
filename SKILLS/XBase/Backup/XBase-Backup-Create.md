@@ -1,6 +1,6 @@
 # XBase-Backup-Create
 
-Copy the entire database directory to a timestamped backup in `AiXBase/backups/`.
+Copy the entire database directory to a timestamped backup in `XBaseFiles/backups/`.
 
 ## Inputs
 
@@ -14,7 +14,7 @@ Copy the entire database directory to a timestamped backup in `AiXBase/backups/`
 ```json
 {
   "Success": true,
-  "BackupPath": "AiXBase/backups/myapp_20260625T143201_pre-migration/",
+  "BackupPath": "XBaseFiles/backups/myapp_20260625T143201_pre-migration/",
   "CreatedAt": "<ISO-8601>"
 }
 ```
@@ -23,9 +23,9 @@ Copy the entire database directory to a timestamped backup in `AiXBase/backups/`
 
 1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
 2. Resolve the source database directory from the registered connection
-3. Ensure `AiXBase/backups/` exists; create it if not
+3. Ensure `XBaseFiles/backups/` exists; create it if not
 4. Generate the backup directory name: `{DatabaseName}_{YYYYMMDDTHHmmss}[_{BackupLabel}]`
-5. Recursively copy every file from the source database directory into `AiXBase/backups/{name}/`, preserving subdirectory structure
+5. Recursively copy every file from the source database directory into `XBaseFiles/backups/{name}/`, preserving subdirectory structure
 6. Skip any active transaction directories (`_txn_*/`) — backup reflects committed state only
 7. Return `BackupPath` and `CreatedAt`
 

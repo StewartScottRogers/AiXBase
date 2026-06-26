@@ -16,10 +16,10 @@ XBase is a native file-based database engine accessed entirely through AI Skills
 
 ### Native File Format
 
-A database is a **named directory** under `AiXBase/`. Every piece of state is a plain text file inside that directory:
+A database is a **named directory** under `XBaseFiles/`. Every piece of state is a plain text file inside that directory:
 
 ```
-AiXBase/
+XBaseFiles/
 └── myapp/
     ├── _meta.json                     Database metadata
     ├── _schema.json                   Table and index definitions
@@ -189,7 +189,7 @@ Pass `TransactionName` to any Record or Query skill to operate within an open tr
 
 | Skill | Purpose |
 |---|---|
-| `XBase-Backup-Create` | Copy the database directory to `AiXBase/backups/{name}_{timestamp}/`; skips active transaction directories |
+| `XBase-Backup-Create` | Copy the database directory to `XBaseFiles/backups/{name}_{timestamp}/`; skips active transaction directories |
 | `XBase-Backup-Restore` | Replace live database directory with a backup copy (`ConfirmRestore: true` required; optionally creates a pre-restore snapshot) |
 | `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.ndjson` files; validate every JSON line; return `IntegrityOk` and `Issues` |
 

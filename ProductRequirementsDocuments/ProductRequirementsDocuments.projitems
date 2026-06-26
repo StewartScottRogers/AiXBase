@@ -9,6 +9,8 @@
     <Import_RootNamespace>ProductRequirementsDocuments</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)XBase-Admin-PRD.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase-Admin-Testing-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase-Testing-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem-PRD.md" />

@@ -46,6 +46,9 @@
 	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Read.md" />
 	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Register.md" />
 	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Update.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Admin\do.proompt.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Admin\that.proompt.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Admin\this.proompt.md" />
 	<None Include="$(MSBuildThisFileDirectory)XBase\XBase.wiki.md" />
 	<None Include="$(MSBuildThisFileDirectory)XBase\Backup\XBase-Backup-Create.md" />
 	<None Include="$(MSBuildThisFileDirectory)XBase\Backup\XBase-Backup-Restore.md" />

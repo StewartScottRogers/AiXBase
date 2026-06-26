@@ -1,19 +1,81 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-    <HasSharedItems>true</HasSharedItems>
-    <SharedGUID>cea07ac3-00f8-4496-a96f-b7f9dcf8d2d4</SharedGUID>
+	<MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+	<HasSharedItems>true</HasSharedItems>
+	<SharedGUID>cea07ac3-00f8-4496-a96f-b7f9dcf8d2d4</SharedGUID>
   </PropertyGroup>
   <PropertyGroup Label="Configuration">
-    <Import_RootNamespace>SKILLS</Import_RootNamespace>
+	<Import_RootNamespace>SKILLS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <!-- SKILLS distribution root owns only its own wiki -->
-    <None Include="$(MSBuildThisFileDirectory)SKILLS.wiki.md" />
+	<None Include="$(MSBuildThisFileDirectory)SKILLS.wiki.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\TicketingSystem.wiki.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Add.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Read.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Remove.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Category\Ticketing-Category-Assign.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Category\Ticketing-Category-Create.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Category\Ticketing-Tag-Add.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Category\Ticketing-Tag-Remove.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Comment\Ticketing-Comment-Add.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Comment\Ticketing-Comment-Delete.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Comment\Ticketing-Comment-Edit.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Comment\Ticketing-Comment-Read.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Display\Ticketing-Display-Alert.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Display\Ticketing-Display-Bell.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Display\Ticketing-Display-Complete.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Priority\Ticketing-Priority-Define.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Priority\Ticketing-Priority-Set.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Report\Ticketing-Report-Export.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Report\Ticketing-Report-Generate.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Report\Ticketing-Report-Summary.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Status\Ticketing-Status-Define.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Status\Ticketing-Status-Transition.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Assign.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Close.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Create.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Delete.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Escalate.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Query.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Read.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Reopen.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Update.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Authenticate.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Deactivate.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Read.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Register.md" />
+	<None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Update.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\XBase.wiki.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Backup\XBase-Backup-Create.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Backup\XBase-Backup-Restore.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Backup\XBase-Backup-Verify.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Connect.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Disconnect.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Drop.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Database\XBase-Database-Initialize.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Index\XBase-Index-Create.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Index\XBase-Index-Drop.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Index\XBase-Index-List.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Index\XBase-Index-Rebuild.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Query\XBase-Query-Aggregate.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Query\XBase-Query-Execute.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Query\XBase-Query-Filter.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Query\XBase-Query-Join.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Query\XBase-Query-Sort.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Record\XBase-Record-Delete.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Record\XBase-Record-Insert.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Record\XBase-Record-Select.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Record\XBase-Record-Update.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Record\XBase-Record-Upsert.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Schema\XBase-Schema-ColumnList.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Schema\XBase-Schema-TableAlter.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Schema\XBase-Schema-TableCreate.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Schema\XBase-Schema-TableDrop.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Schema\XBase-Schema-TableList.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Transaction\XBase-Transaction-Begin.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Transaction\XBase-Transaction-Commit.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Transaction\XBase-Transaction-Rollback.md" />
+	<None Include="$(MSBuildThisFileDirectory)XBase\Transaction\XBase-Transaction-Savepoint.md" />
   </ItemGroup>
-  <!-- XBase skills — owned by AiXBase.shproj -->
-  <Import Project="$(MSBuildThisFileDirectory)..\AiXBase\AiXBase.projitems" />
-  <!-- TicketingSystem skills — owned by AiTicketing.shproj (which also imports AiXBase) -->
-  <Import Project="$(MSBuildThisFileDirectory)..\AiTicketing\AiTicketing.projitems" />
 </Project>

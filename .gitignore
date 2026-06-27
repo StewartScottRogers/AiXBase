@@ -367,3 +367,6 @@ FodyWeavers.xsd
 # Runtime data directories (SQLite databases, backups, reports, attachments)
 AiXBase/
 data/
+
+# Release build artifact (uploaded to GitHub Releases, not committed)
+skills.zip

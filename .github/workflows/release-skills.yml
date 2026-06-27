@@ -1,0 +1,58 @@
+name: Release skills.zip
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'SKILLS/**'
+      - 'manifest.json'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build skills.zip
+        run: |
+          cd SKILLS
+          # Include all markdown files; exclude VS project files
+          zip -r ../skills.zip . \
+            --include "*.md" \
+            -x "*.projitems" "*.shproj"
+          echo "skills.zip contents:"
+          zipinfo -1 ../skills.zip | sort
+
+      - name: Generate version tag
+        id: version
+        run: |
+          TAG="v$(date -u +%Y.%m.%d.%H%M)"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Tag: $TAG"
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.version.outputs.tag }}" \
+            skills.zip#skills.zip \
+            --title "Skills Distribution ${{ steps.version.outputs.tag }}" \
+            --notes "Auto-generated release from master branch.
+
+Contains 69 skills across 2 bundles:
+- **XBase** (34 skills, 9 groups) — file-backed database engine using dBASE III binary format
+- **TicketingSystem** (35 skills, 9 groups) — full helpdesk ticketing system built on XBase
+
+Install:
+\`\`\`powershell
+Invoke-WebRequest -Uri \"https://github.com/${{ github.repository }}/releases/latest/download/skills.zip\" -OutFile skills.zip; Expand-Archive skills.zip -DestinationPath .
+\`\`\`
+\`\`\`bash
+curl -L https://github.com/${{ github.repository }}/releases/latest/download/skills.zip -o skills.zip && unzip skills.zip
+\`\`\`
+
+See [manifest.json](https://github.com/${{ github.repository }}/blob/master/manifest.json) for the full skill catalog."

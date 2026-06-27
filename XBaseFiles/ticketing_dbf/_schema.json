@@ -1,0 +1,203 @@
+{
+  "Tables": [
+    {
+      "Name": "Statuses",
+      "NextId": 1,
+      "Columns": [
+        {
+          "Name": "ID"
+        },
+        {
+          "Name": "NAME"
+        },
+        {
+          "Name": "ISTERMINAL"
+        },
+        {
+          "Name": "ISDEFAULT"
+        },
+        {
+          "Name": "SORTORDER"
+        },
+        {
+          "Name": "CREATEDAT"
+        },
+        {
+          "Name": "UPDATEDAT"
+        },
+        {
+          "Name": "ISDELETED"
+        }
+      ]
+    },
+    {
+      "Name": "Priorities",
+      "NextId": 1,
+      "Columns": [
+        {
+          "Name": "ID"
+        },
+        {
+          "Name": "NAME"
+        },
+        {
+          "Name": "NUMERICVAL"
+        },
+        {
+          "Name": "ISDEFAULT"
+        },
+        {
+          "Name": "CREATEDAT"
+        },
+        {
+          "Name": "UPDATEDAT"
+        },
+        {
+          "Name": "ISDELETED"
+        }
+      ]
+    },
+    {
+      "Name": "Users",
+      "NextId": 1,
+      "Columns": [
+        {
+          "Name": "ID"
+        },
+        {
+          "Name": "USERNAME"
+        },
+        {
+          "Name": "DISPLAYNAM"
+        },
+        {
+          "Name": "EMAIL"
+        },
+        {
+          "Name": "PASSHASH"
+        },
+        {
+          "Name": "ISADMIN"
+        },
+        {
+          "Name": "ISACTIVE"
+        },
+        {
+          "Name": "CREATEDAT"
+        },
+        {
+          "Name": "UPDATEDAT"
+        },
+        {
+          "Name": "ISDELETED"
+        }
+      ]
+    },
+    {
+      "Name": "Tickets",
+      "NextId": 1,
+      "Columns": [
+        {
+          "Name": "ID"
+        },
+        {
+          "Name": "TICKETNUM"
+        },
+        {
+          "Name": "SUMMARY"
+        },
+        {
+          "Name": "DESCRIP"
+        },
+        {
+          "Name": "STATUSID"
+        },
+        {
+          "Name": "PRIORITYID"
+        },
+        {
+          "Name": "SUBMITBYID"
+        },
+        {
+          "Name": "ASSIGNEEID"
+        },
+        {
+          "Name": "CLOSEDAT"
+        },
+        {
+          "Name": "CREATEDAT"
+        },
+        {
+          "Name": "UPDATEDAT"
+        },
+        {
+          "Name": "ISDELETED"
+        }
+      ]
+    },
+    {
+      "Name": "TicketHist",
+      "NextId": 1,
+      "Columns": [
+        {
+          "Name": "ID"
+        },
+        {
+          "Name": "TICKETID"
+        },
+        {
+          "Name": "ACTION"
+        },
+        {
+          "Name": "FROMVALUE"
+        },
+        {
+          "Name": "TOVALUE"
+        },
+        {
+          "Name": "CHANGEDBYID"
+        },
+        {
+          "Name": "CREATEDAT"
+        },
+        {
+          "Name": "UPDATEDAT"
+        },
+        {
+          "Name": "ISDELETED"
+        }
+      ]
+    },
+    {
+      "Name": "Comments",
+      "NextId": 1,
+      "Columns": [
+        {
+          "Name": "ID"
+        },
+        {
+          "Name": "TICKETID"
+        },
+        {
+          "Name": "AUTHORID"
+        },
+        {
+          "Name": "BODY"
+        },
+        {
+          "Name": "ISINTERNAL"
+        },
+        {
+          "Name": "CREATEDAT"
+        },
+        {
+          "Name": "UPDATEDAT"
+        },
+        {
+          "Name": "ISDELETED"
+        }
+      ]
+    }
+  ],
+  "Indexes": []
+}

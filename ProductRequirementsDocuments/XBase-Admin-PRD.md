@@ -35,7 +35,7 @@ User natural-language input
   XBase skill layer        (28 existing skills — all file I/O here)
         │
         ▼
-  XBaseFiles/ directory    (NDJSON files, _meta.json, _schema.json, .ndx files)
+  XBaseFiles/ directory    (DBF files, _meta.json, _schema.json, .ndx files)
 ```
 
 Admin commands are **orchestration prompts only**. They parse intent, collect parameters, sequence skill calls, and present human-readable results. Every byte read from or written to disk goes through a named XBase skill.
@@ -151,9 +151,9 @@ Performs a maintenance operation on a target database.
 | Operation | Description |
 |---|---|
 | `report` (default) | Full health report: integrity check + index health + record counts + backup status |
-| `verify` | Parse every NDJSON line; report corrupt rows with file name and line number |
+| `verify` | Parse every DBF line; report corrupt rows with file name and line number |
 | `backup` | Create a timestamped backup in `XBaseFiles/backups/` |
-| `rebuild-indexes` | Rebuild all `.ndx` files from source NDJSON data |
+| `rebuild-indexes` | Rebuild all `.ndx` files from source DBF data |
 | `vacuum` | Hard-delete all soft-deleted rows across all tables (requires confirmation) |
 
 **Default report output:**

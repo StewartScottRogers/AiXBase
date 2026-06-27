@@ -1,7 +1,7 @@
 # XBase-Schema-TableCreate
 
 Define a new table by adding its definition to `_schema.json` and creating an empty
-`.ndjson` data file. No SQL DDL is generated or executed.
+`.dbf` data file. No SQL DDL is generated or executed.
 
 ## Inputs
 
@@ -49,7 +49,7 @@ Define a new table by adding its definition to `_schema.json` and creating an em
 7. Validate each column definition; return `XBASE_SCHEMA_COLUMN_INVALID` on any malformed entry
 8. Add the table entry to the `Tables` array with `NextId: 1`
 9. `File.WriteAllText(_schema.json, updatedSchema)`
-10. `File.WriteAllText({TableName}.ndjson, "")` — create an empty data file
+10. `File.WriteAllText({TableName}.dbf, "")` — create an empty data file
 11. Return `TableName` and `CreatedAt`
 
 ## Script Templates
@@ -65,7 +65,7 @@ $now       = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 $tableDef  = @{ Name = $TableName; NextId = 1; Columns = $columns }
 $schema.Tables += $tableDef
 $schema | ConvertTo-Json -Depth 20 | Set-Content "$DatabasePath\_schema.json" -Encoding UTF8
-"" | Set-Content "$DatabasePath\$TableName.ndjson" -Encoding UTF8
+"" | Set-Content "$DatabasePath\$TableName.dbf" -Encoding UTF8
 ```
 
 ### Python
@@ -80,7 +80,7 @@ def create_table(db_path, table_name, columns):
     now     = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     schema["Tables"].append({"Name": table_name, "NextId": 1, "Columns": columns})
     (dbpath / "_schema.json").write_text(json.dumps(schema, indent=2))
-    (dbpath / f"{table_name}.ndjson").write_text("", encoding="utf-8")
+    (dbpath / f"{table_name}.dbf").write_text("", encoding="utf-8")
     return now
 ```
 

@@ -56,10 +56,10 @@ For `UPDATE` / `DELETE`:
 3. Resolve the active data directory (transaction workspace or live, based on `TransactionName`)
 4. Read `_schema.json` to locate the table definition; if not found, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
 5. Dispatch by `Operation`:
-   - **SELECT**: Read all lines from `{TableName}.ndjson`; parse each as JSON; apply `IncludeDeleted` filter; apply `Filter` and `Join` specifications; compute `TotalCount`; apply `Aggregate` (if supplied); apply `Sort`; apply `Offset` and `Limit`; project `Columns`; return `Rows` and `TotalCount`
-   - **INSERT**: Enforce NOT NULL, UNIQUE, and FK constraints; assign `Id` from `NextId`; set `CreatedAt`, `UpdatedAt`, `IsDeleted`; append JSON line to `.ndjson`; update index `.ndx` files; write updated `_schema.json`; return `InsertedCount` and `LastInsertedId`
-   - **UPDATE**: Require `Filter`; read `.ndjson`; apply Filter to find matching rows; apply `Values` to each match; enforce constraints; set `UpdatedAt`; rewrite `.ndjson`; update index `.ndx` files; return `AffectedRows`
-   - **DELETE**: Require `Filter`; read `.ndjson`; apply Filter; if `HardDelete` remove matching lines else set `IsDeleted=1` and refresh `UpdatedAt`; rewrite `.ndjson`; update index `.ndx` files; return `AffectedRows`
+   - **SELECT**: Read all lines from `{TableName}.dbf`; parse each as JSON; apply `IncludeDeleted` filter; apply `Filter` and `Join` specifications; compute `TotalCount`; apply `Aggregate` (if supplied); apply `Sort`; apply `Offset` and `Limit`; project `Columns`; return `Rows` and `TotalCount`
+   - **INSERT**: Enforce NOT NULL, UNIQUE, and FK constraints; assign `Id` from `NextId`; set `CreatedAt`, `UpdatedAt`, `IsDeleted`; append JSON line to `.dbf`; update index `.ndx` files; write updated `_schema.json`; return `InsertedCount` and `LastInsertedId`
+   - **UPDATE**: Require `Filter`; read `.dbf`; apply Filter to find matching rows; apply `Values` to each match; enforce constraints; set `UpdatedAt`; rewrite `.dbf`; update index `.ndx` files; return `AffectedRows`
+   - **DELETE**: Require `Filter`; read `.dbf`; apply Filter; if `HardDelete` remove matching lines else set `IsDeleted=1` and refresh `UpdatedAt`; rewrite `.dbf`; update index `.ndx` files; return `AffectedRows`
 
 ## Error Codes
 

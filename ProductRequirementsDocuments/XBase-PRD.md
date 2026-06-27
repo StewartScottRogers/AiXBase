@@ -27,11 +27,11 @@ XBaseFiles/
 └── {DatabaseName}/
     ├── _meta.json                       Database metadata
     ├── _schema.json                     Table and index definitions
-    ├── {TableName}.ndjson               Table data — one JSON object per line
+    ├── {TableName}.dbf               Table data — fixed-length binary record
     ├── {TableName}.{IndexName}.ndx      Index — sorted key→Id entries, one per line
     └── _txn_{TransactionName}/          Active transaction workspace (if any)
         ├── _schema.json                 Transaction-local schema copy
-        ├── {TableName}.ndjson           Transaction-local data copy (lazy — only tables touched)
+        ├── {TableName}.dbf           Transaction-local data copy (lazy — only tables touched)
         └── sp_{SavepointName}/          Savepoint snapshot
             └── ...
 ```
@@ -76,9 +76,9 @@ XBaseFiles/
 }
 ```
 
-### `{TableName}.ndjson` — Table Data
+### `{TableName}.dbf` — Table Data
 
-Newline-Delimited JSON (NDJSON): one complete, self-contained JSON object per line, UTF-8, `\n`-terminated.
+dBASE III DBF binary: fixed-length binary record beginning with a 1-byte deletion flag.
 
 ```
 {"Id":1,"Username":"alice","Email":"alice@example.com","IsDeleted":0,"CreatedAt":"2026-06-25T12:00:00Z","UpdatedAt":"2026-06-25T12:00:00Z"}
@@ -89,14 +89,14 @@ Newline-Delimited JSON (NDJSON): one complete, self-contained JSON object per li
 
 | Operation | File action |
 |---|---|
-| Insert | `File.AppendAllText` — append one line per row |
-| Update | Read all lines → modify matching → `File.WriteAllLines` (full rewrite) |
-| Soft delete | Update `IsDeleted` to `1` — same as Update |
-| Hard delete | Read all lines → omit matching → `File.WriteAllLines` (full rewrite) |
+| Insert | Append one `RecordSize`-byte record; increment header record count; update last-update date |
+| Update | Seek to record byte offset; overwrite field bytes in place |
+| Soft delete | Write `0x2A` deletion flag at record offset; set `IsDeleted=1` |
+| Hard delete (PACK) | Rewrite entire `.dbf` excluding deletion-flagged records; update header record count |
 
 ### `{TableName}.{IndexName}.ndx` — Index
 
-Sorted ascending by Key. One entry per line. Used for O(log n) binary-search lookups.
+dBASE III NDX binary B-tree index. Used for O(log n) lookups without full-table scans.
 
 ```
 {"Key":"alice","Id":1}
@@ -105,7 +105,7 @@ Sorted ascending by Key. One entry per line. Used for O(log n) binary-search loo
 
 For composite indexes, `Key` is a pipe-delimited concatenation of the column values: `"alice|active"`.
 
-Index files are kept in sync on every insert, update, and delete that touches an indexed column. `XBase-Index-Rebuild` regenerates an index from scratch from the live `.ndjson` file.
+Index files are kept in sync on every insert, update, and delete that touches an indexed column. `XBase-Index-Rebuild` regenerates the NDX B-tree from scratch by reading all active records from the live `.dbf` file.
 
 ### Constraints Enforcement
 
@@ -170,9 +170,9 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 
 | Skill | Description |
 |---|---|
-| `XBase-Schema-TableCreate` | Add a table definition to `_schema.json` and create an empty `.ndjson` file |
+| `XBase-Schema-TableCreate` | Add a table definition to `_schema.json` and create an empty `.dbf` file |
 | `XBase-Schema-TableAlter` | Add columns to a table definition in `_schema.json` |
-| `XBase-Schema-TableDrop` | Remove a table from `_schema.json` and delete its `.ndjson` and `.ndx` files |
+| `XBase-Schema-TableDrop` | Remove a table from `_schema.json` and delete its `.dbf` and `.ndx` files |
 | `XBase-Schema-TableList` | Return all table names from `_schema.json` |
 | `XBase-Schema-ColumnList` | Return column definitions for a table from `_schema.json` |
 
@@ -180,9 +180,9 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 
 | Skill | Description |
 |---|---|
-| `XBase-Record-Insert` | Append rows to a `.ndjson` file; enforce constraints; update indexes |
-| `XBase-Record-Select` | Read `.ndjson`, apply filter/sort/pagination in memory; return matching rows |
-| `XBase-Record-Update` | Read `.ndjson`, modify matching rows, rewrite file; update indexes |
+| `XBase-Record-Insert` | Append rows to a `.dbf` file; enforce constraints; update indexes |
+| `XBase-Record-Select` | Read `.dbf`, apply filter/sort/pagination in memory; return matching rows |
+| `XBase-Record-Update` | Read `.dbf`, modify matching rows, rewrite file; update indexes |
 | `XBase-Record-Delete` | Soft-delete (set `IsDeleted=1`) or hard-delete (rewrite without matching rows) |
 | `XBase-Record-Upsert` | Insert or update based on conflict columns |
 
@@ -200,9 +200,9 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 
 | Skill | Description |
 |---|---|
-| `XBase-Index-Create` | Read `.ndjson`, build sorted `.ndx` file, register in `_schema.json` |
+| `XBase-Index-Create` | Read `.dbf`, build sorted `.ndx` file, register in `_schema.json` |
 | `XBase-Index-Drop` | Delete `.ndx` file, remove from `_schema.json` |
-| `XBase-Index-Rebuild` | Re-read `.ndjson`, rewrite `.ndx` file from scratch |
+| `XBase-Index-Rebuild` | Re-read `.dbf`, rewrite `.ndx` file from scratch |
 | `XBase-Index-List` | Return index definitions for a table from `_schema.json` |
 
 ### Transaction Control
@@ -220,7 +220,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 |---|---|
 | `XBase-Backup-Create` | Copy the entire database directory to `XBaseFiles/backups/{name}_{timestamp}/` |
 | `XBase-Backup-Restore` | Replace live database directory with a backup directory copy |
-| `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.ndjson` files; validate each JSON line |
+| `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.dbf` files; validate each JSON line |
 
 ---
 
@@ -286,7 +286,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 5. Append implicit `CreatedAt TEXT`, `UpdatedAt TEXT`, `IsDeleted INTEGER DEFAULT 0` columns unless already present
 6. Validate no duplicate column names
 7. Add table entry to `_schema.json` with `NextId:1`; write `_schema.json`
-8. Write an empty `{TableName}.ndjson` file
+8. Write a valid empty `.dbf` file: DBF header (version `0x03`, record count `0`, correct `HeaderSize` and `RecordSize`), field descriptor array, header terminator `0x0D`, EOF marker `0x1A`
 9. Return `TableName` and `ColumnCount`
 
 ---
@@ -305,13 +305,13 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 
 **Steps**
 1. Read `_schema.json` (from transaction workspace if `TransactionName` supplied, else live)
-2. Locate target table; resolve `.ndjson` path (transaction workspace or live)
+2. Locate target table; resolve `.dbf` path (transaction workspace or live)
 3. For each row:
    a. Enforce `NOT NULL` constraints; inject `Default` values for missing optional fields
-   b. Enforce `UNIQUE` constraints: for each unique column, read its `.ndx` (if exists) or scan `.ndjson`
+   b. Enforce `UNIQUE` constraints: for each unique column, read its `.ndx` (if exists) or scan `.dbf`
    c. Enforce `FOREIGN KEY` constraints: read target table to verify parent Id
    d. Assign `Id = NextId`; set `CreatedAt = UpdatedAt = now()`; set `IsDeleted = 0`
-   e. Append serialised JSON line to `.ndjson`
+   e. Append serialised JSON line to `.dbf`
    f. Update each affected `.ndx` file (insert sorted entry)
    g. Increment `NextId` in `_schema.json`
 4. Write updated `_schema.json`
@@ -336,7 +336,8 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 - `TotalCount` (int) — matching count before Limit/Offset
 
 **Steps**
-1. Read all lines from `{TableName}.ndjson`; parse each line as JSON
+1. Read DBF header from `{TableName}.dbf`; determine `RecordSize`, `RecordCount`, `HeaderSize`, field descriptors
+2. Decode each record: seek to `HeaderSize + (R x RecordSize)`, read `RecordSize` bytes, parse fields from fixed-width byte positions
 2. Unless `IncludeDeleted`, discard rows where `IsDeleted = 1`
 3. Apply `Filter` specification: for each row, evaluate each filter condition; keep rows where all conditions pass
 4. `TotalCount` = count of rows passing filter
@@ -407,10 +408,10 @@ For `UPDATE` / `DELETE`:
 **Steps**
 1. Validate `ConnectionName` and `Operation`
 2. Dispatch to the appropriate record operation based on `Operation`:
-   - `SELECT` → apply Filter, Join, Aggregate, Sort, Limit, Offset to `.ndjson` data in memory
-   - `INSERT` → enforce constraints, append to `.ndjson`, update indexes
-   - `UPDATE` → read `.ndjson`, apply Filter, modify matching rows with `Values`, rewrite
-   - `DELETE` → read `.ndjson`, apply Filter, soft or hard delete matching rows, rewrite
+   - `SELECT` → read DBF records, apply Filter, Join, Aggregate, Sort, Limit, Offset in memory
+   - `INSERT` → enforce constraints, encode and append fixed-length record to `.dbf`, update indexes
+   - `UPDATE` → read DBF records, apply Filter, seek to each matching record offset, overwrite field bytes in place
+   - `DELETE` → soft: write `0x2A` deletion flag; hard (PACK): rewrite `.dbf` excluding deleted records
 
 ---
 
@@ -493,8 +494,10 @@ For `UPDATE` / `DELETE`:
 2. Read `_meta.json`; verify `XBaseVersion` field; if invalid, return `XBASE_BACKUP_CORRUPT`
 3. Read `_schema.json`; verify `Tables` array is valid JSON; if invalid, return `XBASE_BACKUP_CORRUPT`
 4. For each table in `_schema.json`:
-   a. Verify `{TableName}.ndjson` exists
-   b. Read every line; attempt `JSON.Parse(line)`; if any line fails, record the error
+   a. Verify `{TableName}.dbf` exists
+   b. Read the DBF header; verify version byte, `HeaderSize`, `RecordSize`, and field descriptor array
+   c. Verify file size = `HeaderSize + (RecordCount x RecordSize) + 1`
+   d. Check deletion flag byte (`0x20` or `0x2A`) on each record; record anomalies
 5. Return `IntegrityOk: true/false` and `Issues` array
 
 ---
@@ -512,7 +515,7 @@ All tables managed by XBase share these implicit conventions:
 
 `XBase-Record-Select` automatically excludes rows where `IsDeleted = 1` unless `IncludeDeleted: true` is passed.
 
-`XBase-Record-Delete` sets `IsDeleted = 1` by default. Pass `HardDelete: true` to physically remove the line from the `.ndjson` file.
+`XBase-Record-Delete` sets `IsDeleted = 1` by default. Pass `HardDelete: true` to physically remove the line from the `.dbf` file.
 
 ---
 
@@ -528,9 +531,9 @@ All XBase skills are implemented using only these OS-level operations:
 | `Directory.GetFiles(path, pattern)` | List tables, list backups |
 | `File.ReadAllText(path)` | Read `_meta.json`, `_schema.json` |
 | `File.WriteAllText(path, content)` | Write `_meta.json`, `_schema.json` |
-| `File.ReadAllLines(path)` | Read `.ndjson` and `.ndx` files |
-| `File.WriteAllLines(path, lines)` | Rewrite `.ndjson` after update/delete |
-| `File.AppendAllText(path, line)` | Append a new row to `.ndjson` |
+| `File.ReadAllBytes(path)` | Read entire `.dbf` or `.ndx` binary file into memory |
+| `File.WriteAllBytes(path, bytes)` | Write new `.dbf` header or rewrite after PACK / index rebuild |
+| `File.OpenAppend(path)` | Append one fixed-length binary record to `.dbf` on insert |
 | `File.Move(src, dest)` | Atomic commit of transaction files |
 | `File.Copy(src, dest)` | Index rebuild copies, backup |
 | `File.Delete(path)` | Drop table files, drop index files |
@@ -580,7 +583,7 @@ Every skill returns a standard error envelope on failure:
 | `XBASE_SAVEPOINT_NOT_FOUND` | Savepoint subdirectory does not exist |
 | `XBASE_SAVEPOINT_NAME_IN_USE` | Savepoint subdirectory already exists |
 | `XBASE_BACKUP_NOT_FOUND` | Backup directory does not exist |
-| `XBASE_BACKUP_CORRUPT` | `_meta.json` invalid or one or more NDJSON lines fail to parse |
+| `XBASE_BACKUP_CORRUPT` | `_meta.json` invalid or one or more DBF records are corrupt or unreadable |
 | `XBASE_BACKUP_IO_ERROR` | File system error during copy |
 | `XBASE_RESTORE_NOT_CONFIRMED` | `ConfirmRestore` not `true` |
 | `XBASE_DROP_NOT_CONFIRMED` | `ConfirmDrop` not `true` |

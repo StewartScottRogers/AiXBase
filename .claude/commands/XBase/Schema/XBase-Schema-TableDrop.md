@@ -1,6 +1,6 @@
 # XBase-Schema-TableDrop
 
-Remove a table from `_schema.json` and delete its `.ndjson` data file and all associated
+Remove a table from `_schema.json` and delete its `.dbf` data file and all associated
 `.ndx` index files.
 
 ## Inputs
@@ -33,7 +33,7 @@ Remove a table from `_schema.json` and delete its `.ndjson` data file and all as
 5. Remove the table entry from the `Tables` array
 6. Remove all index entries from the `Indexes` array where `TableName` matches
 7. `File.WriteAllText(_schema.json, updatedSchema)`
-8. `File.Delete({TableName}.ndjson)` if the file exists
+8. `File.Delete({TableName}.dbf)` if the file exists
 9. For each `{TableName}.*.ndx` file in the database directory: `File.Delete(path)`
 10. Return `DroppedAt`
 

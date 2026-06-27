@@ -1,6 +1,6 @@
 # XBase-Record-Update
 
-Update rows matching a filter by reading the `.ndjson` file, modifying matching rows
+Update rows matching a filter by reading the `.dbf` file, modifying matching rows
 in memory, and rewriting the file. A `Filter` is always required to prevent
 unintentional full-table updates.
 
@@ -27,14 +27,14 @@ unintentional full-table updates.
 
 1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
 2. Validate `Filter` is non-empty; return `XBASE_RECORD_FILTER_REQUIRED` if absent or empty
-3. Resolve the active data directory (transaction workspace if `TransactionName` supplied; copy `.ndjson` lazily if needed)
+3. Resolve the active data directory (transaction workspace if `TransactionName` supplied; copy `.dbf` lazily if needed)
 4. `File.ReadAllText(_schema.json)`; locate `TableName`; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
 5. Validate each key in `Values` exists as a column in the table definition; return `XBASE_SCHEMA_COLUMN_MISSING` on unknown column
-6. `File.ReadAllLines({TableName}.ndjson)`; parse each non-empty line as JSON
+6. `File.ReadAllBytes({TableName}.dbf)`; read DBF header to obtain `HeaderSize`, `RecordSize`, `RecordCount`, and field descriptors; decode each record from its fixed-width byte positions line as JSON
 7. For each row, apply the `Filter` specification:
    - If match: apply `Values` field-by-field; set `UpdatedAt` to current ISO-8601 timestamp; enforce UNIQUE constraints against all other rows; enforce FK constraints; increment `UpdatedCount`
    - If no match: leave unchanged
-8. `File.WriteAllLines({TableName}.ndjson, serializedRows)` — one JSON object per line, no trailing newline on last line
+8. `File.WriteAllBytes({TableName}.dbf, packedBytes)`; write compacted DBF excluding deletion-flagged records; update header record count — fixed-length binary record, no trailing newline on last line
 9. Rebuild `.ndx` files for any indexed columns that appear in `Values`
 10. Return `UpdatedCount`
 
@@ -47,7 +47,7 @@ unintentional full-table updates.
 param($DatabasePath, $TableName, $FieldName, $FieldValue, $NewValuesJson)
 $now  = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
 $new  = $NewValuesJson | ConvertFrom-Json
-$path = "$DatabasePath\$TableName.ndjson"
+$path = "$DatabasePath\$TableName.dbf"
 $lines = Get-Content $path -Encoding UTF8 | Where-Object { $_ -ne "" }
 $out   = foreach ($line in $lines) {
     $row = $line | ConvertFrom-Json
@@ -68,7 +68,7 @@ import json, datetime, pathlib
 
 def update_rows(db_path, table_name, filter_fn, values):
     dbpath = pathlib.Path(db_path)
-    path   = dbpath / f"{table_name}.ndjson"
+    path   = dbpath / f"{table_name}.dbf"
     now    = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
     rows   = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
     count  = 0

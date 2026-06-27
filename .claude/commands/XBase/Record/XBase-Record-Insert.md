@@ -1,6 +1,6 @@
 # XBase-Record-Insert
 
-Insert one or more rows into a table by appending NDJSON lines to the table data file.
+Insert one or more rows into a table by appending DBF lines to the table data file.
 All constraint enforcement and index maintenance is performed in memory using
 `_schema.json` definitions — no database engine is required.
 
@@ -28,19 +28,19 @@ All constraint enforcement and index maintenance is performed in memory using
 1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
 2. Resolve the active data directory:
    - If `TransactionName` supplied: verify `_txn_{TransactionName}/` exists, else return `XBASE_TRANSACTION_NOT_OPEN`
-   - Lazily copy `{TableName}.ndjson` from the live directory into the workspace if not already present
+   - Lazily copy `{TableName}.dbf` from the live directory into the workspace if not already present
    - Use `_txn_{TransactionName}/` paths for all subsequent reads and writes
    - Otherwise: use the live database directory
 3. `File.ReadAllText(_schema.json)`; parse JSON; locate the table definition; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
 4. For each row in `Rows`:
    a. Apply column `Default` values for omitted columns that have a Default defined
    b. Enforce NOT NULL — any non-nullable column with no value and no Default returns `XBASE_RECORD_CONSTRAINT_VIOLATION`
-   c. Read existing lines from `{TableName}.ndjson`; check UNIQUE columns for duplicates; return `XBASE_RECORD_CONSTRAINT_VIOLATION` on conflict
-   d. Enforce FK constraints — for each `ForeignKey` column, verify the referenced Id exists and `IsDeleted == 0` in the referenced table's `.ndjson`
+   c. Read existing lines from `{TableName}.dbf`; check UNIQUE columns for duplicates; return `XBASE_RECORD_CONSTRAINT_VIOLATION` on conflict
+   d. Enforce FK constraints — for each `ForeignKey` column, verify the referenced Id exists and `IsDeleted == 0` in the referenced table's `.dbf`
    e. Assign `Id` from `table.NextId`; increment `table.NextId` by 1
    f. Set `CreatedAt` and `UpdatedAt` to current ISO-8601 UTC timestamp
    g. Set `IsDeleted` to `0`
-   h. `File.AppendAllText({TableName}.ndjson, JSON.Serialize(row) + "\n")`
+   h. `File.OpenAppend({TableName}.dbf)`; encode each field to fixed-width bytes per DBF type map; prepend deletion flag `0x20`; append the `RecordSize`-byte record
    i. Insert a sorted `{ "Key": <value>, "Id": <id> }` entry into each `.ndx` file defined for this table
 5. `File.WriteAllText(_schema.json, updatedSchema)` to persist incremented `NextId` values
 6. Return `InsertedCount` and `LastInsertedId`
@@ -62,7 +62,7 @@ foreach ($row in $rows) {
     $row | Add-Member -NotePropertyName UpdatedAt -NotePropertyValue $now          -Force
     $row | Add-Member -NotePropertyName IsDeleted -NotePropertyValue 0             -Force
     $table.NextId++
-    ($row | ConvertTo-Json -Compress) | Add-Content "$DatabasePath\$TableName.ndjson" -Encoding UTF8
+    ($row | ConvertTo-Json -Compress) | Add-Content "$DatabasePath\$TableName.dbf" -Encoding UTF8
 }
 $schema | ConvertTo-Json -Depth 20 | Set-Content "$DatabasePath\_schema.json" -Encoding UTF8
 ```
@@ -78,7 +78,7 @@ def insert_rows(db_path, table_name, rows):
     schema = json.loads((dbpath / "_schema.json").read_text())
     tbl    = next(t for t in schema["Tables"] if t["Name"] == table_name)
     now    = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
-    with open(dbpath / f"{table_name}.ndjson", "a", encoding="utf-8") as fh:
+    with open(dbpath / f"{table_name}.dbf", "a", encoding="utf-8") as fh:
         for row in rows:
             row.update(Id=tbl["NextId"], CreatedAt=now, UpdatedAt=now, IsDeleted=0)
             tbl["NextId"] += 1

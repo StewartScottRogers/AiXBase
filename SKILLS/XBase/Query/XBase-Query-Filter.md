@@ -2,7 +2,7 @@
 
 Build a filter specification object for use with Record and Query skills. No file I/O
 occurs — this is a pure in-memory compilation step. The resulting object is evaluated
-row-by-row against parsed NDJSON data by the executing skill.
+row-by-row against parsed DBF data by the executing skill.
 
 ## Inputs
 

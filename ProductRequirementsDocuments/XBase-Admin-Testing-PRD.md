@@ -173,7 +173,7 @@ Tests for `maintain.md` (`/maintain`) and `that.proompt.md` (`/that`). Behaviour
 
 | ID | Description | Setup | Expected output |
 |---|---|---|---|
-| `XBASE-THAT-001` | Clean database | Valid NDJSON, all index files present, recent backup | Report shows `Integrity: OK`, all indexes healthy, correct active and soft-deleted counts, backup timestamp |
+| `XBASE-THAT-001` | Clean database | Valid DBF, all index files present, recent backup | Report shows `Integrity: OK`, all indexes healthy, correct active and soft-deleted counts, backup timestamp |
 | `XBASE-THAT-002` | No backup | Valid database, no entry in `XBaseFiles/backups/` | Report shows `Last Backup: NONE — recommend running: /that <name> backup` |
 | `XBASE-THAT-003` | Stale backup | Most recent backup is older than 12 h | Report shows backup timestamp and age; recommendation section advises taking a new backup |
 | `XBASE-THAT-004` | Missing index file | `_schema.json` lists an index but the `.ndx` file is absent | Report shows `{N} missing` in the Indexes line; recommendation advises running `rebuild-indexes` |
@@ -185,10 +185,10 @@ Tests for `maintain.md` (`/maintain`) and `that.proompt.md` (`/that`). Behaviour
 
 | ID | Description | Setup | Expected output |
 |---|---|---|---|
-| `XBASE-THAT-008` | All valid NDJSON | No corrupt rows | Displays "All NDJSON files are valid" |
-| `XBASE-THAT-009` | Single corrupt line | Manually write `{invalid json}` on line 3 of `Products.ndjson` | `IntegrityOk: false`; output lists `Products.ndjson` and line number 3 |
-| `XBASE-THAT-010` | Multiple corrupt files | Two `.ndjson` files each have one bad line | Both files and their bad line numbers appear in the issues list |
-| `XBASE-THAT-011` | Empty table file | `.ndjson` file exists but is empty | No issues reported for that table |
+| `XBASE-THAT-008` | All valid DBF | No corrupt rows | Displays "All DBF files are valid" |
+| `XBASE-THAT-009` | Single corrupt line | Manually write `{invalid json}` on line 3 of `Products.dbf` | `IntegrityOk: false`; output lists `Products.dbf` and line number 3 |
+| `XBASE-THAT-010` | Multiple corrupt files | Two `.dbf` files each have one bad line | Both files and their bad line numbers appear in the issues list |
+| `XBASE-THAT-011` | Empty table file | `.dbf` file exists but is empty | No issues reported for that table |
 | `XBASE-THAT-012` | Does not modify files | Run verify on clean database | No file modification timestamps change |
 
 ### `backup` Operation
@@ -197,7 +197,7 @@ Tests for `maintain.md` (`/maintain`) and `that.proompt.md` (`/that`). Behaviour
 |---|---|---|---|
 | `XBASE-THAT-013` | Happy path — no label | Open database | Backup created; output shows `BackupPath` and timestamp |
 | `XBASE-THAT-014` | With label | `BackupLabel` extracted from request | Backup directory name includes the label string |
-| `XBASE-THAT-015` | Backup is a valid XBase directory | After backup | `_meta.json` and `_schema.json` present in backup; all `.ndjson` files present |
+| `XBASE-THAT-015` | Backup is a valid XBase directory | After backup | `_meta.json` and `_schema.json` present in backup; all `.dbf` files present |
 | `XBASE-THAT-016` | Temporary connection cleaned up | After backup completes | `admin-backup` connection alias deregistered |
 
 ### `rebuild-indexes` Operation

@@ -1,6 +1,6 @@
 # XBase-Index-Rebuild
 
-Rebuild one or all indexes on a table by re-reading the `.ndjson` file and rewriting
+Rebuild one or all indexes on a table by re-reading the `.dbf` file and rewriting
 the `.ndx` files from scratch. Use after bulk data operations to ensure index
 consistency.
 
@@ -29,7 +29,7 @@ consistency.
    - If `IndexName` provided: find the entry in `Indexes` where `Name == IndexName`; if absent, return `XBASE_INDEX_NOT_FOUND`; derive `TableName` from the entry
    - Else if `TableName` provided: collect all entries in `Indexes` where `TableName` matches; if none, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
    - Else: collect all entries in `Indexes`
-4. `File.ReadAllLines({TableName}.ndjson)`; parse each non-empty line; exclude rows where `IsDeleted == 1`
+4. `File.ReadAllBytes({TableName}.dbf)`; read DBF header to obtain `HeaderSize`, `RecordSize`, `RecordCount`, and field descriptors; decode each record from its fixed-width byte positions line; exclude rows where `IsDeleted == 1`
 5. For each index to rebuild:
    a. Compute key for every active row (single-column: `String(row[col])`; multi-column: `|`-delimited)
    b. Sort all `{ Key, Id }` entries ascending by `Key`

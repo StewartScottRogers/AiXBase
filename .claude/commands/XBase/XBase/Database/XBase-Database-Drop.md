@@ -25,7 +25,7 @@ Delete a database directory and all its contents permanently.
 2. Resolve `XBaseFiles/{DatabaseName}/` to an absolute path; reject if the name contains `..`, `/`, `\`, or null bytes — return `XBASE_DATABASE_PATH_INVALID`
 3. Verify the directory exists; if not, return `XBASE_DATABASE_NOT_FOUND`
 4. Deregister any session connections whose `DatabasePath` matches this directory
-5. `Directory.Delete(DatabasePath, recursive: true)` — removes all `.ndjson`, `.ndx`, `_meta.json`, `_schema.json`, `_txn_*/`, and `backups/` subdirectories in one operation
+5. `Directory.Delete(DatabasePath, recursive: true)` — removes all `.dbf`, `.ndx`, `_meta.json`, `_schema.json`, `_txn_*/`, and `backups/` subdirectories in one operation
 6. Return `DatabasePath` and `DroppedAt`
 
 ## Script Templates

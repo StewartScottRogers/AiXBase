@@ -17,9 +17,9 @@ Perform a maintenance operation on a target XBase database.
 | Operation | Description |
 |---|---|
 | `report` | Full health report: integrity + index health + record counts + backup status |
-| `verify` | Parse every NDJSON line; list any corrupt rows with file name and line number |
+| `verify` | Parse every DBF line; list any corrupt rows with file name and line number |
 | `backup` | Create a timestamped backup in `XBaseFiles/backups/` |
-| `rebuild-indexes` | Rebuild all `.ndx` files from the source NDJSON data |
+| `rebuild-indexes` | Rebuild all `.ndx` files from the source DBF data |
 | `vacuum` | Hard-delete all soft-deleted rows across all tables (requires confirmation) |
 
 ---
@@ -56,7 +56,7 @@ Last Backup:     {timestamp and path / "NONE — recommend running: /that {Datab
 1. Invoke `XBase-Backup-Verify` with `BackupPath` set to `XBaseFiles/{DatabaseName}/`
    (Backup-Verify works on any valid XBase directory, not just backup copies)
 2. Display:
-   - `IntegrityOk: true` → "All NDJSON files are valid"
+   - `IntegrityOk: true` → "All DBF files are valid"
    - `IntegrityOk: false` → list each entry from `Issues` with file name and line number
 
 ---

@@ -19,7 +19,7 @@ Inspect and display the current state of one or all XBase databases.
 2. For each database directory:
    a. Read `_meta.json` → extract `Name`, `UpdatedAt`
    b. Read `_schema.json` → count `Tables` entries
-   c. For each table, count non-empty lines in `{TableName}.ndjson` where `IsDeleted` ≠ 1 (active rows)
+   c. For each table, count non-empty lines in `{TableName}.dbf` where `IsDeleted` ≠ 1 (active rows)
    d. Sum directory size by reading all file sizes
 3. Display a formatted summary table:
 
@@ -41,7 +41,7 @@ XBase Databases — XBaseFiles/
 2. Invoke `XBase-Schema-TableList` → get list of table names
 3. For each table:
    a. Invoke `XBase-Schema-ColumnList` → get column definitions
-   b. Read `{TableName}.ndjson`:
+   b. Read `{TableName}.dbf`:
       - Count lines where `IsDeleted = 0` (or field absent) → active rows
       - Count lines where `IsDeleted = 1` → soft-deleted rows
    c. Invoke `XBase-Index-List` → get indexes for this table

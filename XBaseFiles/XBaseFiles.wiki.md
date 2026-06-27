@@ -22,7 +22,7 @@ XBase databases are stored as directories containing:
 
 - `_meta.json` — Database metadata (name, version, timestamps)
 - `_schema.json` — Table and index definitions
-- `{TableName}.ndjson` — Table data (newline-delimited JSON, one record per line)
+- `{TableName}.dbf` — Table data (newline-delimited JSON, one record per line)
 - `{TableName}.{IndexName}.ndx` — Index files (sorted key→Id entries)
 - `_txn_{TransactionName}/` — Active transaction workspaces (if any)
 
@@ -39,13 +39,13 @@ XBaseFiles/
 ├── MyDatabase/
 │   ├── _meta.json
 │   ├── _schema.json
-│   ├── Users.ndjson
+│   ├── Users.dbf
 │   ├── Users.idx_Username.ndx
-│   └── Orders.ndjson
+│   └── Orders.dbf
 └── AnotherDatabase/
 	├── _meta.json
 	├── _schema.json
-	└── Products.ndjson
+	└── Products.dbf
 ```
 
 ## Notes

@@ -5,7 +5,7 @@ with `XBase-Record-Select` or `XBase-Query-Execute`. No file I/O occurs — pure
 compilation.
 
 Join evaluation in XBase is performed entirely in memory: both tables are read from
-their `.ndjson` files and matched row-by-row on the specified key expression by the
+their `.dbf` files and matched row-by-row on the specified key expression by the
 executing skill.
 
 ## Inputs

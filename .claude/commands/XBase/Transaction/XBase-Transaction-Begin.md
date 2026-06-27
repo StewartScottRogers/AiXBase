@@ -29,7 +29,7 @@ Begin a named transaction by creating a directory snapshot workspace.
 6. Register `TransactionName → DatabasePath` mapping in the session
 7. Return `StartedAt`
 
-**How transaction isolation works:** All writes during the transaction operate only on files inside `_txn_{TransactionName}/`. Table `.ndjson` files are copied lazily — only when a table is first modified. Reads within the transaction check the transaction workspace first; if the file is not there, the live directory is read. The live data files are not modified until `XBase-Transaction-Commit` moves the workspace files over them. `XBase-Transaction-Rollback` simply deletes the workspace directory, leaving live files untouched.
+**How transaction isolation works:** All writes during the transaction operate only on files inside `_txn_{TransactionName}/`. Table `.dbf` files are copied lazily — only when a table is first modified. Reads within the transaction check the transaction workspace first; if the file is not there, the live directory is read. The live data files are not modified until `XBase-Transaction-Commit` moves the workspace files over them. `XBase-Transaction-Rollback` simply deletes the workspace directory, leaving live files untouched.
 
 ## Error Codes
 

@@ -8,7 +8,7 @@ XBase is a native file-based database engine accessed entirely through AI Skills
 
 | Layer | Technology |
 |---|---|
-| Storage engine | Native file system — directories and NDJSON files |
+| Storage engine | Native file system — directories and DBF files |
 | Foreign key enforcement | Skill-level validation against `_schema.json` |
 | Soft deletes | `IsDeleted INTEGER DEFAULT 0` on every table |
 | Transactions | Directory snapshot workspace (`_txn_{name}/`) |
@@ -23,11 +23,11 @@ XBaseFiles/
 └── myapp/
     ├── _meta.json                     Database metadata
     ├── _schema.json                   Table and index definitions
-    ├── Products.ndjson                Table data — one JSON object per line
+    ├── Products.dbf                Table data — fixed-length binary record
     ├── Products.idx_SKU.ndx           Index — sorted key→Id entries, one per line
     └── _txn_txn1/                     Active transaction workspace (if any)
         ├── _schema.json               Transaction-local schema copy
-        └── Products.ndjson            Transaction-local data copy (only tables touched)
+        └── Products.dbf            Transaction-local data copy (only tables touched)
 ```
 
 **`_meta.json`** — database identity:
@@ -37,7 +37,7 @@ XBaseFiles/
 
 **`_schema.json`** — all table and index definitions plus `NextId` counters.
 
-**`{TableName}.ndjson`** — one complete JSON object per line, UTF-8, `\n`-terminated:
+**`{TableName}.dbf`** — one complete JSON object per line, UTF-8, `\n`-terminated:
 ```
 {"Id":1,"SKU":"A001","Label":"Widget","Price":9.99,"IsDeleted":0,"CreatedAt":"2026-06-25T12:00:00Z","UpdatedAt":"2026-06-25T12:00:00Z"}
 ```
@@ -72,9 +72,9 @@ All XBase skills use only:
 | `Directory.Copy` | Backup, restore, transaction commit |
 | `File.ReadAllText` | Read metadata files |
 | `File.WriteAllText` | Write metadata files |
-| `File.ReadAllLines` | Read NDJSON and index files |
-| `File.WriteAllLines` | Rewrite NDJSON after update/delete |
-| `File.AppendAllText` | Append a new row to NDJSON |
+| `File.ReadAllLines` | Read DBF and index files |
+| `File.WriteAllLines` | Rewrite DBF after update/delete |
+| `File.AppendAllText` | Append a new row to DBF |
 | `File.Move` | Atomic commit of transaction files |
 | `File.Delete` | Drop table/index files |
 
@@ -135,9 +135,9 @@ All XBase skills use only:
 
 | Skill | Purpose |
 |---|---|
-| `XBase-Schema-TableCreate` | Add a table to `_schema.json` and create an empty `.ndjson` file |
+| `XBase-Schema-TableCreate` | Add a table to `_schema.json` and create an empty `.dbf` file |
 | `XBase-Schema-TableAlter` | Add columns to a table definition in `_schema.json` |
-| `XBase-Schema-TableDrop` | Remove a table from `_schema.json` and delete its `.ndjson` and `.ndx` files |
+| `XBase-Schema-TableDrop` | Remove a table from `_schema.json` and delete its `.dbf` and `.ndx` files |
 | `XBase-Schema-TableList` | Return all table names from `_schema.json` |
 | `XBase-Schema-ColumnList` | Return column definitions for a table from `_schema.json` |
 
@@ -145,9 +145,9 @@ All XBase skills use only:
 
 | Skill | Purpose |
 |---|---|
-| `XBase-Record-Insert` | Append rows to a `.ndjson` file; enforce constraints; update indexes |
-| `XBase-Record-Select` | Read `.ndjson`, apply filter/sort/pagination in memory; return matching rows |
-| `XBase-Record-Update` | Read `.ndjson`, modify matching rows, rewrite file; update indexes |
+| `XBase-Record-Insert` | Append rows to a `.dbf` file; enforce constraints; update indexes |
+| `XBase-Record-Select` | Read `.dbf`, apply filter/sort/pagination in memory; return matching rows |
+| `XBase-Record-Update` | Read `.dbf`, modify matching rows, rewrite file; update indexes |
 | `XBase-Record-Delete` | Soft-delete (default) or hard-delete rows matching a filter |
 | `XBase-Record-Upsert` | Insert or update based on conflict columns; returns `Action:"inserted"` or `"updated"` |
 
@@ -163,15 +163,15 @@ These skills compile reusable query components passed to `XBase-Record-Select` o
 | `XBase-Query-Aggregate` | Compile an aggregate specification (COUNT, SUM, AVG, MIN, MAX; GROUP BY) |
 | `XBase-Query-Execute` | Execute a compound query specification (filter + sort + join + aggregate in one call) |
 
-Filters evaluate in memory against parsed NDJSON rows. All field names are validated as safe identifiers before use.
+Filters evaluate in memory against parsed DBF rows. All field names are validated as safe identifiers before use.
 
 ### Index (4 skills)
 
 | Skill | Purpose |
 |---|---|
-| `XBase-Index-Create` | Read `.ndjson`, build sorted `.ndx` file, register in `_schema.json` |
+| `XBase-Index-Create` | Read `.dbf`, build sorted `.ndx` file, register in `_schema.json` |
 | `XBase-Index-Drop` | Delete `.ndx` file and remove from `_schema.json` |
-| `XBase-Index-Rebuild` | Re-read `.ndjson`, rewrite `.ndx` file from scratch |
+| `XBase-Index-Rebuild` | Re-read `.dbf`, rewrite `.ndx` file from scratch |
 | `XBase-Index-List` | Return index definitions for a table from `_schema.json` |
 
 ### Transaction (4 skills)
@@ -191,7 +191,7 @@ Pass `TransactionName` to any Record or Query skill to operate within an open tr
 |---|---|
 | `XBase-Backup-Create` | Copy the database directory to `XBaseFiles/backups/{name}_{timestamp}/`; skips active transaction directories |
 | `XBase-Backup-Restore` | Replace live database directory with a backup copy (`ConfirmRestore: true` required; optionally creates a pre-restore snapshot) |
-| `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.ndjson` files; validate every JSON line; return `IntegrityOk` and `Issues` |
+| `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.dbf` files; validate every JSON line; return `IntegrityOk` and `Issues` |
 
 ---
 
@@ -221,8 +221,8 @@ All XBase error codes follow the pattern `XBASE_<CATEGORY>_<REASON>`.
 **Why directory-per-database instead of a single file?**
 A directory-per-database lets each table be an independent file. Updates to one table never touch another table's file, minimising the blast radius of writes. Transactions are isolated by working in a subdirectory — rollback is a directory delete; commit is a file move.
 
-**Why NDJSON instead of binary?**
-NDJSON is human-readable, trivially diffable with `git diff`, and requires no parser beyond `JSON.Parse`. Any text editor can inspect or repair a table file. Backup verification reduces to checking that every line round-trips through JSON parse.
+**Why DBF instead of binary?**
+DBF is human-readable, trivially diffable with `git diff`, and requires no parser beyond `JSON.Parse`. Any text editor can inspect or repair a table file. Backup verification reduces to checking that every line round-trips through JSON parse.
 
 **Why soft deletes?**
 Soft deletes preserve audit history and allow accidental-delete recovery. Hard deletes are opt-in via `HardDelete: true`.

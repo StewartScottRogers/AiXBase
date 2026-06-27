@@ -135,7 +135,7 @@ IsDeleted   INTEGER  DEFAULT 0
 | `XBASE-DB-030` | Directory does not exist | Non-existent name | Returns `XBASE_DATABASE_NOT_FOUND` |
 | `XBASE-DB-031` | Drop with open connections | Two connections open | Both deregistered; directory deleted |
 | `XBASE-DB-032` | Drop with active transaction | Transaction workspace present | Workspace deleted with directory; no error |
-| `XBASE-DB-033` | All NDJSON and index files removed | Directory with tables and indexes | Entire directory tree deleted; no orphaned files |
+| `XBASE-DB-033` | All DBF and index files removed | Directory with tables and indexes | Entire directory tree deleted; no orphaned files |
 
 ---
 
@@ -145,7 +145,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-SCH-001` | Happy path — standard columns | Standard column set | `Success: true`; table entry in `_schema.json`; `{TableName}.ndjson` exists and is empty |
+| `XBASE-SCH-001` | Happy path — standard columns | Standard column set | `Success: true`; table entry in `_schema.json`; `{TableName}.dbf` exists and is empty |
 | `XBASE-SCH-002` | Implicit Id column injected | No `PrimaryKey` column supplied | `Id` column prepended in `_schema.json` with `AutoIncrement: true`; `NextId: 1` |
 | `XBASE-SCH-003` | Explicit primary key honoured | Column with `PrimaryKey: true` | No implicit `Id` added; user PK column is first |
 | `XBASE-SCH-004` | Implicit audit columns appended | No `CreatedAt/UpdatedAt/IsDeleted` in input | Three columns appended automatically in `_schema.json` |
@@ -169,7 +169,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-SCH-018` | Add single column | `AddColumns: [{Name:"Score", Type:"REAL"}]` | Column present in `_schema.json`; existing rows in `.ndjson` do not have the field (treated as NULL on read) |
+| `XBASE-SCH-018` | Add single column | `AddColumns: [{Name:"Score", Type:"REAL"}]` | Column present in `_schema.json`; existing rows in `.dbf` do not have the field (treated as NULL on read) |
 | `XBASE-SCH-019` | Add multiple columns at once | Three column definitions | All three in `_schema.json` |
 | `XBASE-SCH-020` | Add column that already exists | Existing column name | Returns `XBASE_SCHEMA_COLUMN_EXISTS` |
 | `XBASE-SCH-021` | Table does not exist | Non-existent table name | Returns `XBASE_SCHEMA_TABLE_NOT_FOUND` |
@@ -183,12 +183,12 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-SCH-025` | Happy path | `ConfirmDrop: true` | Table entry removed from `_schema.json`; `.ndjson` and all `.ndx` files deleted |
+| `XBASE-SCH-025` | Happy path | `ConfirmDrop: true` | Table entry removed from `_schema.json`; `.dbf` and all `.ndx` files deleted |
 | `XBASE-SCH-026` | ConfirmDrop false | `ConfirmDrop: false` | Returns `XBASE_DROP_NOT_CONFIRMED`; table intact |
 | `XBASE-SCH-027` | Table does not exist, IfExists true | Non-existent table | Returns `Success: true` (no-op) |
 | `XBASE-SCH-028` | Table does not exist, IfExists false | `IfExists: false` | Returns `XBASE_SCHEMA_TABLE_NOT_FOUND` |
 | `XBASE-SCH-029` | Drop referenced table (FK violation) | Table referenced by another as FK target | Skill checks `_schema.json` for FK references; returns error if dependent tables exist |
-| `XBASE-SCH-030` | Drop table with rows | Table with L-tier data | `.ndjson` deleted; no error |
+| `XBASE-SCH-030` | Drop table with rows | Table with L-tier data | `.dbf` deleted; no error |
 
 ---
 
@@ -221,14 +221,14 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-REC-001` | Single row | One `{ Code: "A", Label: "Alpha" }` | `InsertedCount: 1`; `LastInsertedId` equals the `NextId` value consumed; row present in `.ndjson` |
-| `XBASE-REC-002` | Bulk insert | 1 000 rows | `InsertedCount: 1000`; all rows in `.ndjson` |
+| `XBASE-REC-001` | Single row | One `{ Code: "A", Label: "Alpha" }` | `InsertedCount: 1`; `LastInsertedId` equals the `NextId` value consumed; row present in `.dbf` |
+| `XBASE-REC-002` | Bulk insert | 1 000 rows | `InsertedCount: 1000`; all rows in `.dbf` |
 | `XBASE-REC-003` | Auto-set CreatedAt | No `CreatedAt` in input | Row has valid ISO-8601 `CreatedAt` |
 | `XBASE-REC-004` | Auto-set UpdatedAt | No `UpdatedAt` in input | Row has valid ISO-8601 `UpdatedAt` equal to `CreatedAt` on insert |
 | `XBASE-REC-005` | NOT NULL violation | Omit required field | Returns `XBASE_RECORD_CONSTRAINT_VIOLATION` |
 | `XBASE-REC-006` | UNIQUE violation | Two rows, same unique field | Second insert returns `XBASE_RECORD_CONSTRAINT_VIOLATION` |
 | `XBASE-REC-007` | FK violation | FK column pointing to non-existent parent | Returns `XBASE_RECORD_CONSTRAINT_VIOLATION` |
-| `XBASE-REC-008` | NULL value for nullable column | `{ Code: "B", Label: null }` | Row in `.ndjson` has `"Label": null` |
+| `XBASE-REC-008` | NULL value for nullable column | `{ Code: "B", Label: null }` | Row in `.dbf` has `"Label": null` |
 | `XBASE-REC-009` | Empty string vs NULL | `{ Label: "" }` | Row has `"Label": ""` (not null) |
 | `XBASE-REC-010` | Integer 0 vs NULL | `{ Value: 0 }` | Row has `"Value": 0` (not null) |
 | `XBASE-REC-011` | Text with quotes | `{ Label: "it's a \"test\"" }` | JSON serialisation handles escaping; retrieved value matches input exactly |
@@ -240,7 +240,7 @@ IsDeleted   INTEGER  DEFAULT 0
 | `XBASE-REC-017` | Unknown column in row | `{ Bogus: "x" }` | Returns `XBASE_SCHEMA_COLUMN_MISSING` |
 | `XBASE-REC-018` | Table does not exist | Non-existent table | Returns `XBASE_SCHEMA_TABLE_NOT_FOUND` |
 | `XBASE-REC-019` | Connection invalid | Closed connection name | Returns `XBASE_CONNECTION_INVALID` |
-| `XBASE-REC-020` | Insert within transaction | `TransactionName` supplied | Row appended in transaction workspace `.ndjson`; absent from live file before commit |
+| `XBASE-REC-020` | Insert within transaction | `TransactionName` supplied | Row appended in transaction workspace `.dbf`; absent from live file before commit |
 | `XBASE-REC-021` | TransactionName not open | Random transaction name | Returns `XBASE_TRANSACTION_NOT_OPEN` |
 
 ---
@@ -249,7 +249,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-REC-022` | All rows, all columns | No Filter, `Columns: ["*"]` | Returns all rows; `TotalCount` matches row count in `.ndjson` |
+| `XBASE-REC-022` | All rows, all columns | No Filter, `Columns: ["*"]` | Returns all rows; `TotalCount` matches row count in `.dbf` |
 | `XBASE-REC-023` | Column projection | `Columns: ["Id", "Label"]` | Only those two fields in each returned row |
 | `XBASE-REC-024` | Filter applied | Filter `Code = 'CODE-1'` | Returns exactly 1 row |
 | `XBASE-REC-025` | Filter — no matching rows | Filter `Code = 'NONE'` | `Rows: []`, `TotalCount: 0` |
@@ -273,10 +273,10 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-REC-039` | Single row update | Filter `Id = 1`, `Values: {Label:"New"}` | `UpdatedCount: 1`; row in `.ndjson` has new value |
+| `XBASE-REC-039` | Single row update | Filter `Id = 1`, `Values: {Label:"New"}` | `UpdatedCount: 1`; row in `.dbf` has new value |
 | `XBASE-REC-040` | Multi-row update | Filter `IsActive = 0` on 50-row set | `UpdatedCount: 50` |
 | `XBASE-REC-041` | No matching rows | Filter `Code = 'NONE'` | `UpdatedCount: 0`; no error |
-| `XBASE-REC-042` | Auto-set UpdatedAt | No `UpdatedAt` in Values | `UpdatedAt` updated to now; `CreatedAt` unchanged in `.ndjson` |
+| `XBASE-REC-042` | Auto-set UpdatedAt | No `UpdatedAt` in Values | `UpdatedAt` updated to now; `CreatedAt` unchanged in `.dbf` |
 | `XBASE-REC-043` | Empty Filter rejected | No Filter supplied | Returns `XBASE_RECORD_FILTER_REQUIRED` |
 | `XBASE-REC-044` | Empty Values | `Values: {}` | Returns validation error or `UpdatedCount: 0` no-op |
 | `XBASE-REC-045` | UNIQUE violation on update | Set a field to a value duplicating another row | Returns `XBASE_RECORD_CONSTRAINT_VIOLATION` |
@@ -290,8 +290,8 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-REC-049` | Soft delete (default) | Filter `Id = 1` | `IsDeleted = 1` on that row; line still in `.ndjson` |
-| `XBASE-REC-050` | Hard delete | `HardDelete: true` | Line physically removed from `.ndjson` |
+| `XBASE-REC-049` | Soft delete (default) | Filter `Id = 1` | `IsDeleted = 1` on that row; line still in `.dbf` |
+| `XBASE-REC-050` | Hard delete | `HardDelete: true` | Line physically removed from `.dbf` |
 | `XBASE-REC-051` | Soft delete already soft-deleted | `IsDeleted` already 1 | `DeletedCount: 1`; `UpdatedAt` refreshed (idempotent) |
 | `XBASE-REC-052` | No matching rows | Filter on non-existent value | `DeletedCount: 0`; no error |
 | `XBASE-REC-053` | Empty Filter rejected | No Filter | Returns `XBASE_RECORD_FILTER_REQUIRED` |
@@ -304,7 +304,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-REC-056` | Insert path | Row not present | `Action: "inserted"`, row in `.ndjson` |
+| `XBASE-REC-056` | Insert path | Row not present | `Action: "inserted"`, row in `.dbf` |
 | `XBASE-REC-057` | Update path | Row with same conflict key exists | `Action: "updated"`, `UpdatedAt` refreshed |
 | `XBASE-REC-058` | Idempotent — same row twice | Upsert same data twice | Second call: `Action: "updated"`; row unchanged logically |
 | `XBASE-REC-059` | Multiple conflict columns | `ConflictColumns: ["TicketId", "Tag"]` | Both paths work correctly |
@@ -366,7 +366,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-QRY-033` | INNER JOIN — matching rows | Tickets JOIN Statuses on StatusId=Id | Only tickets with a matching status returned; AI loads both `.ndjson` files and joins in memory |
+| `XBASE-QRY-033` | INNER JOIN — matching rows | Tickets JOIN Statuses on StatusId=Id | Only tickets with a matching status returned; AI loads both `.dbf` files and joins in memory |
 | `XBASE-QRY-034` | LEFT JOIN — no match | Ticket with null StatusId | Ticket row present; Status fields null in merged result |
 | `XBASE-QRY-035` | Join with alias | `Alias:"s"` for joined table | Compiled specification uses alias prefix for column disambiguation |
 | `XBASE-QRY-036` | Invalid JoinType | `JoinType:"BANANA"` | Returns `XBASE_JOIN_TYPE_INVALID` |
@@ -443,7 +443,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-IDX-012` | Rebuild named index | Valid `IndexName` | `RebuiltIndexes: ["<name>"]`; `.ndx` file rewritten from `.ndjson` data |
+| `XBASE-IDX-012` | Rebuild named index | Valid `IndexName` | `RebuiltIndexes: ["<name>"]`; `.ndx` file rewritten from `.dbf` data |
 | `XBASE-IDX-013` | Rebuild all on table | `TableName` provided, no `IndexName` | All indexes on that table listed in output; each `.ndx` rewritten |
 | `XBASE-IDX-014` | Rebuild all in database | Neither `IndexName` nor `TableName` | All indexes in `_schema.json` rebuilt |
 | `XBASE-IDX-015` | Table with no indexes | `TableName` pointing to unindexed table | `RebuiltIndexes: []`; no error |
@@ -475,7 +475,7 @@ IsDeleted   INTEGER  DEFAULT 0
 | `XBASE-TXN-003` | Connection invalid | Closed connection | Returns `XBASE_CONNECTION_INVALID` |
 | `XBASE-TXN-004` | Two concurrent transactions, different names | Two Begin calls, different names | Both workspace directories exist simultaneously |
 | `XBASE-TXN-005` | Table file not yet copied | Begin, then read a table | Read returns data from live file (lazy copy not yet triggered) |
-| `XBASE-TXN-006` | Table file copied on first write | Begin, then insert into table | `_txn_{name}/{Table}.ndjson` exists; live file unchanged |
+| `XBASE-TXN-006` | Table file copied on first write | Begin, then insert into table | `_txn_{name}/{Table}.dbf` exists; live file unchanged |
 
 ---
 
@@ -483,7 +483,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-TXN-007` | Happy path | Open transaction, insert row, commit | Row visible in live `.ndjson` after commit; workspace directory gone |
+| `XBASE-TXN-007` | Happy path | Open transaction, insert row, commit | Row visible in live `.dbf` after commit; workspace directory gone |
 | `XBASE-TXN-008` | Commit deregisters name | After commit, same name available | Can begin again with same `TransactionName` |
 | `XBASE-TXN-009` | Commit with no open transaction | Random name | Returns `XBASE_TRANSACTION_NOT_OPEN` |
 | `XBASE-TXN-010` | Commit empty transaction (no writes) | Begin + commit, no ops | `Success: true`; workspace directory removed |
@@ -496,7 +496,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-TXN-013` | Full rollback | Insert row in txn, rollback | Row absent from live `.ndjson`; workspace directory deleted |
+| `XBASE-TXN-013` | Full rollback | Insert row in txn, rollback | Row absent from live `.dbf`; workspace directory deleted |
 | `XBASE-TXN-014` | Rollback deregisters name | After rollback, name reusable | New begin succeeds with same name |
 | `XBASE-TXN-015` | Rollback with no open transaction | Random name | Returns `XBASE_TRANSACTION_NOT_OPEN` |
 | `XBASE-TXN-016` | Rollback to savepoint | Create savepoint after insert A; insert B; rollback to savepoint | B absent from workspace; A present; transaction still open |
@@ -526,7 +526,7 @@ IsDeleted   INTEGER  DEFAULT 0
 |---|---|---|---|
 | `XBASE-BAK-001` | Happy path | Open connection, no label | Directory in `AiXBase/backups/`; name matches `<db>_<timestamp>` pattern |
 | `XBASE-BAK-002` | With label | `BackupLabel:"pre-migration"` | Directory name ends with `_pre-migration` |
-| `XBASE-BAK-003` | Backup is valid XBase directory | After backup | `_meta.json` and `_schema.json` present in backup; all `.ndjson` files present |
+| `XBASE-BAK-003` | Backup is valid XBase directory | After backup | `_meta.json` and `_schema.json` present in backup; all `.dbf` files present |
 | `XBASE-BAK-004` | Backup during active transaction | Transaction open with uncommitted writes | Backup reflects committed live files only; transaction workspace excluded |
 | `XBASE-BAK-005` | `AiXBase/backups/` auto-created | Directory does not exist | Directory created; backup written |
 | `XBASE-BAK-006` | Two backups same second | Called twice within same second | Unique directory names (millisecond suffix or counter) |
@@ -555,7 +555,7 @@ IsDeleted   INTEGER  DEFAULT 0
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
 | `XBASE-BAK-017` | Valid backup | Good backup directory | `IntegrityOk: true`, `Issues: []` |
-| `XBASE-BAK-018` | Corrupt NDJSON line | Manually write an invalid JSON line into a `.ndjson` file | `IntegrityOk: false`; `Issues` contains the file name and line number |
+| `XBASE-BAK-018` | Corrupt DBF line | Manually write an invalid JSON line into a `.dbf` file | `IntegrityOk: false`; `Issues` contains the file name and line number |
 | `XBASE-BAK-019` | Non-existent path | Random path | Returns `XBASE_BACKUP_NOT_FOUND` |
 | `XBASE-BAK-020` | Directory missing `_meta.json` | Directory exists but no `_meta.json` | Returns `XBASE_BACKUP_CORRUPT` |
 | `XBASE-BAK-021` | Empty `_meta.json` | Zero-byte file | Returns `XBASE_BACKUP_CORRUPT` |
@@ -593,8 +593,8 @@ All benchmarks use a dedicated `AiXBase/perf/` database, freshly initialised. Me
 
 | ID | Description | Data | Target |
 |---|---|---|---|
-| `XBASE-PERF-012` | Bulk update (set IsActive flag) | Update 10 000 rows in one call | ≤ 5 s (full `.ndjson` rewrite) |
-| `XBASE-PERF-013` | Bulk hard delete | Delete 10 000 rows in one call | ≤ 5 s (full `.ndjson` rewrite) |
+| `XBASE-PERF-012` | Bulk update (set IsActive flag) | Update 10 000 rows in one call | ≤ 5 s (full `.dbf` rewrite) |
+| `XBASE-PERF-013` | Bulk hard delete | Delete 10 000 rows in one call | ≤ 5 s (full `.dbf` rewrite) |
 | `XBASE-PERF-014` | Update single row by Id | S-tier, filter by Id | ≤ 500 ms |
 
 ### Aggregate Throughput

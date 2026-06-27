@@ -1,6 +1,6 @@
 # XBase-Backup-Verify
 
-Validate the integrity of a backup directory by reading its metadata and every NDJSON data line.
+Validate the integrity of a backup directory by reading its metadata and every DBF data line.
 
 ## Inputs
 
@@ -28,8 +28,8 @@ If issues are found, `IntegrityOk` is `false` and `Issues` lists each problem: t
 2. Read `_meta.json`; verify it is valid JSON with an `XBaseVersion` field; if invalid, add to `Issues`
 3. Read `_schema.json`; verify it is valid JSON with `Tables` and `Indexes` arrays; if invalid, add to `Issues`
 4. For each table in `_schema.json`:
-   a. Verify `{TableName}.ndjson` exists; if absent, add to `Issues`
-   b. Read every line of `{TableName}.ndjson`; attempt `JSON.Parse(line)` on each; record file name and line number for any line that fails to parse
+   a. Verify `{TableName}.dbf` exists; if absent, add to `Issues`
+   b. Read every line of `{TableName}.dbf`; attempt `JSON.Parse(line)` on each; record file name and line number for any line that fails to parse
 5. Set `IntegrityOk: true` if `Issues` is empty; `false` otherwise
 6. Return `IntegrityOk`, `Issues`, and `VerifiedAt`
 

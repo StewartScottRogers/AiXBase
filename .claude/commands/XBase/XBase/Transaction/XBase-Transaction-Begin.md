@@ -26,11 +26,11 @@ Begin a named transaction by creating a directory snapshot workspace.
 3. Resolve `_txn_{TransactionName}/` inside the database directory.
 4. If the `_txn_{TransactionName}/` directory already exists, return `XBASE_TRANSACTION_NAME_IN_USE`.
 5. Create the `_txn_{TransactionName}/` directory.
-6. Copy `_schema.json` into `_txn_{TransactionName}/_schema.json` (this is the only file copied eagerly; table `.ndjson` files are copied lazily on first write).
+6. Copy `_schema.json` into `_txn_{TransactionName}/_schema.json` (this is the only file copied eagerly; table `.dbf` files are copied lazily on first write).
 7. Register `TransactionName → DatabasePath` in the session context.
 8. Return `StartedAt`.
 
-**How transaction isolation works:** All writes during the transaction operate only on files inside `_txn_{TransactionName}/`. Table `.ndjson` files are copied lazily — only when a table is first modified. Reads within the transaction check the workspace first; if the file is not there, the live directory is read. The live data files are not modified until `XBase-Transaction-Commit` moves the workspace files over them. `XBase-Transaction-Rollback` simply deletes the workspace directory, leaving live files untouched.
+**How transaction isolation works:** All writes during the transaction operate only on files inside `_txn_{TransactionName}/`. Table `.dbf` files are copied lazily — only when a table is first modified. Reads within the transaction check the workspace first; if the file is not there, the live directory is read. The live data files are not modified until `XBase-Transaction-Commit` moves the workspace files over them. `XBase-Transaction-Rollback` simply deletes the workspace directory, leaving live files untouched.
 
 ## Script Templates
 

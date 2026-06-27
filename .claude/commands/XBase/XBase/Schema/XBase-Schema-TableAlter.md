@@ -35,7 +35,7 @@ drop old table) for those operations.
 5. `File.WriteAllText(_schema.json, updatedSchema)`
 6. Return the list of `AddedColumns`
 
-**Note:** Adding a column does not backfill existing rows in `{TableName}.ndjson`. Existing rows
+**Note:** Adding a column does not backfill existing rows in `{TableName}.dbf`. Existing rows
 return `null` (or the column's `Default`) when the field is absent from the stored JSON object.
 
 ## Error Codes

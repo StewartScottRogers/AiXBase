@@ -9,10 +9,17 @@
     <Import_RootNamespace>XBaseFiles</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <!-- Automatically include all files in subdirectories, excluding project files -->
-    <Content Include="$(MSBuildThisFileDirectory)**\*" Exclude="$(MSBuildThisFileDirectory)*.shproj;$(MSBuildThisFileDirectory)*.projitems;$(MSBuildThisFileDirectory)README.md" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)XBaseFiles.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)demo_dbf\Tasks.dbf" />
+    <None Include="$(MSBuildThisFileDirectory)demo_dbf\_meta.json" />
+    <None Include="$(MSBuildThisFileDirectory)demo_dbf\_schema.json" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\Comments.dbf" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\Priorities.dbf" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\Statuses.dbf" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\TicketHist.dbf" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\Tickets.dbf" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\Users.dbf" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\_meta.json" />
+    <None Include="$(MSBuildThisFileDirectory)ticketing_dbf\_schema.json" />
   </ItemGroup>
 </Project>

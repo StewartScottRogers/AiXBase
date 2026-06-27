@@ -1,0 +1,10 @@
+﻿
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":1,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":1,"ToStatusId":2,"IsDeleted":0}
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":2,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":1,"ToStatusId":3,"IsDeleted":0}
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":3,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":1,"ToStatusId":4,"IsDeleted":0}
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":4,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":2,"ToStatusId":3,"IsDeleted":0}
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":5,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":2,"ToStatusId":4,"IsDeleted":0}
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":6,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":2,"ToStatusId":1,"IsDeleted":0}
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":7,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":3,"ToStatusId":2,"IsDeleted":0}
+{"UpdatedAt":"2026-06-27T20:13:20Z","Id":8,"CreatedAt":"2026-06-27T20:13:20Z","FromStatusId":3,"ToStatusId":1,"IsDeleted":0}
+{"Id":9,"FromStatusId":4,"ToStatusId":1,"IsDeleted":0}

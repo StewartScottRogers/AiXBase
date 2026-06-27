@@ -1,0 +1,2 @@
+﻿"TicketNumber","Summary","Status","Priority","ReportedBy","AssignedTo","CommentCount","AttachCount","CreatedAt"
+"TKT-0001","Login page crashes on mobile (iOS 17)","Open","Critical","Administrator","Alice J. Smith","0","0","2026-06-27T20:21:38Z"

@@ -1,0 +1,21 @@
+﻿{
+    "FromDate":  "2026-06-01",
+    "ExportedAt":  "2026-06-27T20:25:56Z",
+    "ToDate":  "2026-06-30",
+    "Tickets":  [
+                    {
+                        "TicketNumber":  "TKT-0001",
+                        "Summary":  "Login page crashes on mobile (iOS 17)",
+                        "Status":  "Open",
+                        "Priority":  "Critical",
+                        "ReportedBy":  "Administrator",
+                        "AssignedTo":  "Alice J. Smith",
+                        "CommentCount":  0,
+                        "AttachCount":  0,
+                        "CreatedAt":  "2026-06-27T20:21:38Z"
+                    }
+                ],
+    "Success":  true,
+    "TotalRecords":  1,
+    "Format":  "JSON"
+}

@@ -1,0 +1,14 @@
+﻿
+{"Id":1,"TicketId":1,"Action":"Created","ActorUserId":1,"OldValue":null,"NewValue":"TKT-0001","ChangedAt":"2026-06-27T20:15:22Z","IsDeleted":0}
+{"Id":2,"TicketId":2,"Action":"Created","ActorUserId":2,"OldValue":null,"NewValue":"TKT-0002","ChangedAt":"2026-06-27T20:15:31Z","IsDeleted":0}
+{"Id":3,"TicketId":1,"Action":"Assigned","ActorUserId":1,"OldValue":"Unassigned","NewValue":"Alice J. Smith (UserId=2)","ChangedAt":"2026-06-27T20:16:06Z","IsDeleted":0}
+{"Id":4,"TicketId":1,"Action":"Updated","ActorUserId":1,"OldValue":"Login page crashes on mobile","NewValue":"Login page crashes on mobile (iOS 17)","ChangedAt":"2026-06-27T20:16:25Z","IsDeleted":0}
+{"Id":5,"TicketId":1,"Action":"Updated","ActorUserId":1,"OldValue":"Users report a crash when tapping the login button on iOS 17.","NewValue":"Confirmed crash on iPhone 14 and 15 Pro running iOS 17.4.","ChangedAt":"2026-06-27T20:16:25Z","IsDeleted":0}
+{"Id":6,"TicketId":1,"Action":"StatusChanged","ActorUserId":1,"OldValue":"Open","NewValue":"In Progress","ChangedAt":"2026-06-27T20:16:45Z","IsDeleted":0}
+{"Id":7,"TicketId":1,"Action":"PriorityChanged","ActorUserId":1,"OldValue":"High","NewValue":"Critical","ChangedAt":"2026-06-27T20:17:03Z","IsDeleted":0}
+{"Id":8,"TicketId":2,"Action":"Escalated","ActorUserId":1,"OldValue":"Medium","NewValue":"High","ChangedAt":"2026-06-27T20:17:47Z","IsDeleted":0}
+{"Id":9,"TicketId":2,"Action":"CategoryChanged","ActorUserId":1,"OldValue":"null","NewValue":"Bug","ChangedAt":"2026-06-27T20:20:13Z","IsDeleted":0}
+{"Id":10,"TicketId":1,"Action":"StatusChanged","ActorUserId":1,"OldValue":"In Progress","NewValue":"Closed","ChangedAt":"2026-06-27T20:21:38Z","IsDeleted":0}
+{"Id":11,"TicketId":1,"Action":"Closed","ActorUserId":1,"OldValue":null,"NewValue":"Fixed in build 2.1.4 - patched UIButton crash handler on iOS 17.","ChangedAt":"2026-06-27T20:21:38Z","IsDeleted":0}
+{"Id":12,"TicketId":1,"Action":"Reopened","ActorUserId":2,"OldValue":"Closed","NewValue":"Open","ChangedAt":"2026-06-27T20:22:07Z","IsDeleted":0}
+{"Id":13,"TicketId":2,"Action":"Deleted","ActorUserId":1,"OldValue":null,"NewValue":"Deleted by admin","ChangedAt":"2026-06-27T20:22:31Z","IsDeleted":0}

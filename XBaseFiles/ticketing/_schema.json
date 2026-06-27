@@ -1,0 +1,694 @@
+﻿{
+    "Indexes":  [
+
+                ],
+    "Tables":  [
+                   {
+                       "NextId":  3,
+                       "Name":  "Users",
+                       "Columns":  [
+                                       {
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  null,
+                                           "AutoIncrement":  true,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "Username",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "Default":  null,
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "DisplayName",
+                                           "Nullable":  true,
+                                           "Type":  "TEXT",
+                                           "Default":  null,
+                                           "AutoIncrement":  false,
+                                           "Unique":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "Email",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "Default":  null,
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "CredentialHash",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "Default":  null,
+                                           "AutoIncrement":  false,
+                                           "Unique":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsAdmin",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false,
+                                           "Unique":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsActive",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  1,
+                                           "AutoIncrement":  false,
+                                           "Unique":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Nullable":  true,
+                                           "Type":  "TEXT",
+                                           "Default":  null,
+                                           "AutoIncrement":  false,
+                                           "Unique":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "UpdatedAt",
+                                           "Nullable":  true,
+                                           "Type":  "TEXT",
+                                           "Default":  null,
+                                           "AutoIncrement":  false,
+                                           "Unique":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false,
+                                           "Unique":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  2,
+                       "Name":  "Sessions",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "UserId",
+                                           "ForeignKey":  "Users.Id",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "AutoIncrement":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "SessionToken",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "ExpiresAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  5,
+                       "Name":  "Statuses",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "Name",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDefault",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsTerminal",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "UpdatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  10,
+                       "Name":  "StatusTransitions",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "FromStatusId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "ToStatusId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  5,
+                       "Name":  "Priorities",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "Name",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "Weight",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDefault",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  4,
+                       "Name":  "Categories",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "Name",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "ParentId",
+                                           "Nullable":  true,
+                                           "Type":  "INTEGER",
+                                           "Default":  null,
+                                           "AutoIncrement":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  3,
+                       "Name":  "Tags",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "Name",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  3,
+                       "Name":  "Tickets",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "TicketNumber",
+                                           "Nullable":  false,
+                                           "Type":  "TEXT",
+                                           "AutoIncrement":  false,
+                                           "Unique":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "Summary",
+                                           "Type":  "TEXT",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "Description",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "StatusId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "PriorityId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CategoryId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "ReporterUserId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "AssignedToUserId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "ClosedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "UpdatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  2,
+                       "Name":  "Comments",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "TicketId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "AuthorUserId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "Body",
+                                           "Type":  "TEXT",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "UpdatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  2,
+                       "Name":  "Attachments",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "TicketId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "UploaderUserId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "FilePath",
+                                           "Type":  "TEXT",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "FileName",
+                                           "Type":  "TEXT",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "CreatedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  14,
+                       "Name":  "TicketHistory",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "TicketId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "Action",
+                                           "Type":  "TEXT",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "ActorUserId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "OldValue",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "NewValue",
+                                           "Type":  "TEXT",
+                                           "Nullable":  true
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "ChangedAt",
+                                           "Type":  "TEXT",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   },
+                   {
+                       "NextId":  3,
+                       "Name":  "TicketTags",
+                       "Columns":  [
+                                       {
+                                           "AutoIncrement":  true,
+                                           "PrimaryKey":  true,
+                                           "Name":  "Id",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "TicketId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "AutoIncrement":  false,
+                                           "PrimaryKey":  false,
+                                           "Name":  "TagId",
+                                           "Type":  "INTEGER",
+                                           "Nullable":  false
+                                       },
+                                       {
+                                           "PrimaryKey":  false,
+                                           "Name":  "IsDeleted",
+                                           "Nullable":  false,
+                                           "Type":  "INTEGER",
+                                           "Default":  0,
+                                           "AutoIncrement":  false
+                                       }
+                                   ],
+                       "CreatedAt":  "2026-06-27T20:12:54Z"
+                   }
+               ]
+}

@@ -1,0 +1,4 @@
+﻿
+{"Id":1,"Name":"Bug","ParentId":null,"CreatedAt":"2026-06-27T20:15:01Z","IsDeleted":0}
+{"Id":2,"Name":"Feature","ParentId":null,"CreatedAt":"2026-06-27T20:15:01Z","IsDeleted":0}
+{"Id":3,"Name":"Question","ParentId":null,"CreatedAt":"2026-06-27T20:15:01Z","IsDeleted":0}

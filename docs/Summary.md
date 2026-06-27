@@ -1,0 +1,97 @@
+# AiXBase
+
+AiXBase is a demonstration of **Ai Polymorphic Services**: software capabilities expressed as AI Skills rather than fixed API endpoints, where the AI dynamically selects, composes, and adapts behaviors based on context rather than traversing a rigid call graph.
+
+The repository ships two fully realised features — XBase and the Ticketing System — alongside 61 distributable Skill files that any Claude Code project can install and invoke as slash commands.
+
+---
+
+## What Is an Ai Skill?
+
+A Skill is a self-contained Markdown file that instructs Claude Code to perform one well-defined operation. It specifies inputs, JSON outputs, numbered steps, error codes, and dependencies. Claude executes those steps against real files when you invoke it as a slash command:
+
+```
+/XBase-Database-Initialize  DatabaseName:"myapp"
+/XBase-Record-Insert        ConnectionName:"main"  TableName:"Products"  Rows:[...]
+/Ticketing-Ticket-Close     TicketId:1  ClosedByUserId:"admin-id"
+```
+
+Skills are **portable** — copy a `.md` file and the capability moves with it. They are **composable** — skills call other skills through their declared dependency list. They are **harness-agnostic** — the same specification runs under PowerShell, bash, or Python, with the runtime detected automatically at execution time.
+
+---
+
+## XBase
+
+XBase is a lightweight, file-based database engine with no external runtime dependencies. A database is a named directory; tables are newline-delimited JSON files (`.dbf`); indexes are sorted key-to-Id text files (`.ndx`); and transactions are directory snapshot workspaces that commit atomically via `File.Move`.
+
+**29 skills across 8 operation groups:**
+
+| Group | Skills | Scope |
+|---|:---:|---|
+| Runtime | 1 | Environment detection — selects PowerShell, bash, or Python |
+| Database | 4 | Initialize, connect, disconnect, drop |
+| Schema | 5 | Table and column DDL |
+| Record | 5 | Insert, select, update, delete, upsert |
+| Query | 5 | Filter, sort, join, aggregate, compound execute |
+| Index | 4 | Create, drop, rebuild, list |
+| Transaction | 4 | Begin, commit, rollback, savepoints |
+| Backup | 3 | Create, restore, verify |
+
+Every table receives implicit `Id` (auto-increment), `CreatedAt`, `UpdatedAt`, and `IsDeleted` columns. Soft deletes are the default; hard deletes are opt-in via `HardDelete: true`. A filter is required on Update and Delete to prevent accidental mass mutations — if you genuinely mean all rows, the filter must say so explicitly.
+
+The storage format is intentionally human-readable: every row is a complete JSON object on a single line, making tables trivially diffable with `git diff` and repairable with any text editor.
+
+---
+
+## Ticketing System
+
+A full helpdesk ticketing system built entirely on top of XBase. It covers the complete ticket lifecycle — creation, assignment, escalation, status transitions, comments, attachments, reporting, and a Unicode terminal display with audible bell notification on completion.
+
+**33 skills across 9 operation groups:**
+
+| Group | Skills | Scope |
+|---|:---:|---|
+| Ticket | 9 | Create, read, update, delete, close, reopen, assign, escalate, query |
+| Comment | 4 | Threaded comments; `IsInternal` flag for staff-only notes |
+| Attachment | 3 | File attachment metadata — path, filename, size, uploader |
+| Status | 2 | Configurable statuses and a validated transition graph |
+| Priority | 2 | Configurable priorities with numeric ordering |
+| Category | 4 | Hierarchical category tree and free-text tags |
+| User | 5 | Registration, authentication, update, deactivation |
+| Report | 3 | Aggregate summaries, named report types, CSV/JSON export |
+| Display | 3 | Unicode COMPLETE banner, alert banners, audible bell |
+
+The system maintains 11 database tables. `TicketHistory` is append-only and records every mutation — status changes, assignments, escalations, reopens — making the full audit trail always available. Authentication deliberately returns a single generic error (`TICKETING_AUTH_FAILED`) for wrong password, unknown username, and deactivated account alike, preventing user enumeration.
+
+When a ticket closes, the system writes a full-width Unicode block-art COMPLETE banner to stdout and rings the terminal bell three times — audible from across the room.
+
+---
+
+## Ai Polymorphic Services
+
+Traditional software routes a request to a fixed handler. An Ai Polymorphic Service routes **intent** to a dynamically selected skill composition. The same high-level goal — "resolve this issue", "summarize open work", "triage new requests" — can trigger different service pathways depending on data shape, operational mode, or user role.
+
+XBase and the Ticketing System demonstrate this in practice: a data-access layer and a business-logic application layer, each expressed entirely as Skills, composable without recompilation, portable across runtimes, and adaptive by design. The AI behaves less like a rigid endpoint and more like a self-orchestrating service that selects the right path from the available skill surface.
+
+---
+
+## Distribution
+
+The `SKILLS/` folder is the GitHub ZIP distribution artifact. Drop its contents into any project's `.claude/commands/` directory — preserving the subfolder structure — and every command becomes available immediately in Claude Code. No build step, no package manager, no runtime installation required.
+
+```
+your-project/
+└── .claude/
+    └── commands/
+        ├── XBase/
+        │   ├── Database/   XBase-Database-*.md
+        │   ├── Schema/     XBase-Schema-*.md
+        │   ├── Record/     XBase-Record-*.md
+        │   └── ...
+        └── TicketingSystem/
+            ├── Ticket/     Ticketing-Ticket-*.md
+            ├── User/       Ticketing-User-*.md
+            └── ...
+```
+
+All 61 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required script is generated dynamically by the AI at execution time based on what the deployment environment provides.

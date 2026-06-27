@@ -1,0 +1,2 @@
+﻿{"Id":1,"Username":"admin","DisplayName":"Administrator","Email":"admin@example.com","CredentialHash":"3eb3fe66b31e3b4d10fa70b5cad49c7112294af6ae4e476a1c405155d45aa121","IsAdmin":1,"IsActive":1,"CreatedAt":"2026-06-27T20:13:57Z","UpdatedAt":"2026-06-27T20:13:57Z","IsDeleted":0}
+{"Id":2,"Username":"alice","DisplayName":"Alice J. Smith","Email":"alice.j@example.com","CredentialHash":"e6ae7c992c1a6eee61efafc2378e8780e613c1e99c1021f035f54b310e2cf743","IsAdmin":0,"IsActive":0,"CreatedAt":"2026-06-27T20:14:06Z","UpdatedAt":"2026-06-27T20:22:50Z","IsDeleted":0}

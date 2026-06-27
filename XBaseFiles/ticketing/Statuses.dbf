@@ -1,0 +1,5 @@
+﻿
+{"IsTerminal":0,"Id":1,"CreatedAt":"2026-06-27T20:13:20Z","Name":"Open","UpdatedAt":"2026-06-27T20:13:20Z","IsDefault":1,"IsDeleted":0}
+{"IsTerminal":0,"Id":2,"CreatedAt":"2026-06-27T20:13:20Z","Name":"In Progress","UpdatedAt":"2026-06-27T20:13:20Z","IsDefault":0,"IsDeleted":0}
+{"IsTerminal":0,"Id":3,"CreatedAt":"2026-06-27T20:13:20Z","Name":"Blocked","UpdatedAt":"2026-06-27T20:13:20Z","IsDefault":0,"IsDeleted":0}
+{"IsTerminal":1,"Id":4,"CreatedAt":"2026-06-27T20:13:20Z","Name":"Closed","UpdatedAt":"2026-06-27T20:13:20Z","IsDefault":0,"IsDeleted":0}

@@ -1,0 +1,41 @@
+﻿{
+    "ByStatus":  [
+                     {
+                         "Count":  1251,
+                         "Status":  "Open"
+                     },
+                     {
+                         "Count":  1250,
+                         "Status":  "In Progress"
+                     },
+                     {
+                         "Count":  1250,
+                         "Status":  "Blocked"
+                     },
+                     {
+                         "Count":  1250,
+                         "Status":  "Closed"
+                     }
+                 ],
+    "ByPriority":  [
+                       {
+                           "Count":  1251,
+                           "Priority":  "Critical"
+                       },
+                       {
+                           "Count":  1250,
+                           "Priority":  "High"
+                       },
+                       {
+                           "Count":  1250,
+                           "Priority":  "Medium"
+                       },
+                       {
+                           "Count":  1250,
+                           "Priority":  "Low"
+                       }
+                   ],
+    "TotalTickets":  5001,
+    "ExportedAt":  "2026-06-27T20:59:24Z",
+    "Success":  true
+}

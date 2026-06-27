@@ -10,7 +10,7 @@ XBase is a skill-based, file-backed database engine implemented exclusively thro
 
 Example: `XBase-Record-Insert`, `XBase-Transaction-Rollback`
 
-**Storage engine: native file system only.** XBase reads and writes its own structured text files using file system primitives (`Directory.CreateDirectory`, `File.ReadAllText`, `File.WriteAllLines`, `File.Move`, `File.Copy`, `File.Delete`). No third-party database libraries, no SQLite binaries, no ORM, no ADO.NET providers.
+**Storage engine: native file system only.** XBase reads and writes its own structured binary files using OS file system primitives (directory create/delete/copy, file read/write/move/delete/append). No third-party database libraries, no external database engines, no ORM layers, no package manager dependencies.
 
 ---
 
@@ -20,7 +20,7 @@ Example: `XBase-Record-Insert`, `XBase-Transaction-Rollback`
 
 A database is a **named directory** stored under `XBaseFiles/`. Every file inside that directory is owned exclusively by XBase and managed through the skills.
 
-**Note:** The `XBaseFiles/` directory is a Visual Studio Shared Project that automatically tracks all XBase database files using wildcard includes. Files added or modified by external applications will automatically appear in Solution Explorer without manual refresh.
+**Convention:** `XBaseFiles/` is the default database root used in this repository. Consumers may place the root anywhere on a writable local file system; all skill inputs that accept a `DatabaseName` resolve against the configured root. No harness-specific directory structure is required.
 
 ```
 XBaseFiles/
@@ -78,11 +78,15 @@ XBaseFiles/
 
 ### `{TableName}.dbf` — Table Data
 
-dBASE III DBF binary: fixed-length binary record beginning with a 1-byte deletion flag.
+dBASE III binary format. The file begins with a fixed-size header followed by one fixed-length record per row. Each record starts with a 1-byte deletion flag (`0x20` = active, `0x2A` = deleted) followed by field bytes at positions defined by the field descriptor array in the header.
+
+The field descriptor array is built from the table's column definitions in `_schema.json`. Each field occupies a fixed byte width determined by its type: `INTEGER` and `REAL` fields are stored as ASCII-encoded numerics right-padded with spaces; `TEXT` fields are left-padded or right-padded to their declared maximum length.
+
+The logical content of a record (shown here as a key-value map for readability — the file itself is binary):
 
 ```
-{"Id":1,"Username":"alice","Email":"alice@example.com","IsDeleted":0,"CreatedAt":"2026-06-25T12:00:00Z","UpdatedAt":"2026-06-25T12:00:00Z"}
-{"Id":2,"Username":"bob","Email":"bob@example.com","IsDeleted":0,"CreatedAt":"2026-06-25T12:01:00Z","UpdatedAt":"2026-06-25T12:01:00Z"}
+{ Id:1, Username:"alice", Email:"alice@example.com", IsDeleted:0, CreatedAt:"2026-06-25T12:00:00Z", UpdatedAt:"2026-06-25T12:00:00Z" }
+{ Id:2, Username:"bob",   Email:"bob@example.com",   IsDeleted:0, CreatedAt:"2026-06-25T12:01:00Z", UpdatedAt:"2026-06-25T12:01:00Z" }
 ```
 
 **Mutation model:**
@@ -96,11 +100,13 @@ dBASE III DBF binary: fixed-length binary record beginning with a 1-byte deletio
 
 ### `{TableName}.{IndexName}.ndx` — Index
 
-dBASE III NDX binary B-tree index. Used for O(log n) lookups without full-table scans.
+dBASE III NDX binary B-tree index. Used for O(log n) lookups without full-table scans. Each node entry associates a key value with a record offset in the corresponding `.dbf` file.
+
+Logical representation of index entries (the file itself is binary):
 
 ```
-{"Key":"alice","Id":1}
-{"Key":"bob","Id":2}
+{ Key:"alice", RecordOffset:1 }
+{ Key:"bob",   RecordOffset:2 }
 ```
 
 For composite indexes, `Key` is a pipe-delimited concatenation of the column values: `"alice|active"`.
@@ -140,7 +146,7 @@ All subsequent reads and writes during the transaction operate on files inside `
 
 ### Commit
 
-1. For each modified file in `_txn_{TransactionName}/`: move it over the corresponding live file (`File.Move` — atomic on the same volume)
+1. For each modified file in `_txn_{TransactionName}/`: atomically move it over the corresponding live file (same-volume move)
 2. Update `_meta.json` `UpdatedAt`
 3. Delete `_txn_{TransactionName}/` directory
 
@@ -218,7 +224,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 
 | Skill | Description |
 |---|---|
-| `XBase-Backup-Create` | Copy the entire database directory to `XBaseFiles/backups/{name}_{timestamp}/` |
+| `XBase-Backup-Create` | Copy the entire database directory to `{DatabaseRoot}/backups/{name}_{timestamp}/` |
 | `XBase-Backup-Restore` | Replace live database directory with a backup directory copy |
 | `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.dbf` files; validate each JSON line |
 
@@ -240,7 +246,7 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
 1. Resolve `XBaseFiles/{DatabaseName}/` to an absolute path
 2. If the directory already exists and `OverwriteIfExists` is `false`, return `XBASE_DATABASE_EXISTS`
 3. If the directory already exists and `OverwriteIfExists` is `true`, delete it recursively
-4. `Directory.CreateDirectory(DatabasePath)`
+4. Create directory at `DatabasePath`
 5. Write `_meta.json`: `{ XBaseVersion:1, Name, CreatedAt, UpdatedAt }`
 6. Write `_schema.json`: `{ Tables:[], Indexes:[] }`
 7. Return `DatabasePath` and `CreatedAt`
@@ -311,8 +317,8 @@ Delete `_txn_{TransactionName}/` and its contents. Live files were never modifie
    b. Enforce `UNIQUE` constraints: for each unique column, read its `.ndx` (if exists) or scan `.dbf`
    c. Enforce `FOREIGN KEY` constraints: read target table to verify parent Id
    d. Assign `Id = NextId`; set `CreatedAt = UpdatedAt = now()`; set `IsDeleted = 0`
-   e. Append serialised JSON line to `.dbf`
-   f. Update each affected `.ndx` file (insert sorted entry)
+   e. Encode row as a fixed-length dBASE III binary record (deletion flag `0x20` + field bytes at fixed positions); append record to `.dbf`; increment header record count and update last-modified date in DBF header
+   f. Update each affected `.ndx` file (insert sorted B-tree entry)
    g. Increment `NextId` in `_schema.json`
 4. Write updated `_schema.json`
 5. Return `InsertedCount` and `LastInsertedId`
@@ -429,7 +435,7 @@ For `UPDATE` / `DELETE`:
 **Steps**
 1. Validate `ConnectionName`
 2. If `_txn_{TransactionName}/` already exists in the database directory, return `XBASE_TRANSACTION_NAME_IN_USE`
-3. `Directory.CreateDirectory(_txn_{TransactionName}/)`
+3. Create `_txn_{TransactionName}/` directory
 4. Copy `_schema.json` into `_txn_{TransactionName}/_schema.json`
 5. Register `TransactionName → DatabasePath` mapping in the session
 6. Return `StartedAt`
@@ -441,9 +447,9 @@ For `UPDATE` / `DELETE`:
 **Steps**
 1. Validate `TransactionName` is active
 2. For each file in `_txn_{TransactionName}/` (excluding savepoint subdirectories):
-   - `File.Move` it over the corresponding live file in the database directory
+   - Atomically move it over the corresponding live file in the database directory (same-volume move)
 3. Update live `_meta.json` `UpdatedAt`
-4. `Directory.Delete(_txn_{TransactionName}/, recursive:true)`
+4. Delete `_txn_{TransactionName}/` directory recursively
 5. Deregister `TransactionName`
 
 ---
@@ -455,9 +461,9 @@ For `UPDATE` / `DELETE`:
 2. If `ToSavepoint` specified:
    a. Verify `_txn_{TransactionName}/sp_{ToSavepoint}/` exists
    b. Overwrite `_txn_{TransactionName}/` files with savepoint copies
-   c. `Directory.Delete` the savepoint subdirectory
+   c. Delete the savepoint subdirectory
 3. If no `ToSavepoint`:
-   a. `Directory.Delete(_txn_{TransactionName}/, recursive:true)`
+   a. Delete `_txn_{TransactionName}/` directory recursively
    b. Deregister `TransactionName`
 
 ---
@@ -467,9 +473,9 @@ For `UPDATE` / `DELETE`:
 **Steps**
 1. Validate `ConnectionName`
 2. Resolve source database directory
-3. Ensure `XBaseFiles/backups/` exists; create if not
+3. Ensure `{DatabaseRoot}/backups/` exists; create if not
 4. Generate destination name: `{DatabaseName}_{YYYYMMDDTHHmmss}[_{BackupLabel}]`
-5. `Directory.Copy(source, XBaseFiles/backups/{dest}/)` — recursive file copy
+5. Recursively copy source directory to `{DatabaseRoot}/backups/{dest}/`
 6. Return `BackupPath` and `CreatedAt`
 
 ---
@@ -481,8 +487,8 @@ For `UPDATE` / `DELETE`:
 2. Require `ConfirmRestore: true`; if absent, return `XBASE_RESTORE_NOT_CONFIRMED`
 3. If `CreateBackupBeforeRestore`: run `XBase-Backup-Create` first; record `PreRestoreBackupPath`
 4. Close all connections to the target database
-5. `Directory.Delete(TargetDatabasePath, recursive:true)`
-6. `Directory.Copy(BackupPath, TargetDatabasePath)`
+5. Delete `TargetDatabasePath` directory recursively
+6. Recursively copy `BackupPath` to `TargetDatabasePath`
 7. Return `PreRestoreBackupPath` (if taken) and `RestoredAt`
 
 ---
@@ -521,25 +527,25 @@ All tables managed by XBase share these implicit conventions:
 
 ## File System Primitives Used
 
-All XBase skills are implemented using only these OS-level operations:
+All XBase skills operate exclusively through these abstract OS file system operations. Implementations may use any language or runtime that provides equivalent primitives.
 
-| Primitive | Usage |
+| Abstract Operation | Usage |
 |---|---|
-| `Directory.CreateDirectory(path)` | Create database, transaction, backup directories |
-| `Directory.Delete(path, recursive)` | Drop database, rollback transaction, clean up |
-| `Directory.Copy(src, dest)` | Backup, restore, transaction commit |
-| `Directory.GetFiles(path, pattern)` | List tables, list backups |
-| `File.ReadAllText(path)` | Read `_meta.json`, `_schema.json` |
-| `File.WriteAllText(path, content)` | Write `_meta.json`, `_schema.json` |
-| `File.ReadAllBytes(path)` | Read entire `.dbf` or `.ndx` binary file into memory |
-| `File.WriteAllBytes(path, bytes)` | Write new `.dbf` header or rewrite after PACK / index rebuild |
-| `File.OpenAppend(path)` | Append one fixed-length binary record to `.dbf` on insert |
-| `File.Move(src, dest)` | Atomic commit of transaction files |
-| `File.Copy(src, dest)` | Index rebuild copies, backup |
-| `File.Delete(path)` | Drop table files, drop index files |
-| `File.Exists(path)` | Guard checks throughout |
+| `create-directory(path)` | Create database, transaction, backup directories |
+| `delete-directory-recursive(path)` | Drop database, rollback transaction, clean up |
+| `copy-directory-recursive(src, dest)` | Backup, restore |
+| `list-files(path, pattern)` | List tables, list backups |
+| `read-text-file(path)` | Read `_meta.json`, `_schema.json` |
+| `write-text-file(path, content)` | Write `_meta.json`, `_schema.json` |
+| `read-binary-file(path)` | Read entire `.dbf` or `.ndx` binary file into memory |
+| `write-binary-file(path, bytes)` | Write new `.dbf` header or rewrite after PACK / index rebuild |
+| `append-binary-record(path, bytes)` | Append one fixed-length binary record to `.dbf` on insert |
+| `move-file-atomic(src, dest)` | Atomic commit of transaction files (same-volume move) |
+| `copy-file(src, dest)` | Index rebuild copies, backup file copy |
+| `delete-file(path)` | Drop table files, drop index files |
+| `file-exists(path)` | Guard checks throughout |
 
-No SQLite, no NuGet packages, no ADO.NET, no P/Invoke.
+No third-party database libraries, no external database engines, no package manager dependencies, no native binary extensions.
 
 ---
 
@@ -597,7 +603,8 @@ Every skill returns a standard error envelope on failure:
 
 ## Dependencies
 
-- File system with read/write access to `XBaseFiles/`
+- Writable local file system with a configurable database root directory (default convention: `XBaseFiles/`)
 - No external network dependencies
-- No third-party libraries
+- No third-party libraries or external tools
 - All skill inputs and outputs are serializable to JSON
+- Harness-agnostic: any AI agent or runtime that can follow the numbered skill steps and perform the abstract file system operations listed above can implement XBase

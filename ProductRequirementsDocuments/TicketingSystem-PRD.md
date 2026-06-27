@@ -10,7 +10,7 @@ The Ticketing System is a full-featured issue-tracking feature implemented exclu
 
 Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 
-**Dependency**: All Ticketing Skills require an active `XBase-Database-Connect` session named `ticketing`.
+**Dependency**: All Ticketing Skills require an active `XBase-Database-Connect` session named `ticketing`. The Ticketing System is harness-agnostic and system-agnostic: any AI agent or runtime that can invoke the XBase skill set and write BEL characters and text to stdout can run the Ticketing System without modification.
 
 ---
 
@@ -200,7 +200,7 @@ Rejects the transition if no matching row in `StatusTransitions(FromStatusId, To
 
 **Inputs**
 - `Username` (string)
-- `CredentialHash` (string) — pre-hashed by the caller; never accept plaintext
+- `Password` (string) — plaintext; the skill hashes it internally using a secure hash function and compares against the stored hash; the plaintext password is never persisted or returned
 
 **Outputs**
 - `SessionToken` (string, 64-char hex)
@@ -244,9 +244,9 @@ Renders a full-screen ASCII art completion banner and rings the terminal bell th
 - `RenderedBanner` (string) — the full text written to stdout
 
 **Behavior**
-1. Emit `BellCount` × BEL character (`\a`, ASCII 7) — `Console.Write('\a')` per ring
-2. Write a blank line
-3. Write the banner (see templates below) with `TicketNumber`, `Summary`, `ClosedByDisplayName`, and `ClosedAt` interpolated
+1. Emit `BellCount` × BEL character (ASCII 7) to stdout — one character per ring, written sequentially so the user hears distinct rings
+2. Write a blank line to stdout
+3. Write the banner (see templates below) to stdout with `TicketNumber`, `Summary`, `ClosedByDisplayName`, and `ClosedAt` interpolated
 4. Flush stdout
 
 ---
@@ -266,8 +266,8 @@ Renders a compact single-line-border alert banner and rings the bell once. Calle
 - `RenderedBanner` (string)
 
 **Behavior**
-1. Emit `BellCount` × BEL
-2. Render the compact alert template (see below)
+1. Emit `BellCount` × BEL character (ASCII 7) to stdout
+2. Render the compact alert template (see below) to stdout
 3. Flush stdout
 
 ---
@@ -283,7 +283,7 @@ Emits BEL characters only — no banner, no output beyond the control characters
 - `EmittedCount` (int)
 
 **Behavior**
-Loop `Count` times: `Console.Write('\a')`. Intentionally synchronous so the user hears distinct rings rather than a burst.
+Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing after each so the user hears distinct rings rather than a burst. No other output is produced.
 
 ---
 
@@ -439,7 +439,7 @@ Loop `Count` times: `Console.Write('\a')`. Intentionally synchronous so the user
 | `Id` | INTEGER PK | |
 | `TicketId` | INTEGER FK | |
 | `FileName` | TEXT NOT NULL | |
-| `FilePath` | TEXT NOT NULL | path relative to `AiXBase/attachments/` |
+| `FilePath` | TEXT NOT NULL | path relative to `{DatabaseRoot}/attachments/` (or an absolute path — consumer's convention) |
 | `UploadedByUserId` | INTEGER FK | |
 | `UploadedAt` | TEXT | |
 | `IsDeleted` | INTEGER | |
@@ -450,7 +450,7 @@ Loop `Count` times: `Console.Write('\a')`. Intentionally synchronous so the user
 
 When setting up a fresh Ticketing database, skills must be called in this order:
 
-1. `XBase-Database-Initialize` — create `AiXBase/ticketing/` database directory
+1. `XBase-Database-Initialize` — create a database named `ticketing` in the configured database root (e.g. `{DatabaseRoot}/ticketing/`)
 2. `XBase-Database-Connect` — `DatabaseName:"ticketing"`, connection name `ticketing`
 3. `XBase-Schema-TableCreate` × N — create all tables above
 4. `XBase-Index-Create` — at minimum: `Tickets.StatusId`, `Tickets.AssignedToUserId`, `Tickets.CreatedAt`

@@ -27,12 +27,14 @@ Test IDs follow the pattern `TICK-<GROUP>-<NNN>` where group codes are:
 
 | Requirement | Specification |
 |---|---|
-| XBase skills | All 28 XBase skills must pass their own test suite first |
-| `AiXBase/ticketing/` | Freshly initialised database directory with full Ticketing schema for each test group unless noted |
+| XBase skills | All 30 core XBase skills must pass their own test suite first |
+| Database root | Writable local directory; configurable (default `XBaseFiles/` in this repo) |
+| `{DatabaseRoot}/ticketing/` | Freshly initialised database directory with full Ticketing schema for each test group unless noted |
 | Seed data | At least 1 admin user (`admin`, hashed password), all seed statuses, all seed priorities present |
 | Disk space | ≥ 5 GB for performance and stress suites |
 | stdout | Writable (for Display group tests) |
 | Clock | Stable; no large jumps during test run |
+| Harness | Any compliant AI harness; tests must not depend on Claude Code-specific invocation syntax |
 
 ---
 
@@ -83,7 +85,7 @@ Tickets are numbered `TKT-{N}` where N is zero-padded to at minimum 4 digits: `T
 - Tests within a group that depend on each other are listed in order and marked with the prerequisite test ID
 - A test **fails** if: wrong output, wrong error code, unhandled exception, audit record not created, or execution time exceeds the stated limit
 - Performance tests must be repeated 3 times; the **median** value must meet the target
-- All tests must pass with the XBase native file engine only — no SQLite or third-party database libraries
+- All tests must pass with the XBase native dBASE III file engine only — no third-party database libraries or external database engines
 - Every write operation (ticket create/update/close/assign/escalate/reopen) must produce a corresponding `TicketHistory` row; tests verify this unless the skill is read-only
 
 ---
@@ -677,15 +679,15 @@ Tickets are numbered `TKT-{N}` where N is zero-padded to at minimum 4 digits: `T
 | `TICK-DSP-026` | Count 0 | `Count:0` | Returns validation error (`Count` must be ≥ 1) |
 | `TICK-DSP-027` | Negative count | `Count:-1` | Returns validation error |
 | `TICK-DSP-028` | Non-integer count | `Count:"three"` | Returns validation error |
-| `TICK-DSP-029` | Synchronous emission | `Count:3` | Three audibly distinct rings (not one burst); verified by timing: each `Console.Write('\a')` is a separate call |
-| `TICK-DSP-030` | Does not use Console.Beep() | Code review / implementation note | Implementation verified to use `Console.Write('\a')` not `Console.Beep()` |
+| `TICK-DSP-029` | Synchronous emission | `Count:3` | Three audibly distinct rings (not one burst); verified by timing: each BEL character (ASCII 7) is written to stdout as a separate flush |
+| `TICK-DSP-030` | BEL is character 7, not OS bell API | Code review / implementation note | Implementation emits raw ASCII 7 to stdout; must not use OS-specific audio APIs (e.g. system bell functions) that bypass stdout |
 | `TICK-DSP-031` | No other output | Any valid count | stdout contains ONLY the BEL characters; no extra newlines, labels, or text |
 
 ---
 
 ## Performance Benchmarks
 
-All benchmarks use a dedicated `AiXBase/perf-ticketing/` database directory with the full schema. Median of 3 runs must meet the target.
+All benchmarks use a dedicated `{DatabaseRoot}/perf-ticketing/` database directory with the full schema. Median of 3 runs must meet the target.
 
 ### Ticket Throughput
 
@@ -753,7 +755,7 @@ All benchmarks use a dedicated `AiXBase/perf-ticketing/` database directory with
 | `TICK-STRESS-007` | Concurrent read + write | 5 readers querying while 1 writer creates tickets | Readers return consistent snapshots; no corruption |
 | `TICK-STRESS-008` | Reopen/close cycle × 1 000 | Same ticket closed and reopened 1 000 times | 2 000+ history rows; `ClosedAt` reflects latest close; banner emitted each time |
 | `TICK-STRESS-009` | Report on XL-tier with history | Generate all report types on 100 000-ticket DB with full history | All reports complete within 3× their PERF targets |
-| `TICK-STRESS-010` | Large CSV export under memory pressure | Export 100 000 tickets with streaming | Process stays under 500 MB RSS; file written completely |
+| `TICK-STRESS-010` | Large CSV export under memory pressure | Export 100 000 tickets with streaming | Process stays under 500 MB resident memory; file written completely |
 | `TICK-STRESS-011` | User registration at scale | Register 10 000 users with unique emails | No duplicate session tokens; no auth timing regressions |
 | `TICK-STRESS-012` | Tag deduplication at scale | Add the same tag to 50 000 tickets | No duplicate `TicketTags` rows; all idempotent calls succeed |
 
@@ -768,8 +770,8 @@ All benchmarks use a dedicated `AiXBase/perf-ticketing/` database directory with
 | `TICK-SEC-003` | Filter injection via SearchText | `SearchText:"' OR 1=1--"` | Treated as literal string in XBase in-memory filter; no extra rows returned |
 | `TICK-SEC-004` | Injection via Username (Authenticate) | `Username:"admin'--"` | Returns `TICKETING_AUTH_FAILED`; no bypass; XBase field name guard rejects unsafe chars |
 | `TICK-SEC-005` | Injection via Tag name | `Tag:"'; DROP TABLE TicketTags--"` | Returns `TICKETING_TAG_NAME_REQUIRED` or validation error; tag stored as literal or rejected |
-| `TICK-SEC-006` | Injection via FileName | `FileName:"'; DELETE FROM Attachments--"` | Stored as literal metadata string or validation error; no file system operation outside `AiXBase/` |
-| `TICK-SEC-007` | Path traversal in FilePath (Attachment) | `FilePath:"../../Windows/System32/hosts"` | Validation error or stored as literal (if path is metadata-only); no actual file written outside `AiXBase/` |
+| `TICK-SEC-006` | Injection via FileName | `FileName:"'; DELETE FROM Attachments--"` | Stored as literal metadata string or validation error; no file system operation outside `{DatabaseRoot}/` |
+| `TICK-SEC-007` | Path traversal in FilePath (Attachment) | `FilePath:"../../system-dir/sensitive-file"` | Validation error or stored as literal (if path is metadata-only); no actual file written outside `{DatabaseRoot}/` |
 | `TICK-SEC-008` | Auth timing — existence oracle | Compare response time for non-existent vs wrong-password user | Within ±100 ms; no statistical distinguishability |
 | `TICK-SEC-009` | Password in API response | Register + authenticate | `Password` and `PasswordHash` absent from all response objects |
 | `TICK-SEC-010` | Session token entropy | 1 000 consecutive tokens for same user | No two identical; passes birthday-paradox check for 128-bit token space |
@@ -805,7 +807,7 @@ A build of the Ticketing System is considered **release-ready** when:
 
 1. **All functional tests pass** — every `TICK-TKT-*`, `TICK-CMT-*`, `TICK-ATT-*`, `TICK-STA-*`, `TICK-PRI-*`, `TICK-CAT-*`, `TICK-USR-*`, `TICK-RPT-*`, `TICK-DSP-*`, `TICK-INT-*` test ID returns the stated expected result.
 
-2. **All XBase tests pass first** — the Ticketing System is built on XBase; the full XBase test suite must pass before any Ticketing test is run.
+2. **All XBase tests pass first** — the Ticketing System is built on XBase; the full XBase test suite (30 core skills) must pass before any Ticketing test is run.
 
 3. **Every write produces a TicketHistory row** — for all skills that mutate a ticket (Create, Update, Close, Reopen, Assign, Escalate, Status-Transition, Priority-Set, Category-Assign), a corresponding `TicketHistory` row must exist. Auditors verify by counting history rows after each test.
 

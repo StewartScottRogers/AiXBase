@@ -4,12 +4,12 @@
 
 The XBase Administrative Console provides three composable commands for database administrators to inspect, operate, and maintain XBase databases through natural language — without needing to know the individual skill APIs.
 
-The console is implemented across two delivery surfaces, each orchestrating the existing 28 XBase skills. No new file I/O primitives are added; all operations delegate to the underlying skill layer.
+The console is implemented across two delivery surfaces, each orchestrating the existing 30 XBase skills. No new file I/O primitives are added; all operations delegate to the underlying skill layer.
 
-- **Distributable skills** (`SKILLS/XBase/Admin/`) — `execute.md`, `Inspect.md`, `maintain.md` — packaged with the XBase skill set for distribution
-- **Claude Code slash commands** (`.claude/commands/XBase/Admin/`) — `do.proompt.md`, `this.proompt.md`, `that.proompt.md` — registered locally for CLI use
+- **Distributable skills** (`SKILLS/XBase/Admin/`) — `execute.md`, `Inspect.md`, `maintain.md` — packaged with the XBase skill set for distribution. These are harness-agnostic: any AI agent or runtime that can invoke skill files can use them.
+- **Harness-specific invocation wrappers** — e.g. Claude Code slash commands (`.claude/commands/XBase/Admin/`) — `do.proompt.md`, `this.proompt.md`, `that.proompt.md`. These are reference implementations for a specific harness and are not part of the distributable SKILLS package. Other harnesses should implement equivalent wrappers appropriate to their invocation model.
 
-Both surfaces implement identical workflows. The slash commands use the shorter `/do`, `/this`, `/that` invocation names; the distributable skills use the longer `/execute`, `/Inspect`, `/maintain` names.
+Both surfaces implement identical workflows. The Claude Code slash commands use the shorter `/do`, `/this`, `/that` invocation names; the distributable skills use the longer `/execute`, `/Inspect`, `/maintain` names.
 
 ---
 
@@ -103,11 +103,11 @@ Displays the current state of one or all XBase databases.
 
 **Mode 1 — Survey (no `DatabaseName`):**
 
-Lists all databases in `XBaseFiles/` (excluding `backups/`). For each:
+Lists all databases in the configured database root (excluding `backups/`). For each:
 - Name, table count, total active row count, total directory size, last-modified timestamp
 
 ```
-XBase Databases — XBaseFiles/
+XBase Databases — {DatabaseRoot}/
 ────────────────────────────────────────────────────
   inventory    5 tables    12,847 rows    4.2 MB    2026-06-25
   analytics    3 tables   891,204 rows  287.0 MB   2026-06-26
@@ -124,7 +124,7 @@ Full breakdown of one database:
 
 ```
 Database: inventory
-Path:     XBaseFiles/inventory/
+Path:     {DatabaseRoot}/inventory/
 Created:  2026-06-01T09:00:00
 Updated:  2026-06-25T18:30:00
 
@@ -137,7 +137,7 @@ Tables (5):
 
 Active Connections:  conn-main
 Pending Transactions: none
-Last Backup: XBaseFiles/backups/inventory_20260625T183000  (24h ago)
+Last Backup: {DatabaseRoot}/backups/inventory_20260625T183000  (24h ago)
 ```
 
 ---
@@ -154,7 +154,7 @@ Performs a maintenance operation on a target database.
 | `verify` | Parse every DBF line; report corrupt rows with file name and line number |
 | `backup` | Create a timestamped backup in `XBaseFiles/backups/` |
 | `rebuild-indexes` | Rebuild all `.ndx` files from source DBF data |
-| `vacuum` | Hard-delete all soft-deleted rows across all tables (requires confirmation) |
+| `vacuum` | Hard-delete all soft-deleted rows across all tables via `XBase-Record-Delete HardDelete:true` (requires confirmation) |
 
 **Default report output:**
 ```
@@ -191,9 +191,10 @@ SKILLS/XBase/Admin/
 - The admin console does not implement its own file I/O — all reads and writes go through XBase skills
 - It does not add new error codes; it surfaces existing XBase error envelopes with added context
 - It does not provide a GUI or web interface — output is plain text to stdout
+- It does not prescribe a specific AI harness or operating system
 
 ---
 
 ## Dependencies
 
-All three admin commands depend on the complete XBase skill set (28 skills across 7 groups). They must not be distributed without the full XBase skill package.
+All three admin commands depend on the complete XBase skill set (30 core skills across 7 groups: Database, Schema, Record, Query, Index, Transaction, Backup). They must not be distributed without the full XBase skill package. The Admin skills are themselves part of the XBase distribution and are listed as a separate Admin group in the skill manifest.

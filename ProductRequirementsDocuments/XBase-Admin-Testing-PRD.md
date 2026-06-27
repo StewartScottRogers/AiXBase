@@ -22,16 +22,18 @@ Test IDs follow the pattern `XBASE-<GROUP>-<NNN>` where group codes are:
 | Requirement | Specification |
 |---|---|
 | Available disk space | ≥ 1 GB |
-| `XBaseFiles/` directory | Writable, on a local drive |
-| `XBaseFiles/backups/` | Created automatically by skills if absent |
-| Pre-existing test databases | Each test creates and tears down its own database in `XBaseFiles/adm-test-<ID>/` |
-| Baseline XBase skills | All 28 XBase skills installed and functional (XBase-Testing-PRD must pass) |
+| Database root | Writable local directory (configurable; default `XBaseFiles/` in this repo) |
+| `{DatabaseRoot}/backups/` | Created automatically by skills if absent |
+| Pre-existing test databases | Each test creates and tears down its own database in `{DatabaseRoot}/adm-test-<ID>/` |
+| Baseline XBase skills | All 30 core XBase skills loaded and functional (XBase-Testing-PRD must pass) |
+
+**Harness note:** Tests for the distributable SKILLS files (`execute.md`, `Inspect.md`, `maintain.md`) must pass under any compliant AI harness. The Claude Code slash command wrappers (`do.proompt.md`, `this.proompt.md`, `that.proompt.md`) are a reference implementation for Claude Code users; they are tested separately and are not required to be present in non-Claude-Code environments.
 
 ---
 
 ## Test Cases: Execute Command
 
-Tests for `execute.md` (`/execute`) and `do.proompt.md` (`/do`). Behaviour is identical across both surfaces; run each test against both.
+Tests for `execute.md` (`/execute`) and, where a Claude Code environment is available, `do.proompt.md` (`/do`). The distributable skill (`execute.md`) must pass under any compliant harness. The slash command wrapper (`do.proompt.md`) is Claude Code-specific and tested in addition, not instead.
 
 ### Intent Recognition — Database Operations
 
@@ -127,7 +129,7 @@ Tests for `execute.md` (`/execute`) and `do.proompt.md` (`/do`). Behaviour is id
 
 ## Test Cases: Inspect Command
 
-Tests for `Inspect.md` (`/inspect`) and `this.proompt.md` (`/this`). Behaviour is identical across both surfaces; run each test against both.
+Tests for `Inspect.md` (`/inspect`) and, where a Claude Code environment is available, `this.proompt.md` (`/this`). The distributable skill must pass under any compliant harness.
 
 ### Survey Mode (no DatabaseName)
 
@@ -167,7 +169,7 @@ Tests for `Inspect.md` (`/inspect`) and `this.proompt.md` (`/this`). Behaviour i
 
 ## Test Cases: Maintain Command
 
-Tests for `maintain.md` (`/maintain`) and `that.proompt.md` (`/that`). Behaviour is identical across both surfaces; run each test against both.
+Tests for `maintain.md` (`/maintain`) and, where a Claude Code environment is available, `that.proompt.md` (`/that`). The distributable skill must pass under any compliant harness.
 
 ### `report` Operation (default)
 
@@ -233,16 +235,16 @@ Tests for `maintain.md` (`/maintain`) and `that.proompt.md` (`/that`). Behaviour
 
 | ID | Description | Attack vector | Pass criterion |
 |---|---|---|---|
-| `XBASE-ADM-SEC-001` | Path traversal in extracted `DatabaseName` | `create a database called "../outside"` | Command extracts `DatabaseName:"../outside"` and passes it to `XBase-Database-Initialize`, which returns `XBASE_DATABASE_PATH_INVALID`; no directory created outside `XBaseFiles/` |
+| `XBASE-ADM-SEC-001` | Path traversal in extracted `DatabaseName` | `create a database called "../outside"` | Command extracts `DatabaseName:"../outside"` and passes it to `XBase-Database-Initialize`, which returns `XBASE_DATABASE_PATH_INVALID`; no directory created outside `{DatabaseRoot}/` |
 | `XBASE-ADM-SEC-002` | Path traversal in `TableName` | `insert into ../secret a record Code=X` | Command passes `TableName:"../secret"` to `XBase-Record-Insert`, which returns a validation error; no file accessed outside the database directory |
 | `XBASE-ADM-SEC-003` | SQL-like injection in filter | `show products where Code = 'A; DROP TABLE Products--'` | Filter value treated as a literal string; `XBase-Query-Filter` returns rows matching that exact string; no unintended modification |
-| `XBASE-ADM-SEC-004` | Injection in `DatabaseName` via detail inspect | `/this "../etc"` | `XBase-Database-Connect` returns `XBASE_DATABASE_PATH_INVALID`; no files read outside `XBaseFiles/` |
+| `XBASE-ADM-SEC-004` | Injection in `DatabaseName` via detail inspect | `inspect "../etc"` | `XBase-Database-Connect` returns `XBASE_DATABASE_PATH_INVALID`; no files read outside `{DatabaseRoot}/` |
 | `XBASE-ADM-SEC-005` | Injection in `TransactionName` | `begin a transaction called "../live"` | `XBase-Transaction-Begin` returns `XBASE_DATABASE_PATH_INVALID`; no workspace directory created outside the database directory |
 | `XBASE-ADM-SEC-006` | Confirmation spoofing — string "true" instead of `ConfirmDrop` | `drop the inventory database, ConfirmDrop="true"` (string) | The command does not treat the string `"true"` as a confirmation phrase; prompts the user for explicit confirmation |
 | `XBASE-ADM-SEC-007` | Vacuum without explicit confirmation | `/that inventory vacuum` with no follow-up | Does not hard-delete rows; waits for explicit "yes" before proceeding |
 | `XBASE-ADM-SEC-008` | Restore without confirmation | `restore inventory from backups/inv_20260625` | Does not call `XBase-Backup-Restore` until user explicitly confirms; reports that the operation will overwrite the live database |
 | `XBASE-ADM-SEC-009` | Null byte in extracted parameter | `create a database called "test\x00evil"` | Passed to `XBase-Database-Initialize`, which returns `XBASE_DATABASE_PATH_INVALID`; no directory created |
-| `XBASE-ADM-SEC-010` | Injection in `BackupPath` | `verify backup at ../../Windows/System32` | Passed to `XBase-Backup-Verify`, which returns an error; no file read outside `XBaseFiles/` |
+| `XBASE-ADM-SEC-010` | Injection in `BackupPath` | `verify backup at ../../system-dir` | Passed to `XBase-Backup-Verify`, which returns an error; no file read outside `{DatabaseRoot}/` |
 
 ---
 
@@ -258,4 +260,4 @@ An implementation of the XBase Administrative Console is considered **release-re
 
 4. **All security tests pass** — every `XBASE-ADM-SEC-*` test produces the stated pass criterion; no path traversal, injection, or unauthorised destructive action occurs.
 
-5. **Both surfaces pass** — every test above must pass for the SKILLS distributable files (`execute.md`, `Inspect.md`, `maintain.md`) **and** for the Claude Code slash commands (`do.proompt.md`, `this.proompt.md`, `that.proompt.md`).
+5. **Harness-agnostic surface passes** — every test above must pass for the SKILLS distributable files (`execute.md`, `Inspect.md`, `maintain.md`) under any compliant AI harness. Claude Code slash command wrappers (`do.proompt.md`, `this.proompt.md`, `that.proompt.md`) are also tested where a Claude Code environment is available, but their failure does not block release of the harness-agnostic SKILLS package.

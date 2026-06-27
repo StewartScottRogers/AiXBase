@@ -27,8 +27,8 @@ Test IDs follow the pattern `XBASE-<GROUP>-<NNN>` where group codes are:
 |---|---|
 | Available disk space | ≥ 10 GB for performance and stress suites |
 | RAM | ≥ 4 GB |
-| OS | Windows 10+ or Linux (kernel ≥ 5.15) |
-| `AiXBase/` directory | Writable, on a local drive (not network share) for baseline perf tests |
+| OS | Any OS with a writable local file system (Windows, Linux, macOS all supported) |
+| Database root | Writable local directory (not a network share) for baseline performance tests; path is configurable |
 | Clock | System clock must be stable; no large jumps during test run |
 
 ---
@@ -68,11 +68,11 @@ IsDeleted   INTEGER  DEFAULT 0
 
 ## Test Execution Standards
 
-- Each test must set up its own state (create a fresh `AiXBase/test-<ID>/` database directory) and tear it down on completion
+- Each test must set up its own state (create a fresh `{DatabaseRoot}/test-<ID>/` database directory) and tear it down on completion; `{DatabaseRoot}` is the configured database root, e.g. `XBaseFiles/` in this repo
 - Tests within a group may share a single database only when explicitly noted
 - A test **fails** if: wrong output, wrong error code, unhandled exception, or execution time exceeds the stated limit
 - Performance tests must be repeated 3 times; the **median** value must meet the target
-- All tests must pass with the native file-format engine only — no third-party database libraries
+- All tests must pass with the native dBASE III file-format engine only — no third-party database libraries
 
 ---
 
@@ -86,11 +86,11 @@ IsDeleted   INTEGER  DEFAULT 0
 | `XBASE-DB-002` | DatabaseName produces nested path | (Not supported; name is a single directory segment) | `XBASE_DATABASE_PATH_INVALID` |
 | `XBASE-DB-003` | Directory already exists, OverwriteIfExists false | Pre-create the directory | Returns `XBASE_DATABASE_EXISTS`; original directory unchanged |
 | `XBASE-DB-004` | Directory already exists, OverwriteIfExists true | Pre-create directory with known content | Returns `Success: true`; original content removed; new `_meta.json` and `_schema.json` present |
-| `XBASE-DB-005` | Name escapes `AiXBase/` via traversal | `DatabaseName: "../outside"` | Returns `XBASE_DATABASE_PATH_INVALID` |
+| `XBASE-DB-005` | Name escapes database root via traversal | `DatabaseName: "../outside"` | Returns `XBASE_DATABASE_PATH_INVALID` |
 | `XBASE-DB-006` | Name with spaces and Unicode | `DatabaseName: "my db 测试"` | Returns `Success: true`; directory created at path with spaces/Unicode |
 | `XBASE-DB-007` | Absolute path supplied as name | `DatabaseName: "C:/Windows/Temp/evil"` | Returns `XBASE_DATABASE_PATH_INVALID` |
 | `XBASE-DB-008` | Empty string name | `DatabaseName: ""` | Returns `XBASE_DATABASE_PATH_INVALID` |
-| `XBASE-DB-009` | Name exceeding 260 chars (Windows MAX_PATH) | 261-char name | Returns `XBASE_DATABASE_PATH_INVALID` or OS-level error wrapped in skill error envelope |
+| `XBASE-DB-009` | Name exceeding the OS-defined path length limit | Name that would produce a path exceeding the OS limit | Returns `XBASE_DATABASE_PATH_INVALID` or OS-level error wrapped in skill error envelope |
 | `XBASE-DB-010` | `_meta.json` has correct version field | Normal init | `_meta.json` parsed; `XBaseVersion` equals `1` |
 | `XBASE-DB-011` | `CreatedAt` is valid ISO-8601 | Normal init | `CreatedAt` matches `^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}` |
 | `XBASE-DB-012` | Concurrent init same name (race) | Two callers simultaneously | Exactly one succeeds; the other returns `XBASE_DATABASE_EXISTS` or serialises cleanly |
@@ -488,7 +488,7 @@ IsDeleted   INTEGER  DEFAULT 0
 | `XBASE-TXN-009` | Commit with no open transaction | Random name | Returns `XBASE_TRANSACTION_NOT_OPEN` |
 | `XBASE-TXN-010` | Commit empty transaction (no writes) | Begin + commit, no ops | `Success: true`; workspace directory removed |
 | `XBASE-TXN-011` | CommittedAt timestamp | Normal commit | `CommittedAt` ≥ `StartedAt` |
-| `XBASE-TXN-012` | Live file updated atomically | Commit of large insert | `File.Move` replaces each live file; no partial state observed by concurrent reader |
+| `XBASE-TXN-012` | Live file updated atomically | Commit of large insert | Same-volume atomic move replaces each live file; no partial state observed by concurrent reader |
 
 ---
 
@@ -524,11 +524,11 @@ IsDeleted   INTEGER  DEFAULT 0
 
 | ID | Description | Inputs | Expected Result |
 |---|---|---|---|
-| `XBASE-BAK-001` | Happy path | Open connection, no label | Directory in `AiXBase/backups/`; name matches `<db>_<timestamp>` pattern |
+| `XBASE-BAK-001` | Happy path | Open connection, no label | Directory in `{DatabaseRoot}/backups/`; name matches `<db>_<timestamp>` pattern |
 | `XBASE-BAK-002` | With label | `BackupLabel:"pre-migration"` | Directory name ends with `_pre-migration` |
 | `XBASE-BAK-003` | Backup is valid XBase directory | After backup | `_meta.json` and `_schema.json` present in backup; all `.dbf` files present |
 | `XBASE-BAK-004` | Backup during active transaction | Transaction open with uncommitted writes | Backup reflects committed live files only; transaction workspace excluded |
-| `XBASE-BAK-005` | `AiXBase/backups/` auto-created | Directory does not exist | Directory created; backup written |
+| `XBASE-BAK-005` | `{DatabaseRoot}/backups/` auto-created | Directory does not exist | Directory created; backup written |
 | `XBASE-BAK-006` | Two backups same second | Called twice within same second | Unique directory names (millisecond suffix or counter) |
 | `XBASE-BAK-007` | Connection invalid | Closed connection | Returns `XBASE_CONNECTION_INVALID` |
 | `XBASE-BAK-008` | Backup of XL-tier database | 1M-row database | Completes; backup file count and total size within 5% of source |
@@ -566,7 +566,7 @@ IsDeleted   INTEGER  DEFAULT 0
 
 ## Performance Benchmarks
 
-All benchmarks use a dedicated `AiXBase/perf/` database, freshly initialised. Median of 3 runs must meet target.
+All benchmarks use a dedicated `{DatabaseRoot}/perf/` database, freshly initialised. Median of 3 runs must meet target.
 
 ### Insert Throughput
 
@@ -660,13 +660,13 @@ All benchmarks use a dedicated `AiXBase/perf/` database, freshly initialised. Me
 
 | ID | Description | Attack Vector | Pass Criterion |
 |---|---|---|---|
-| `XBASE-SEC-001` | Path traversal in `DatabaseName` | `DatabaseName:"../outside"` | Returns `XBASE_DATABASE_PATH_INVALID`; no directory created outside `AiXBase/` |
+| `XBASE-SEC-001` | Path traversal in `DatabaseName` | `DatabaseName:"../outside"` | Returns `XBASE_DATABASE_PATH_INVALID`; no directory created outside `{DatabaseRoot}/` |
 | `XBASE-SEC-002` | Path traversal in `TableName` | `TableName:"../secret"` | Returns validation error; no file accessed outside database directory |
 | `XBASE-SEC-003` | Injection in `ColumnName` | `Name:"Id\"); DROP TABLE Users--"` | Returns `XBASE_SCHEMA_COLUMN_INVALID`; no unexpected change to `_schema.json` |
 | `XBASE-SEC-004` | Injection attempt in filter `Value` | `Value:"' OR '1'='1"` with `Operator:"="` | Treated as a literal string in in-memory comparison; no extra rows returned |
 | `XBASE-SEC-005` | Null byte in `DatabaseName` | `DatabaseName:"test\x00evil"` | Returns `XBASE_DATABASE_PATH_INVALID`; null byte rejected |
-| `XBASE-SEC-006` | Null byte in column value | `Value:"hello\x00world"` | Stored as JSON string with the null character; retrieved as-is; no truncation |
-| `XBASE-SEC-007` | Path traversal in `BackupPath` input | `BackupPath:"../../Windows/System32/evil"` | Returns error; no file written outside `AiXBase/` |
+| `XBASE-SEC-006` | Null byte in column value | `Value:"hello\x00world"` | Stored in the binary field bytes with the null character; retrieved as-is; no truncation |
+| `XBASE-SEC-007` | Path traversal in `BackupPath` input | `BackupPath:"../../system-dir/evil"` | Returns error; no file written outside `{DatabaseRoot}/` |
 | `XBASE-SEC-008` | Homoglyph attack in table name | `TableName:"Uѕerѕ"` (Cyrillic `ѕ`) | Treated as a different name from `Users`; no unintended access |
 | `XBASE-SEC-009` | Excessive `Limit` value | `Limit:2147483647` | Executes (returns all rows) or caps at a safe maximum; no integer overflow crash |
 | `XBASE-SEC-010` | Negative `Offset` | `Offset:-1` | Returns validation error or treated as 0; no crash |

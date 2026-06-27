@@ -1,15 +1,14 @@
 # Ticketing-Ticket-Assign
 
-Assign or reassign the owner of a ticket and emit an alert notification.
+Assign or reassign the owner of a ticket and emit an assignment notification.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to assign |
-| `AssignedToUserId` | int | yes | — | User to assign the ticket to |
-| `AssignedByUserId` | int | yes | — | User making the assignment |
-| `Comment` | string | no | — | Optional note recorded in history |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `TicketId` | int | yes | Ticket to assign |
+| `AssignToUserId` | int | yes | User to assign the ticket to |
+| `AssignedByUserId` | int | yes | User making the assignment |
 
 ## Outputs
 
@@ -24,26 +23,25 @@ Assign or reassign the owner of a ticket and emit an alert notification.
 
 ## Steps
 
-1. Validate ticket exists and `IsDeleted = 0`
-2. Validate `AssignedToUserId` exists and `IsActive = 1`
-3. `XBase-Transaction-Begin`
-4. `XBase-Record-Update` → `Tickets` set `AssignedToUserId`
-5. `XBase-Record-Insert` → `TicketHistory` (action: `Assigned`, `FromValue`: previous assignee, `ToValue`: new assignee display name)
-6. `XBase-Transaction-Commit`
-7. `Ticketing-Display-Alert` (event: `TICKET ASSIGNED`, detail: new assignee display name)
-8. Return `AssignedAt`
+1. Call `XBase-Record-Select` on the `Tickets` table with filter `Id = TicketId`; if no row is returned or `IsDeleted = 1`, return `TICKETING_TICKET_NOT_FOUND`; capture the current `AssignedToUserId` for use as `FromValue` in the history row
+2. Call `XBase-Record-Select` on the `Users` table with filter `Id = AssignToUserId`; if no row is returned, return `TICKETING_USER_NOT_FOUND`; if `IsActive = 0`, return `TICKETING_USER_INACTIVE`; capture the user's `DisplayName`
+3. Call `XBase-Record-Update` on the `Tickets` table with filter `Id = TicketId` setting `AssignedToUserId = AssignToUserId` and `UpdatedAt = now()`
+4. Call `XBase-Record-Insert` on the `TicketHistory` table with `TicketId`, `ChangedByUserId = AssignedByUserId`, `Action = 'Assigned'`, `FromValue = previous AssignedToUserId`, `ToValue = AssignToUserId`, `ChangedAt = now()`
+5. Call `Ticketing-Display-Alert` with `Event = 'TICKET ASSIGNED'`, `TicketNumber`, and `Detail` set to the display name of the newly assigned user
+6. Return `TicketId`, `AssignedToUserId = AssignToUserId`, `AssignedAt`
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is deleted |
-| `TICKETING_USER_NOT_FOUND` | Assignee user does not exist |
-| `TICKETING_USER_INACTIVE` | Assignee is deactivated |
+| Code | Meaning |
+|------|---------|
+| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is soft-deleted |
+| `TICKETING_USER_NOT_FOUND` | `AssignToUserId` does not exist |
+| `TICKETING_USER_INACTIVE` | `AssignToUserId` is deactivated |
+| `XBASE_CONNECTION_INVALID` | No active connection named `ticketing` |
 
 ## Dependencies
 
-- `XBase-Transaction-Begin/Commit`
+- `XBase-Record-Select`
 - `XBase-Record-Update`
 - `XBase-Record-Insert`
 - `Ticketing-Display-Alert`

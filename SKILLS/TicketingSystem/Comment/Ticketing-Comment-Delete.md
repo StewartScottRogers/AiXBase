@@ -1,13 +1,13 @@
 # Ticketing-Comment-Delete
 
-Soft-delete a comment by setting `IsDeleted = 1`.
+Soft-delete a comment.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `CommentId` | int | yes | — | Comment to delete |
-| `DeletedByUserId` | int | yes | — | Must match `AuthorUserId` or be an admin |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| CommentId | int | yes | Comment to delete |
+| DeletedByUserId | int | yes | User requesting deletion |
 
 ## Outputs
 
@@ -21,19 +21,19 @@ Soft-delete a comment by setting `IsDeleted = 1`.
 
 ## Steps
 
-1. Validate `CommentId` exists and `IsDeleted = 0`
-2. Validate `DeletedByUserId` is the comment author or has admin role
-3. `XBase-Record-Update` → `Comments` set `IsDeleted = 1`, `UpdatedAt`
-4. Return `DeletedAt`
+1. Call XBase-Record-Select on Comments where Id = CommentId and IsDeleted = 0; if no row found, return TICKETING_COMMENT_NOT_FOUND.
+2. Call XBase-Record-Delete (soft delete) on Comments for CommentId, setting IsDeleted = 1 and UpdatedAt = now().
+3. Call XBase-Record-Insert on TicketHistory with TicketId = comment.TicketId, ChangedByUserId = DeletedByUserId, Action = CommentDeleted, ChangedAt = now().
+4. Return DeletedAt (the value of UpdatedAt set in step 2).
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_COMMENT_NOT_FOUND` | Comment does not exist or is already deleted |
-| `TICKETING_COMMENT_DELETE_FORBIDDEN` | Requester is neither the author nor an admin |
+| Code | Meaning |
+|------|---------|
+| TICKETING_COMMENT_NOT_FOUND | CommentId does not exist or is already soft-deleted |
 
 ## Dependencies
 
-- `XBase-Record-Update`
-- `XBase-Query-Filter`
+- XBase-Record-Select
+- XBase-Record-Delete
+- XBase-Record-Insert

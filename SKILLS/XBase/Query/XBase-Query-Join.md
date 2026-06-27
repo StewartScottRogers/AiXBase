@@ -1,22 +1,16 @@
 # XBase-Query-Join
 
-Build a join specification object combining two tables on a key expression, for use
-with `XBase-Record-Select` or `XBase-Query-Execute`. No file I/O occurs — pure
-compilation.
-
-Join evaluation in XBase is performed entirely in memory: both tables are read from
-their `.dbf` files and matched row-by-row on the specified key expression by the
-executing skill.
+Compile and return a join specification object combining two tables on a key expression, for use with `XBase-Record-Select` or `XBase-Query-Execute`. No file I/O occurs — pure compilation step. Join evaluation is performed entirely in memory by the executing skill, which reads both tables' `.dbf` files and matches records row-by-row.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `JoinType` | string | no | `INNER` | `INNER` or `LEFT` |
-| `TargetTable` | string | yes | — | The table to join to the primary table |
-| `OnLeft` | string | yes | — | Column reference on the primary table, e.g. `Tickets.StatusId` |
-| `OnRight` | string | yes | — | Column reference on the joined table, e.g. `Statuses.Id` |
-| `Alias` | string | no | — | Optional prefix for joined table fields in the merged row |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `JoinType` | string | no | `INNER` or `LEFT` (default `INNER`) |
+| `TableName` | string | yes | The right-hand table to join |
+| `OnLeft` | string | yes | Column reference on the primary table, e.g. `Tickets.StatusId` |
+| `OnRight` | string | yes | Column reference on the joined table, e.g. `Statuses.Id` |
+| `Joins` | array | no | Array of additional join specification objects for chaining multiple joins |
 
 ## Outputs
 
@@ -24,29 +18,29 @@ executing skill.
 {
   "Success": true,
   "Join": {
-    "JoinType":    "INNER",
-    "TargetTable": "Statuses",
-    "OnLeft":      "Tickets.StatusId",
-    "OnRight":     "Statuses.Id",
-    "Alias":       null
+    "JoinType":  "INNER",
+    "TableName": "Statuses",
+    "OnLeft":    "Tickets.StatusId",
+    "OnRight":   "Statuses.Id"
   }
 }
 ```
 
 ## Steps
 
-1. Validate `JoinType` is `INNER` or `LEFT`; return `XBASE_JOIN_TYPE_INVALID` if not
-2. Validate `TargetTable` name — alphanumeric + underscore only
-3. Validate `OnLeft` and `OnRight` match the pattern `TableName.ColumnName` (both parts alphanumeric + underscore); return `XBASE_JOIN_REFERENCE_INVALID` if malformed
-4. Return the compiled join specification object
+1. Validate `JoinType` is `INNER` or `LEFT`; return `XBASE_JOIN_TYPE_INVALID` if present but neither; default to `INNER` if omitted.
+2. Validate `TableName` is a safe identifier: letters, numbers, and underscores only.
+3. Validate `OnLeft` and `OnRight` each match the pattern `Table.Column` where both the table part and the column part contain only letters, numbers, and underscores; return `XBASE_JOIN_REFERENCE_INVALID` if either is malformed or missing either part.
+4. If `Joins` is provided, validate each entry in the array by applying steps 1–3.
+5. Return the compiled join specification object.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
+| Code | Meaning |
+|------|---------|
 | `XBASE_JOIN_TYPE_INVALID` | `JoinType` is not `INNER` or `LEFT` |
-| `XBASE_JOIN_REFERENCE_INVALID` | `OnLeft` or `OnRight` is malformed |
+| `XBASE_JOIN_REFERENCE_INVALID` | `OnLeft` or `OnRight` does not match the `Table.Column` pattern |
 
 ## Dependencies
 
-None — pure compilation, no file access.
+- None — pure compilation step with no file access.

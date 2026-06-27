@@ -4,11 +4,11 @@ Update the body of an existing comment.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `CommentId` | int | yes | — | Comment to edit |
-| `EditedByUserId` | int | yes | — | Must match `AuthorUserId` or be an admin |
-| `Body` | string | yes | — | New comment text |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| CommentId | int | yes | Comment to edit |
+| EditorUserId | int | yes | User making the edit |
+| Body | string | yes | New comment text |
 
 ## Outputs
 
@@ -22,19 +22,19 @@ Update the body of an existing comment.
 
 ## Steps
 
-1. Validate `CommentId` exists and `IsDeleted = 0`
-2. Validate `EditedByUserId` is the comment author or has admin role
-3. `XBase-Record-Update` → `Comments` set `Body`, `UpdatedAt`
-4. Return `UpdatedAt`
+1. Call XBase-Record-Select on Comments where Id = CommentId and IsDeleted = 0; if no row found, return TICKETING_COMMENT_NOT_FOUND.
+2. Call XBase-Record-Update on Comments setting Body = Body, UpdatedAt = now() where Id = CommentId.
+3. Call XBase-Record-Insert on TicketHistory with TicketId = comment.TicketId, ChangedByUserId = EditorUserId, Action = CommentEdited, ChangedAt = now().
+4. Return UpdatedAt.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_COMMENT_NOT_FOUND` | Comment does not exist or is deleted |
-| `TICKETING_COMMENT_EDIT_FORBIDDEN` | Editor is neither the author nor an admin |
+| Code | Meaning |
+|------|---------|
+| TICKETING_COMMENT_NOT_FOUND | CommentId does not exist or is soft-deleted |
 
 ## Dependencies
 
-- `XBase-Record-Update`
-- `XBase-Query-Filter`
+- XBase-Record-Select
+- XBase-Record-Update
+- XBase-Record-Insert

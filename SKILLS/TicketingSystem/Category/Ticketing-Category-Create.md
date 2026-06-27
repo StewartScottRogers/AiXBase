@@ -1,13 +1,13 @@
 # Ticketing-Category-Create
 
-Define a category for classifying tickets (e.g. Bug, Feature, Question).
+Define a category for classifying tickets.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `Name` | string | yes | — | Category name |
-| `Description` | string | no | — | Optional explanation of when to use this category |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| Name | string | yes | Category name, e.g. Bug, Feature, Question |
+| Description | string | no | Optional explanation of when to use this category |
 
 ## Outputs
 
@@ -21,15 +21,17 @@ Define a category for classifying tickets (e.g. Bug, Feature, Question).
 
 ## Steps
 
-1. `XBase-Record-Insert` → `Categories`
-2. Return `CategoryId` and `Name`
+1. Call XBase-Record-Select on Categories where Name = Name; if a row is found, return TICKETING_CATEGORY_NAME_DUPLICATE.
+2. Call XBase-Record-Insert on Categories with Name and Description.
+3. Return CategoryId and Name.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_CATEGORY_NAME_DUPLICATE` | A category with that name already exists |
+| Code | Meaning |
+|------|---------|
+| TICKETING_CATEGORY_NAME_DUPLICATE | A category with that name already exists |
 
 ## Dependencies
 
-- `XBase-Record-Insert`
+- XBase-Record-Select
+- XBase-Record-Insert

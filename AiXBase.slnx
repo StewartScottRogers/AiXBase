@@ -2,6 +2,10 @@
   <Folder Name="/Solution Items/">
     <File Path="CLAUDE.md" />
     <File Path="Claude--dangerously-skip-permissions.cmd" />
+    <File Path="README.md" />
+    <File Path="manifest.json" />
+    <File Path="llms.txt" />
+    <File Path="docs/index.md" />
   </Folder>
   <Project Path="ProductRequirementsDocuments/ProductRequirementsDocuments.shproj" />
   <Project Path="SKILLS/SKILLS.shproj" Id="cea07ac3-00f8-4496-a96f-b7f9dcf8d2d4" />

@@ -1,15 +1,15 @@
 # Ticketing-Attachment-Add
 
-Associate a file reference with a ticket and record its metadata.
+Associate a file reference with a ticket. Does not copy or move the file; the caller is responsible for physically placing the file at FilePath before calling this skill.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to attach the file to |
-| `UploadedByUserId` | int | yes | — | User adding the attachment |
-| `FileName` | string | yes | — | Original file name |
-| `FilePath` | string | yes | — | Path relative to `AiXBase/attachments/` where the file is stored |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| TicketId | int | yes | Ticket to attach the file to |
+| FileName | string | yes | Original file name |
+| FilePath | string | yes | Path to the file (relative to {DatabaseRoot}/attachments/ or absolute) |
+| UploadedByUserId | int | yes | User adding the attachment |
 
 ## Outputs
 
@@ -23,19 +23,20 @@ Associate a file reference with a ticket and record its metadata.
 
 ## Steps
 
-1. Validate `TicketId` exists and `IsDeleted = 0`
-2. Validate `UploadedByUserId` exists and `IsActive = 1`
-3. Verify the physical file exists at the resolved `FilePath`
-4. `XBase-Record-Insert` → `Attachments`
-5. Return `AttachmentId` and `UploadedAt`
+1. Call XBase-Record-Select on Tickets where Id = TicketId and IsDeleted = 0; if no row found, return TICKETING_TICKET_NOT_FOUND.
+2. Call XBase-Record-Select on Users where Id = UploadedByUserId and IsActive = 1; if no active row found, return TICKETING_USER_NOT_FOUND.
+3. Call XBase-Record-Insert on Attachments with TicketId, FileName, FilePath, UploadedByUserId, UploadedAt = now(), IsDeleted = 0.
+4. Call XBase-Record-Insert on TicketHistory with TicketId, ChangedByUserId = UploadedByUserId, Action = AttachmentAdded, ChangedAt = now().
+5. Return AttachmentId and UploadedAt.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist |
-| `TICKETING_ATTACHMENT_FILE_NOT_FOUND` | Physical file not found at `FilePath` |
+| Code | Meaning |
+|------|---------|
+| TICKETING_TICKET_NOT_FOUND | Ticket does not exist or is soft-deleted |
+| TICKETING_USER_NOT_FOUND | UploadedByUserId does not exist or is inactive |
 
 ## Dependencies
 
-- `XBase-Record-Insert`
+- XBase-Record-Select
+- XBase-Record-Insert

@@ -4,11 +4,10 @@ Remove a tag from a ticket. Uses a hard delete since tags have no audit requirem
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to untag |
-| `Tag` | string | yes | — | Tag text to remove (matched after normalize: trim + lowercase) |
-| `RemovedByUserId` | int | yes | — | User removing the tag |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| TicketId | int | yes | Ticket to remove the tag from |
+| TagName | string | yes | Tag value to remove |
 
 ## Outputs
 
@@ -16,27 +15,23 @@ Remove a tag from a ticket. Uses a hard delete since tags have no audit requirem
 {
   "Success": true,
   "TicketId": 42,
-  "Tag": "backend",
-  "Removed": true
+  "TagName": "backend"
 }
 ```
 
-`Removed` is `false` if the tag was not present (idempotent — not an error).
-
 ## Steps
 
-1. Validate `TicketId` exists and `IsDeleted = 0`
-2. Normalize `Tag`
-3. `XBase-Record-Delete` (hard delete) → `TicketTags` where `TicketId` and `Tag` match
-4. Return `Removed: true` if any rows were affected, `false` if none
+1. Call XBase-Record-Select on Tags where TicketId = TicketId and Name = TagName; if no row found, return XBASE_RECORD_CONSTRAINT_VIOLATION.
+2. Call XBase-Record-Delete (hard delete) on Tags for the TagId found in step 1.
+3. Return Success.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is deleted |
+| Code | Meaning |
+|------|---------|
+| XBASE_RECORD_CONSTRAINT_VIOLATION | No tag matching TagName found on this ticket |
 
 ## Dependencies
 
-- `XBase-Record-Delete`
-- `XBase-Query-Filter`
+- XBase-Record-Select
+- XBase-Record-Delete

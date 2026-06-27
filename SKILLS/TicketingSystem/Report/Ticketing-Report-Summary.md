@@ -4,9 +4,9 @@ Produce aggregate counts grouped by status, priority, and assignee for a quick d
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `IncludeDeleted` | bool | no | `false` | Include soft-deleted tickets in counts |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| ConnectionName | string | no | XBase connection name (default: "ticketing") |
 
 ## Outputs
 
@@ -21,24 +21,29 @@ Produce aggregate counts grouped by status, priority, and assignee for a quick d
     { "Priority": "Critical", "Count": 2 }
   ],
   "ByAssignee": [
-    { "Assignee": "Bob", "Count": 8 }
+    { "Assignee": "Alice Smith", "Count": 8 }
   ],
-  "GeneratedAt": "<ISO-8601>"
+  "TotalOpen": 19,
+  "TotalClosed": 7,
+  "GeneratedAt": "2026-06-27T10:00:00Z"
 }
 ```
 
 ## Steps
 
-1. `XBase-Query-Aggregate` (COUNT by `StatusId`, joined to `Statuses.Name`)
-2. `XBase-Query-Aggregate` (COUNT by `PriorityId`, joined to `Priorities.Name`)
-3. `XBase-Query-Aggregate` (COUNT by `AssignedToUserId`, joined to `Users.DisplayName`)
-4. Assemble and return the three result arrays
+1. Call XBase-Query-Aggregate with Count grouped by StatusId on the Tickets table; call XBase-Query-Join with Statuses to resolve each StatusId to its Name; produce the ByStatus array.
+2. Call XBase-Query-Aggregate with Count grouped by PriorityId on the Tickets table; call XBase-Query-Join with Priorities to resolve each PriorityId to its Name; produce the ByPriority array.
+3. Call XBase-Query-Aggregate with Count grouped by AssignedToUserId on the Tickets table; call XBase-Query-Join with Users to resolve each AssignedToUserId to its DisplayName; produce the ByAssignee array.
+4. Calculate TotalOpen as the sum of counts for all non-terminal statuses; calculate TotalClosed as the sum of counts for terminal statuses (IsTerminal = 1).
+5. Return ByStatus, ByPriority, ByAssignee, TotalOpen, TotalClosed, and GeneratedAt = now().
 
 ## Error Codes
 
-None beyond standard XBase connection errors.
+| Code | Meaning |
+|------|---------|
+| XBASE_CONNECTION_INVALID | No active XBase connection named "ticketing" |
 
 ## Dependencies
 
-- `XBase-Query-Aggregate`
-- `XBase-Query-Join`
+- XBase-Query-Aggregate
+- XBase-Query-Join

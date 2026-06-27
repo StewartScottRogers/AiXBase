@@ -1,90 +1,50 @@
 # XBase-Runtime-Detect
 
-Detect the execution environment and return the runtime context used by all subsequent XBase skills to generate platform-appropriate file system scripts. Call this skill once at the start of any session before calling any other XBase skill.
+Verify that the AI agent's execution environment supports the abstract file system primitives required by XBase skills, and confirm write access to the intended database root.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `PreferredRuntime` | string | no | `""` | Force a specific runtime: `"powershell"`, `"bash"`, or `"python"`. Leave empty for auto-detect. |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| DatabaseRoot | string | yes | The intended path where XBase database directories will be stored |
+| VerifyWriteAccess | bool | no (default true) | Perform write and read test operations inside `DatabaseRoot` to confirm the agent can perform file I/O |
 
 ## Outputs
 
 ```json
 {
   "Success": true,
-  "Runtime": "powershell",
-  "Version": "7.4.2",
-  "Capabilities": ["mkdir", "Get-Content", "Set-Content", "Add-Content", "Move-Item", "Remove-Item", "Copy-Item", "Test-Path"],
-  "ScriptExtension": ".ps1",
-  "PathSeparator": "\\",
-  "LineEnding": "\r\n",
-  "Note": "Auto-detected Windows PowerShell 7. All subsequent skills will generate .ps1 scripts."
+  "EnvironmentReady": true,
+  "DatabaseRoot": "/absolute/path/to/databases",
+  "CanCreateDirectory": true,
+  "CanReadBinaryFile": true,
+  "CanWriteBinaryFile": true,
+  "CanMoveFileAtomic": true,
+  "CanCopyDirectory": true,
+  "Issues": [],
+  "DetectedAt": "2026-06-27T14:00:00Z"
 }
 ```
 
 ## Steps
 
-1. If `PreferredRuntime` is supplied and not empty, skip detection and jump to step 5 with `PreferredRuntime` as the chosen runtime.
-
-2. **Probe for PowerShell**: check whether the current shell has `$PSVersionTable` in scope or whether `pwsh` / `powershell.exe` is reachable on PATH.
-   - On Windows (Visual Studio terminal, Windows Terminal, CMD): `powershell.exe` is always present; prefer `pwsh` (PowerShell 7+) if available, otherwise fall back to `powershell` (Windows PS 5).
-   - If found, set `Runtime = "powershell"` and capture version from `$PSVersionTable.PSVersion`.
-
-3. **Probe for bash/zsh** (only if step 2 found nothing): check `$BASH_VERSION`, `$ZSH_VERSION`, or `bash --version` / `zsh --version` on PATH.
-   - If found, set `Runtime = "bash"` and capture version string from the version flag.
-
-4. **Fall back to Python** (only if steps 2–3 found nothing): check `python3 --version`, then `python --version`.
-   - Accept Python 3.6 or higher only; reject Python 2.
-   - If found, set `Runtime = "python"` and capture version string.
-   - If Python is also absent, return `XBASE_RUNTIME_NOT_FOUND`.
-
-5. Set the runtime-specific values:
-
-   | Runtime | `ScriptExtension` | `PathSeparator` | `LineEnding` | Capabilities |
-   |---|---|---|---|---|
-   | `powershell` | `.ps1` | `\` | `\r\n` | `New-Item`, `Get-Content`, `Set-Content`, `Add-Content`, `Move-Item`, `Remove-Item -Recurse`, `Copy-Item -Recurse`, `Test-Path`, `ConvertFrom-Json`, `ConvertTo-Json` |
-   | `bash` | `.sh` | `/` | `\n` | `mkdir -p`, `cat`, `tee`, `mv`, `rm -rf`, `cp -r`, `[[ -e ]]`, `python3 -c json` for JSON parsing |
-   | `python` | `.py` | `/` on non-Windows; `\` on Windows | platform | `os`, `os.path`, `shutil`, `json`, `pathlib` (stdlib only) |
-
-6. Store the runtime context as `XBaseRuntimeContext` in the current session so that all subsequent XBase skills can reference it without re-running detection.
-
-7. Return the full output object.
+1. Resolve `DatabaseRoot` to an absolute path. Record this absolute path as the canonical value of `DatabaseRoot` in the output.
+2. Check whether `DatabaseRoot` exists using `directory-exists`. If it does not exist, attempt `create-directory(DatabaseRoot)`. Record the outcome in `CanCreateDirectory`. If the directory cannot be created, add "Cannot create database root directory" to `Issues` and return `XBASE_RUNTIME_ROOT_INACCESSIBLE`.
+3. If `VerifyWriteAccess` is true: write a small text payload to `{DatabaseRoot}/_xbase_env_check.tmp` using `write-text-file`; read it back using `read-text-file`; then delete the file. If the write operation fails, add "Write access denied on DatabaseRoot" to `Issues`. If the read-back fails after a successful write, add "Read-back failed after write" to `Issues`.
+4. Verify binary file capability: write a 4-byte binary payload to `{DatabaseRoot}/_xbase_bin_check.tmp` using `write-binary-file`; read it back using `read-binary-file`; confirm the bytes match the written payload; then delete the file. Record the write result in `CanWriteBinaryFile` and the read result in `CanReadBinaryFile`. If either operation fails, add "Binary file I/O not supported by agent tools" to `Issues`.
+5. Verify atomic move capability: write a small text file to `{DatabaseRoot}/_xbase_move_src.tmp`; move it to `{DatabaseRoot}/_xbase_move_dst.tmp` using `move-file-atomic`; confirm the destination file now exists; then delete it. Record the result in `CanMoveFileAtomic`. If the move fails, add "Atomic file move not supported by agent tools" to `Issues`.
+6. Verify directory copy capability: create a temporary directory at `{DatabaseRoot}/_xbase_copy_src.tmp/` containing one small file; copy the entire directory to `{DatabaseRoot}/_xbase_copy_dst.tmp/` using `copy-directory-recursive`; confirm the copy exists; then delete both directories. Record the result in `CanCopyDirectory`. If the copy fails, add "Directory copy not supported by agent tools" to `Issues`.
+7. Set `EnvironmentReady` to true if `Issues` is empty; set it to false otherwise.
+8. Return all capability flags, `Issues`, `DatabaseRoot` (absolute path), and `DetectedAt` set to the current ISO-8601 timestamp.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|\
-| `XBASE_RUNTIME_NOT_FOUND` | No supported runtime (PowerShell, bash, Python 3) is available on PATH |
-| `XBASE_RUNTIME_PYTHON_VERSION` | Python is present but version is below 3.6 |
-| `XBASE_RUNTIME_UNKNOWN` | `PreferredRuntime` was supplied but is not one of `powershell`, `bash`, `python` |
-
-## Script Templates
-
-### PowerShell — verify detection
-
-```powershell
-# Generated by XBase-Runtime-Detect
-$rt = $PSVersionTable.PSVersion.ToString()
-Write-Output "Runtime: powershell $rt"
-```
-
-### bash — verify detection
-
-```bash
-#!/usr/bin/env bash
-# Generated by XBase-Runtime-Detect
-echo "Runtime: bash $BASH_VERSION"
-```
-
-### Python — verify detection
-
-```python
-# Generated by XBase-Runtime-Detect
-import sys
-print(f"Runtime: python {sys.version.split()[0]}")
-```
+| Code | Meaning |
+|------|---------|
+| `XBASE_RUNTIME_ROOT_INACCESSIBLE` | `DatabaseRoot` cannot be created or written — the agent lacks access to the target path |
+| `XBASE_RUNTIME_BINARY_IO_FAILED` | The agent's tools do not support binary file read/write, which is required for all DBF and NDX operations |
 
 ## Dependencies
 
-None — this is the root skill for all XBase operations.
+- Writable local file system accessible to the AI agent's tools
+- No other XBase skills are required; this skill may be called before any database exists

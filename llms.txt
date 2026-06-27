@@ -1,0 +1,24 @@
+# AiXBase
+
+> AI Skills distribution for file-backed database management and helpdesk ticketing.
+> All operations are plain markdown skill files; no runtime, SDK, or build step required.
+
+## Key Resources
+
+- [Skill Manifest](manifest.json) — machine-readable catalog of all skills and bundles
+- [XBase Wiki](SKILLS/XBase/XBase.wiki.md) — database engine skill reference
+- [Ticketing Wiki](SKILLS/TicketingSystem/TicketingSystem.wiki.md) — ticketing system skill reference
+- [Latest Release](https://github.com/StewartScottRogers/AiXBase/releases/latest) — versioned ZIP download
+
+## Install Contract
+
+Download the latest `skills.zip` from Releases. Extract it. Place the markdown files where your AI harness loads skill definitions. No other steps required.
+
+## Bundles
+
+- **XBase** (34 skills, 9 groups) — file-backed database engine using dBASE III binary format. No external database engine required.
+- **TicketingSystem** (35 skills, 9 groups) — full helpdesk ticketing system built on XBase. Depends on XBase bundle.
+
+## Harness Compatibility
+
+Any AI agent or runtime that can read a markdown file and follow numbered steps can use these skills. No specific AI platform, operating system, or programming language is required.

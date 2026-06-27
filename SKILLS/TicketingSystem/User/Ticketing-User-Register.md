@@ -4,12 +4,12 @@ Create a user account in the ticketing store.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `Username` | string | yes | — | Unique login name (alphanumeric + underscore, 3–50 chars) |
-| `DisplayName` | string | yes | — | Human-readable name shown in the UI |
-| `Email` | string | yes | — | Email address |
-| `CredentialHash` | string | yes | — | Pre-hashed credential; never accept plaintext |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| Username | string | yes | Unique login name |
+| DisplayName | string | no | Human-readable name shown in the UI |
+| Email | string | no | Email address |
+| Password | string | yes | Plaintext password; the skill hashes it internally before storing; never persisted or returned |
 
 ## Outputs
 
@@ -18,25 +18,26 @@ Create a user account in the ticketing store.
   "Success": true,
   "UserId": 3,
   "Username": "alice",
-  "CreatedAt": "<ISO-8601>"
+  "CreatedAt": "2026-06-27T10:00:00Z"
 }
 ```
 
 ## Steps
 
-1. Validate `Username` format
-2. Check for an existing user with that `Username`; if found, return `TICKETING_USER_USERNAME_DUPLICATE`
-3. `XBase-Record-Insert` → `Users` with `IsActive = 1`
-4. Return `UserId`, `Username`, `CreatedAt`
+1. Call XBase-Record-Select on the Users table filtering by Username to verify uniqueness; if a matching row exists, return TICKETING_USER_USERNAME_DUPLICATE.
+2. Compute a secure one-way hash of Password; do not store the plaintext value.
+3. Call XBase-Record-Insert on Users with Username, DisplayName, Email, CredentialHash (from step 2), IsActive = 1, and CreatedAt = now().
+4. Return UserId, Username, and CreatedAt.
+5. Never include Password or CredentialHash in outputs.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_USER_USERNAME_DUPLICATE` | Username is already registered |
-| `TICKETING_USER_USERNAME_INVALID` | Username format does not meet requirements |
+| Code | Meaning |
+|------|---------|
+| TICKETING_USER_USERNAME_DUPLICATE | Username is already registered |
+| XBASE_CONNECTION_INVALID | No active XBase connection named "ticketing" |
 
 ## Dependencies
 
-- `XBase-Record-Insert`
-- `XBase-Record-Select`
+- XBase-Record-Select
+- XBase-Record-Insert

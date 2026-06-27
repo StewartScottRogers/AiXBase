@@ -1,86 +1,40 @@
 # XBase-Admin-Execute
 
-Execute any XBase database operation described in natural language.
+Execute any named XBase skill dynamically by passing its name and inputs as structured data.
 
-## Usage
+## Inputs
 
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| SkillName | string | yes | The exact name of the XBase skill to invoke (e.g. `XBase-Record-Insert`) |
+| Inputs | object | yes | Key-value pairs to pass as inputs to the named skill |
+| ConnectionName | string | no | A pre-validated connection alias to inject into the invoked skill's inputs if the skill accepts one |
+
+## Outputs
+
+```json
+{
+  "Success": true,
+  "SkillName": "XBase-Record-Insert",
+  "Result": { "InsertedCount": 1, "LastInsertedId": 42 },
+  "ExecutedAt": "2026-06-27T14:00:00Z"
+}
 ```
-/execute <plain-English description of what you want to do>
-```
-
-Provide a plain-English description. This command parses the intent, collects any missing parameters, maps the request to the appropriate XBase skill(s), executes them, and returns a human-readable summary.
-
----
-
-## Intent-to-Skill Map
-
-| If the request mentions… | Invoke… |
-|---|---|
-| create / initialise / new database | `XBase-Database-Initialize` |
-| connect / open / use database | `XBase-Database-Connect` |
-| close / disconnect | `XBase-Database-Disconnect` |
-| drop / delete / remove database | `XBase-Database-Drop` |
-| create / add table | `XBase-Schema-TableCreate` |
-| alter / add column | `XBase-Schema-TableAlter` |
-| drop / remove table | `XBase-Schema-TableDrop` |
-| list / show tables | `XBase-Schema-TableList` |
-| list / show columns | `XBase-Schema-ColumnList` |
-| insert / add / create record(s) | `XBase-Record-Insert` |
-| select / query / show / find / get records | `XBase-Record-Select` + `XBase-Query-Filter` + `XBase-Query-Sort` |
-| update / change / set record(s) | `XBase-Record-Update` |
-| delete / remove / soft-delete record(s) | `XBase-Record-Delete` |
-| upsert / insert-or-update | `XBase-Record-Upsert` |
-| create / add index | `XBase-Index-Create` |
-| drop / remove index | `XBase-Index-Drop` |
-| rebuild index | `XBase-Index-Rebuild` |
-| list / show indexes | `XBase-Index-List` |
-| begin / start transaction | `XBase-Transaction-Begin` |
-| commit transaction | `XBase-Transaction-Commit` |
-| rollback / undo transaction | `XBase-Transaction-Rollback` |
-| savepoint | `XBase-Transaction-Savepoint` |
-| backup | `XBase-Backup-Create` |
-| restore backup | `XBase-Backup-Restore` |
-| verify backup | `XBase-Backup-Verify` |
-
----
 
 ## Steps
 
-1. Read the user's natural-language request
-2. Identify the primary operation type using the Intent-to-Skill Map above
-3. Extract parameters from the request (DatabaseName, TableName, column definitions, filter values, etc.)
-4. If any **required** parameter is missing, ask the user for it before proceeding
-5. If the operation is **destructive** (Drop, HardDelete, Restore, OverwriteIfExists), confirm with the user unless the request already contains a confirmation phrase such as "I'm sure", "yes", "confirm", or `ConfirmDrop: true`
-6. Execute the identified skill(s) in the correct order (e.g. Initialize then Connect; Begin then Insert then Commit)
-7. Present the result as a plain-text summary:
-   - On success: what was done, key output values (e.g. `InsertedCount`, `DatabasePath`, `BackupPath`)
-   - On error: the `ErrorCode` and `Message` from the skill's error envelope, with a plain-English explanation and suggested next step
+1. Validate that `SkillName` is a recognized XBase or Ticketing skill name by checking it against the known skill catalog. If the name is not found, return `XBASE_ADMIN_SKILL_NOT_FOUND`.
+2. If `ConnectionName` is supplied, verify that it is registered in the current session. If the named skill does not accept a `ConnectionName` input, emit a warning in the output but continue.
+3. Merge `ConnectionName` (if supplied) into the `Inputs` object, then invoke the named skill with the merged inputs.
+4. Capture the output returned by the invoked skill. Return it under `Result` along with `SkillName` and `ExecutedAt` set to the current ISO-8601 timestamp.
 
----
+## Error Codes
 
-## Parameter Extraction Examples
-
-| Request | Extracted parameters |
-|---|---|
-| `create a database called "inventory"` | `DatabaseName:"inventory"` |
-| `show all products where price > 50 sorted by name` | `TableName:"Products"`, Filter `Price > 50`, Sort `Name ASC` |
-| `insert SKU=P001, Label=Widget, Price=9.99` | `Rows:[{SKU:"P001",Label:"Widget",Price:9.99}]` |
-| `backup the inventory database with label pre-migration` | `DatabaseName:"inventory"`, `BackupLabel:"pre-migration"` |
-| `drop table OldLogs — I'm sure` | `TableName:"OldLogs"`, `ConfirmDrop:true` |
-
----
-
-## Error Handling
-
-Surface the XBase error code and message with plain-English context:
-
-```
-Error: XBASE_DATABASE_EXISTS
-The database "inventory" already exists. To overwrite it, add "overwrite" to your request.
-```
-
----
+| Code | Meaning |
+|------|---------|
+| `XBASE_ADMIN_SKILL_NOT_FOUND` | `SkillName` does not match any known skill in the catalog |
+| `XBASE_CONNECTION_INVALID` | `ConnectionName` was supplied but is not registered in the current session |
 
 ## Dependencies
 
-All 28 XBase skills. This command performs no direct file I/O.
+- All XBase skills (any skill may be invoked depending on the value of `SkillName`)

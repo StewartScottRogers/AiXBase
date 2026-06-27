@@ -4,14 +4,13 @@ Search and list tickets with filter, sort, and pagination.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `Filters` | array | no | `[]` | Array of `{ Field, Operator, Value }` filter specs |
-| `SortBy` | string | no | `CreatedAt` | Column to sort by |
-| `SortDirection` | string | no | `DESC` | `ASC` or `DESC` |
-| `Page` | int | no | `1` | 1-based page number |
-| `PageSize` | int | no | `25` | Rows per page, max `200` |
-| `IncludeDeleted` | bool | no | `false` | Include soft-deleted tickets |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `Filters` | array | no | Array of `{ Field, Operator, Value }` filter objects; omit or pass empty to return all tickets |
+| `SortBy` | string | no | Column to sort by; default `CreatedAt` |
+| `SortDirection` | string | no | `ASC` or `DESC`; default `DESC` |
+| `Page` | int | no | 1-based page number; default `1` |
+| `PageSize` | int | no | Rows per page; default `25`, max `200` |
 
 ## Outputs
 
@@ -26,7 +25,7 @@ Search and list tickets with filter, sort, and pagination.
       "Status": "Open",
       "Priority": "High",
       "AssignedTo": "Bob",
-      "CreatedAt": "..."
+      "CreatedAt": "<ISO-8601>"
     }
   ],
   "TotalCount": 137,
@@ -37,17 +36,18 @@ Search and list tickets with filter, sort, and pagination.
 
 ## Steps
 
-1. Build filter expressions using `XBase-Query-Filter` for each entry in `Filters`
-2. Build sort using `XBase-Query-Sort`
-3. Build joins to `Statuses`, `Priorities`, `Users` (assignee) via `XBase-Query-Join`
-4. `XBase-Record-Select` → `Tickets` with filters, joins, sort, LIMIT/OFFSET from `Page`/`PageSize`
-5. Return paged results and `TotalCount`
+1. For each entry in `Filters`, call `XBase-Query-Filter` with the specified `Field`, `Operator`, and `Value` to build the composite filter expression
+2. Call `XBase-Query-Sort` with `SortBy` and `SortDirection`
+3. Call `XBase-Query-Join` to join the `Tickets` table to `Statuses`, `Priorities`, and `Users` (assignee) as needed for display fields
+4. Call `XBase-Record-Select` on the `Tickets` table with the compiled filter, sort, joins, `Limit = PageSize`, and `Offset = (Page - 1) * PageSize`
+5. Return `Tickets` array, `TotalCount`, `Page`, `PageSize`
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_QUERY_PAGE_SIZE_EXCEEDED` | `PageSize` > 200 |
+| Code | Meaning |
+|------|---------|
+| `TICKETING_QUERY_PAGE_SIZE_EXCEEDED` | `PageSize` is greater than 200 |
+| `XBASE_CONNECTION_INVALID` | No active connection named `ticketing` |
 
 ## Dependencies
 

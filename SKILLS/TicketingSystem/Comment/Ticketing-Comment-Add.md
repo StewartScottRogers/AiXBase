@@ -4,11 +4,11 @@ Append a comment to a ticket.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to comment on |
-| `AuthorUserId` | int | yes | — | User posting the comment |
-| `Body` | string | yes | — | Comment text |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| TicketId | int | yes | Ticket to comment on |
+| AuthorUserId | int | yes | User posting the comment |
+| Body | string | yes | Comment text (NOT NULL) |
 
 ## Outputs
 
@@ -22,18 +22,23 @@ Append a comment to a ticket.
 
 ## Steps
 
-1. Validate `TicketId` exists and `IsDeleted = 0`
-2. Validate `AuthorUserId` exists and `IsActive = 1`
-3. `XBase-Record-Insert` → `Comments`
-4. Return `CommentId` and `CreatedAt`
+1. Call XBase-Record-Select on Tickets where Id = TicketId and IsDeleted = 0; if no row found, return TICKETING_TICKET_NOT_FOUND.
+2. Call XBase-Record-Select on Users where Id = AuthorUserId; if no row found, return TICKETING_USER_NOT_FOUND; if row found but IsActive = 0, return TICKETING_USER_INACTIVE.
+3. Call XBase-Record-Insert on Comments with TicketId, AuthorUserId, Body, CreatedAt = now(), UpdatedAt = now(), IsDeleted = 0.
+4. Call XBase-Record-Update on Tickets setting UpdatedAt = now() where Id = TicketId.
+5. Call XBase-Record-Insert on TicketHistory with TicketId, ChangedByUserId = AuthorUserId, Action = CommentAdded, ChangedAt = now().
+6. Return CommentId and CreatedAt.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is deleted |
-| `TICKETING_USER_NOT_FOUND` | Author user does not exist |
+| Code | Meaning |
+|------|---------|
+| TICKETING_TICKET_NOT_FOUND | Ticket does not exist or is soft-deleted |
+| TICKETING_USER_NOT_FOUND | AuthorUserId does not exist |
+| TICKETING_USER_INACTIVE | Author user is deactivated |
 
 ## Dependencies
 
-- `XBase-Record-Insert`
+- XBase-Record-Select
+- XBase-Record-Insert
+- XBase-Record-Update

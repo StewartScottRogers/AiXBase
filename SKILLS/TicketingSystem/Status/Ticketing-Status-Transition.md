@@ -1,15 +1,15 @@
 # Ticketing-Status-Transition
 
-Move a ticket from one status to another, validating allowed transitions. Fires `Ticketing-Display-Complete` when the destination is terminal.
+Move a ticket from one status to another, validating allowed transitions. Fires Ticketing-Display-Complete when the destination status is terminal.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to transition |
-| `ToStatusId` | int | yes | — | Target status |
-| `ChangedByUserId` | int | yes | — | User making the change |
-| `Comment` | string | no | — | Note recorded in history |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| TicketId | int | yes | Ticket to transition |
+| ToStatusId | int | yes | Target status |
+| ChangedByUserId | int | yes | User making the change |
+| Comment | string | no | Optional note to append as a comment |
 
 ## Outputs
 
@@ -25,26 +25,29 @@ Move a ticket from one status to another, validating allowed transitions. Fires 
 
 ## Steps
 
-1. Fetch current `StatusId` from the ticket
-2. Validate the transition exists in `StatusTransitions(FromStatusId, ToStatusId)` — bypass if user has admin role
-3. `XBase-Transaction-Begin`
-4. `XBase-Record-Update` → `Tickets` set `StatusId = ToStatusId`
-5. `XBase-Record-Insert` → `TicketHistory` (action: `StatusChanged`, `FromValue`, `ToValue`)
-6. `XBase-Transaction-Commit`
-7. If `ToStatus.IsTerminal = 1`: call `Ticketing-Display-Complete`
-8. Return `FromStatus`, `ToStatus`, `TransitionedAt`
+1. Call XBase-Record-Select on Tickets where Id = TicketId and IsDeleted = 0 to fetch the current StatusId; if no row found, return TICKETING_TICKET_NOT_FOUND.
+2. Call XBase-Record-Select on StatusTransitions where FromStatusId = current StatusId and ToStatusId = ToStatusId; if no matching row found, return TICKETING_STATUS_TRANSITION_INVALID.
+3. Call XBase-Transaction-Begin.
+4. Call XBase-Record-Update on Tickets setting StatusId = ToStatusId, UpdatedAt = now() where Id = TicketId.
+5. Call XBase-Record-Insert on TicketHistory with TicketId, ChangedByUserId, Action = StatusChanged, FromValue = old status Name, ToValue = new status Name, ChangedAt = now().
+6. If Comment is provided: call Ticketing-Comment-Add with TicketId, AuthorUserId = ChangedByUserId, Body = Comment.
+7. Call XBase-Transaction-Commit.
+8. Call XBase-Record-Select on Statuses where Id = ToStatusId; if IsTerminal = 1, call Ticketing-Display-Complete.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is deleted |
-| `TICKETING_STATUS_NOT_FOUND` | `ToStatusId` does not exist |
-| `TICKETING_STATUS_TRANSITION_INVALID` | Transition not permitted for non-admin users |
+| Code | Meaning |
+|------|---------|
+| TICKETING_TICKET_NOT_FOUND | Ticket does not exist or is soft-deleted |
+| TICKETING_STATUS_NOT_FOUND | ToStatusId does not exist |
+| TICKETING_STATUS_TRANSITION_INVALID | No allowed transition from the current status to ToStatusId |
 
 ## Dependencies
 
-- `XBase-Transaction-Begin/Commit`
-- `XBase-Record-Update`
-- `XBase-Record-Insert`
-- `Ticketing-Display-Complete` — called on terminal transitions
+- XBase-Record-Select
+- XBase-Record-Update
+- XBase-Record-Insert
+- XBase-Transaction-Begin
+- XBase-Transaction-Commit
+- Ticketing-Comment-Add
+- Ticketing-Display-Complete

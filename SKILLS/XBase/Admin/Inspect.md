@@ -1,84 +1,51 @@
 # XBase-Admin-Inspect
 
-Inspect and display the current state of one or all XBase databases.
+Inspect the structural health of a connected database: report tables, record counts, index counts, active transaction workspaces, and any detected anomalies.
 
-## Usage
+## Inputs
 
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| ConnectionName | string | yes | The connection alias for the database to inspect |
+| IncludeRecordCounts | bool | no (default true) | Read each `.dbf` file and count active and deleted records |
+| IncludeIndexInfo | bool | no (default true) | Count `.ndx` files for each table and check for orphans or missing files |
+| IncludeTransactions | bool | no (default true) | List active transaction workspace directories |
+
+## Outputs
+
+```json
+{
+  "Success": true,
+  "DatabaseName": "inventory",
+  "Tables": [
+    { "Name": "Products", "RecordCount": 4210, "DeletedCount": 12, "IndexCount": 2 }
+  ],
+  "ActiveTransactions": ["_txn_batch-import"],
+  "Anomalies": [],
+  "InspectedAt": "2026-06-27T14:00:00Z"
+}
 ```
-/inspect                          — survey all databases
-/inspect <DatabaseName>           — detailed view of one database
-```
-
----
 
 ## Steps
 
-### Mode 1 — Survey (no DatabaseName)
+1. Validate `ConnectionName`. If it is not registered in the current session, return `XBASE_CONNECTION_INVALID`.
+2. Read `_meta.json` and `_schema.json` from the database directory. If either file is missing or unparseable, return `XBASE_DATABASE_CORRUPT`.
+3. For each table defined in `_schema.json`:
+   a. Verify that `{TableName}.dbf` exists in the database directory. If the file is absent, record an anomaly: "Missing .dbf for table {TableName}".
+   b. If `IncludeRecordCounts` is true: read the DBF header; bytes 4–7 contain the declared record count as a uint32 little-endian integer. Scan each record in the file: records with deletion flag `0x20` are active; records with flag `0x2A` are deleted. If the header's declared count does not match the scanned total, record an anomaly describing the mismatch with the table name and both counts.
+   c. If `IncludeIndexInfo` is true: count the `.ndx` files present in the database directory whose names begin with `{TableName}.`. For each index entry in `_schema.json` that belongs to this table, verify a corresponding `.ndx` file exists; if any are absent, record an anomaly. If `.ndx` files exist that are not referenced in `_schema.json` for any table, record each as an orphaned index file.
+4. If `IncludeTransactions` is true: list all directories inside the database directory whose names match the pattern `_txn_*`. Record each directory name in `ActiveTransactions`.
+5. Collect all anomaly strings identified across steps 3 and 4 into the `Anomalies` array.
+6. Return `DatabaseName`, `Tables` (one entry per table containing `Name`, `RecordCount`, `DeletedCount`, and `IndexCount`), `ActiveTransactions`, `Anomalies`, and `InspectedAt` set to the current ISO-8601 timestamp.
 
-1. List all subdirectories in `XBaseFiles/` that contain `_meta.json` (exclude `backups/` and `_txn_*`)
-2. For each database directory:
-   a. Read `_meta.json` → extract `Name`, `UpdatedAt`
-   b. Read `_schema.json` → count `Tables` entries
-   c. For each table, count non-empty lines in `{TableName}.dbf` where `IsDeleted` ≠ 1 (active rows)
-   d. Sum directory size by reading all file sizes
-3. Display a formatted summary table:
+## Error Codes
 
-```
-XBase Databases — XBaseFiles/
-────────────────────────────────────────────────────
-  {Name}    {TableCount} tables    {ActiveRows} rows    {SizeMB} MB    {UpdatedAt}
-────────────────────────────────────────────────────
-{N} databases
-```
-
-4. Note if `XBaseFiles/backups/` exists and how many backup directories it contains
-
----
-
-### Mode 2 — Detail (DatabaseName provided)
-
-1. Invoke `XBase-Database-Connect` with a temporary alias (e.g. `admin-inspect`)
-2. Invoke `XBase-Schema-TableList` → get list of table names
-3. For each table:
-   a. Invoke `XBase-Schema-ColumnList` → get column definitions
-   b. Read `{TableName}.dbf`:
-      - Count lines where `IsDeleted = 0` (or field absent) → active rows
-      - Count lines where `IsDeleted = 1` → soft-deleted rows
-   c. Invoke `XBase-Index-List` → get indexes for this table
-4. Check for any `_txn_*/` directories inside the database directory → pending transactions
-5. Check `XBaseFiles/backups/` for directories starting with `{DatabaseName}_` → backup history
-6. Display the detailed report:
-
-```
-Database: {Name}
-Path:     XBaseFiles/{DatabaseName}/
-Created:  {CreatedAt from _meta.json}
-Updated:  {UpdatedAt from _meta.json}
-
-Tables ({count}):
-  {TableName}    {ActiveRows} rows  ({SoftDeleted} soft-deleted)  {ColumnCount} columns  {IndexCount} indexes
-  ...
-
-Connections:      {list of open connection aliases or "none"}
-Transactions:     {list of _txn_* directory names or "none"}
-Backups:          {most recent backup path and timestamp, or "none found"}
-```
-
-7. Invoke `XBase-Database-Disconnect` to release the temporary alias
-
----
-
-## Notes
-
-- This command is **read-only** — it never modifies any file
-- If a database directory is missing `_meta.json`, report it as `[corrupt — missing _meta.json]` in the survey
-- Soft-deleted rows are counted separately; they are not included in the active-row count
-- Index health is reported as present/missing (`.ndx` file exists for each index in `_schema.json`)
-
----
+| Code | Meaning |
+|------|---------|
+| `XBASE_CONNECTION_INVALID` | `ConnectionName` is not registered in the current session |
+| `XBASE_DATABASE_CORRUPT` | `_meta.json` or `_schema.json` is missing or cannot be parsed |
 
 ## Dependencies
 
-- `XBase-Database-Connect`, `XBase-Database-Disconnect`
-- `XBase-Schema-TableList`, `XBase-Schema-ColumnList`
-- `XBase-Index-List`
+- XBase-Database-Connect (ConnectionName must already be registered before calling this skill)
+- Readable file system access to the database directory

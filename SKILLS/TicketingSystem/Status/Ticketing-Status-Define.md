@@ -1,14 +1,13 @@
 # Ticketing-Status-Define
 
-Create a named workflow status and optionally configure allowed transitions.
+Create a named workflow status.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `Name` | string | yes | — | Status name, e.g. `Open`, `In Progress`, `Closed` |
-| `IsTerminal` | bool | no | `false` | If `true`, tickets in this status are considered closed |
-| `AllowedFromStatusIds` | array | no | `[]` | IDs of statuses that may transition **to** this one; empty means unrestricted |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| Name | string | yes | Status name, e.g. Open, In Progress, Closed |
+| IsTerminal | bool | no | When true, tickets in this status are considered closed; defaults to false |
 
 ## Outputs
 
@@ -22,17 +21,17 @@ Create a named workflow status and optionally configure allowed transitions.
 
 ## Steps
 
-1. `XBase-Record-Insert` → `Statuses`
-2. For each `FromStatusId` in `AllowedFromStatusIds`:
-   - `XBase-Record-Insert` → `StatusTransitions` (`FromStatusId`, `ToStatusId: new StatusId`)
-3. Return `StatusId` and `Name`
+1. Call XBase-Record-Select on Statuses where Name = Name; if a row is found, return TICKETING_STATUS_NAME_DUPLICATE.
+2. Call XBase-Record-Insert on Statuses with Name, IsTerminal (0 if not supplied).
+3. Return StatusId and Name.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_STATUS_NAME_DUPLICATE` | A status with that name already exists |
+| Code | Meaning |
+|------|---------|
+| TICKETING_STATUS_NAME_DUPLICATE | A status with that name already exists |
 
 ## Dependencies
 
-- `XBase-Record-Insert`
+- XBase-Record-Select
+- XBase-Record-Insert

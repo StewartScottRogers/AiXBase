@@ -4,40 +4,38 @@ Write a generated report to a file in CSV or JSON format.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `Report` | object | yes | — | Output from `Ticketing-Report-Generate` |
-| `Format` | string | no | `JSON` | `JSON` or `CSV` |
-| `OutputPath` | string | no | — | File path relative to `AiXBase/reports/`; auto-generated if omitted |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| Report | object | yes | Output from Ticketing-Report-Generate or Ticketing-Report-Summary |
+| Format | string | no | Output format: CSV or JSON (default: JSON) |
+| OutputPath | string | yes | File path to write the report; e.g. {DatabaseRoot}/reports/report.json |
 
 ## Outputs
 
 ```json
 {
   "Success": true,
-  "OutputPath": "AiXBase/reports/report_20260625T143201.json",
+  "OutputPath": "{DatabaseRoot}/reports/report_20260627T100000.json",
   "Format": "JSON",
-  "ExportedAt": "<ISO-8601>"
+  "WrittenAt": "2026-06-27T10:00:00Z",
+  "RowCount": 42
 }
 ```
 
 ## Steps
 
-1. Ensure `AiXBase/reports/` directory exists
-2. If `OutputPath` omitted, generate filename: `report_<YYYYMMDDTHHmmss>.<ext>`
-3. Serialize `Report` to the requested format:
-   - JSON: pretty-printed with 2-space indent
-   - CSV: one row per ticket in `Report.Tickets`, headers on first row
-4. Write to `OutputPath`
-5. Return `OutputPath`, `Format`, `ExportedAt`
+1. Validate Format is CSV or JSON; if not, return TICKETING_REPORT_FORMAT_UNKNOWN.
+2. If Format is JSON, serialize Report to JSON text.
+3. If Format is CSV, serialize Report.Tickets to comma-separated text with a header row; set RowCount to the number of ticket rows written.
+4. Write the serialized content to OutputPath.
+5. Return OutputPath, Format, WrittenAt = now(), and RowCount.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_REPORT_FORMAT_UNKNOWN` | `Format` is not `JSON` or `CSV` |
-| `TICKETING_REPORT_IO_ERROR` | File system error writing the output |
+| Code | Meaning |
+|------|---------|
+| TICKETING_REPORT_FORMAT_UNKNOWN | Format is not CSV or JSON |
 
 ## Dependencies
 
-- `Ticketing-Report-Generate` — must be called first to produce the `Report` input
+- Ticketing-Report-Generate (or Ticketing-Report-Summary — must be called first to produce the Report input)

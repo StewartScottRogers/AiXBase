@@ -1,16 +1,16 @@
 # Ticketing-Ticket-Update
 
-Edit the summary, description, or metadata of an existing ticket.
+Edit the summary, description, or category of an existing ticket.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to update |
-| `ChangedByUserId` | int | yes | — | User making the change |
-| `Summary` | string | no | — | New summary |
-| `Description` | string | no | — | New description |
-| `CategoryId` | int | no | — | New category |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `TicketId` | int | yes | Ticket to update |
+| `UpdatedByUserId` | int | yes | User making the change |
+| `Summary` | string | no | New summary (max 200 characters) |
+| `Description` | string | no | New description |
+| `CategoryId` | int | no | New category FK |
 
 ## Outputs
 
@@ -24,22 +24,24 @@ Edit the summary, description, or metadata of an existing ticket.
 
 ## Steps
 
-1. Validate ticket exists and is not soft-deleted
-2. Build the `Values` map from non-null inputs only
-3. `XBase-Transaction-Begin`
-4. `XBase-Record-Update` → `Tickets` where `Id = TicketId`
-5. `XBase-Record-Insert` → `TicketHistory` for each changed field (action: `Updated`)
-6. `XBase-Transaction-Commit`
-7. Return `UpdatedAt`
+1. Call `XBase-Record-Select` on the `Tickets` table with filter `Id = TicketId`; if no row is returned or `IsDeleted = 1`, return `TICKETING_TICKET_NOT_FOUND`
+2. Call `XBase-Transaction-Begin`
+3. Call `XBase-Record-Update` on the `Tickets` table with filter `Id = TicketId`, setting only the fields provided among `Summary`, `Description`, and `CategoryId`, plus `UpdatedAt = now()`
+4. Call `XBase-Record-Insert` on the `TicketHistory` table with `TicketId`, `ChangedByUserId = UpdatedByUserId`, `Action = 'Updated'`, `ChangedAt = now()`
+5. Call `XBase-Transaction-Commit`
+6. Return `TicketId` and `UpdatedAt`
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is deleted |
+| Code | Meaning |
+|------|---------|
+| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is soft-deleted |
+| `XBASE_CONNECTION_INVALID` | No active connection named `ticketing` |
 
 ## Dependencies
 
-- `XBase-Transaction-Begin/Commit`
+- `XBase-Transaction-Begin`
+- `XBase-Transaction-Commit`
+- `XBase-Record-Select`
 - `XBase-Record-Update`
 - `XBase-Record-Insert`

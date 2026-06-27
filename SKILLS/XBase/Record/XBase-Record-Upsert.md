@@ -1,17 +1,16 @@
 # XBase-Record-Upsert
 
-Insert a row if no conflict is detected on the specified columns, or update the
-existing matching row in place if a conflict is found.
+Insert a row if no matching record is found on the specified conflict columns, or update the existing matching record in place if a conflict is detected.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ConnectionName` | string | yes | — | Open connection alias |
-| `TableName` | string | yes | — | Target table |
-| `Row` | object | yes | — | `{ ColumnName: value }` map for the row |
-| `ConflictColumns` | array | yes | — | Column names that define uniqueness for conflict detection |
-| `TransactionName` | string | no | — | Execute within this named transaction |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `ConnectionName` | string | yes | Registered connection alias |
+| `TableName` | string | yes | Target table name |
+| `Row` | object | yes | `{ ColumnName: value }` map representing the row to insert or update |
+| `ConflictColumns` | array | yes | Column names that define uniqueness for conflict detection |
+| `TransactionName` | string | no | If supplied, execute within this transaction's workspace directory |
 
 ## Outputs
 
@@ -23,44 +22,47 @@ existing matching row in place if a conflict is found.
 }
 ```
 
-`Action` is `"inserted"` or `"updated"`.
+`Action` is either `"inserted"` or `"updated"`.
 
 ## Steps
 
-1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
-2. Resolve the active data directory (transaction workspace if `TransactionName` supplied; copy `.dbf` lazily if needed)
-3. `File.ReadAllText(_schema.json)`; locate `TableName`; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
-4. Validate each column in `ConflictColumns` exists in the table definition; return `XBASE_SCHEMA_COLUMN_MISSING` on failure
-5. `File.ReadAllBytes({TableName}.dbf)`; read DBF header to obtain `HeaderSize`, `RecordSize`, `RecordCount`, and field descriptors; decode each record from its fixed-width byte positions line as JSON
-6. Search for an existing non-deleted row where every `ConflictColumns` field value matches the corresponding `Row` value
-7. **No conflict (insert path):**
-   - Assign `Id` from `table.NextId`; increment `NextId`
-   - Set `CreatedAt` and `UpdatedAt` to current ISO-8601 timestamp; set `IsDeleted = 0`
-   - Enforce NOT NULL, UNIQUE (non-conflict columns), and FK constraints; return `XBASE_RECORD_CONSTRAINT_VIOLATION` on failure
-   - `File.OpenAppend({TableName}.dbf)`; encode each field to fixed-width bytes per DBF type map; prepend deletion flag `0x20`; append the `RecordSize`-byte record
-   - Update `.ndx` files for all indexed columns
-   - Set `Action = "inserted"`, `RowId = new Id`
-8. **Conflict found (update path):**
-   - Apply all non-`ConflictColumns` values from `Row` to the matching row in memory
-   - Set `UpdatedAt` to current ISO-8601 timestamp
-   - Enforce constraints on updated fields
-   - `File.WriteAllBytes({TableName}.dbf, packedBytes)`; write compacted DBF excluding deletion-flagged records; update header record count
-   - Rebuild `.ndx` files for changed indexed columns
-   - Set `Action = "updated"`, `RowId = existing row Id`
-9. Write updated `_schema.json` if `NextId` changed
-10. Return `Action` and `RowId`
+1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`.
+2. Resolve the active data directory: if `TransactionName` is supplied, verify `_txn_{TransactionName}/` exists (return `XBASE_TRANSACTION_NOT_OPEN` if not); if `{TableName}.dbf` is not yet present in the workspace, copy it lazily from the live directory; use workspace paths for all reads and writes. Otherwise use the live database directory.
+3. read-text-file(`_schema.json`); locate the `TableName` entry in `Tables`; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`.
+4. Validate each name in `ConflictColumns` against the table's column definitions; return `XBASE_SCHEMA_COLUMN_MISSING` for any unknown name.
+5. read-binary-file(`{TableName}.dbf`); parse the DBF header to obtain `HeaderSize`, `RecordSize`, `RecordCount`, and the field descriptor array; decode each active (non-deleted) record from its fixed byte positions.
+6. Search the decoded active records for an existing record where every `ConflictColumns` field value matches the corresponding value in `Row`.
+7. **No conflict — insert path:** Follow the full `XBase-Record-Insert` logic for this single row:
+   a. Inject `Default` values for omitted columns with defaults defined in the schema.
+   b. Enforce `NOT NULL`, `UNIQUE` (for columns not in `ConflictColumns`), and `FOREIGN KEY` constraints; return `XBASE_RECORD_CONSTRAINT_VIOLATION` on any violation.
+   c. Assign `Id = table.NextId`; set `CreatedAt` and `UpdatedAt` to the current ISO-8601 UTC timestamp; set `IsDeleted = 0`.
+   d. Encode the row as a fixed-length dBASE III binary record: deletion flag `0x20` followed by each field's bytes at its fixed offset within the record.
+   e. append-binary-record(`{TableName}.dbf`, encodedRecord).
+   f. Read the DBF header; increment `RecordCount` at bytes 4–7 by 1; update last-modified date at bytes 1–3; write-binary-file the updated header back at byte offset 0.
+   g. Insert a sorted key entry into each `.ndx` B-tree index for this table.
+   h. Increment `table.NextId` by 1; write-text-file(`_schema.json`, updatedSchema).
+   i. Set `Action = "inserted"` and `RowId = new Id`.
+8. **Conflict found — update path:** Follow the `XBase-Record-Update` logic for the single matching record:
+   a. Apply all field values from `Row` that are not in `ConflictColumns` to the matching record.
+   b. Set `UpdatedAt` to the current ISO-8601 UTC timestamp.
+   c. Enforce `UNIQUE` and `FOREIGN KEY` constraints on updated fields; return `XBASE_RECORD_CONSTRAINT_VIOLATION` on any violation.
+   d. Re-encode the updated field bytes; seek to the record's byte offset (`HeaderSize + (RecordIndex × RecordSize)`); overwrite the updated field bytes in place.
+   e. Update each `.ndx` B-tree index whose indexed column was changed: remove the old key entry and insert the new key entry.
+   f. Set `Action = "updated"` and `RowId = existing record's Id`.
+9. Return `Action` and `RowId`.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `XBASE_CONNECTION_INVALID` | Connection not open |
-| `XBASE_SCHEMA_TABLE_NOT_FOUND` | Table does not exist |
-| `XBASE_SCHEMA_COLUMN_MISSING` | A conflict column does not exist |
-| `XBASE_RECORD_CONSTRAINT_VIOLATION` | Non-conflict constraint failed |
-| `XBASE_TRANSACTION_NOT_OPEN` | `TransactionName` supplied but workspace not found |
+| Code | Meaning |
+|------|---------|
+| `XBASE_CONNECTION_INVALID` | `ConnectionName` not registered |
+| `XBASE_TRANSACTION_NOT_OPEN` | `TransactionName` supplied but workspace directory not found |
+| `XBASE_SCHEMA_TABLE_NOT_FOUND` | Table not in `_schema.json` |
+| `XBASE_SCHEMA_COLUMN_MISSING` | A conflict column or value column is not defined for this table |
+| `XBASE_RECORD_CONSTRAINT_VIOLATION` | `NOT NULL`, `UNIQUE`, or `FOREIGN KEY` constraint violated |
 
 ## Dependencies
 
 - `XBase-Database-Connect`
-- `XBase-Transaction-Begin` — if using a transaction
+- `XBase-Schema-TableCreate` — table must exist before upserting
+- `XBase-Transaction-Begin` — if using a named transaction

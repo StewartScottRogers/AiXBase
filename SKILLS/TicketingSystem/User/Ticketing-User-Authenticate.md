@@ -1,42 +1,48 @@
 # Ticketing-User-Authenticate
 
-Verify a username and credential hash and issue a session token.
+Verify a username and password, then issue a session token.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `Username` | string | yes | — | Login name |
-| `CredentialHash` | string | yes | — | Pre-hashed credential; never accept plaintext |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| Username | string | yes | Login name |
+| Password | string | yes | Plaintext password; the skill hashes it internally for comparison; never persisted or returned |
 
 ## Outputs
 
 ```json
 {
   "Success": true,
-  "UserId": 3,
-  "SessionToken": "<64-char hex>",
-  "ExpiresAt": "<ISO-8601>"
+  "SessionToken": "a3f1c8...64hexchars...b9c2d7",
+  "ExpiresAt": "2026-06-28T10:00:00Z",
+  "UserId": 3
 }
 ```
 
 ## Steps
 
-1. `XBase-Record-Select` → `Users` where `Username` matches and `IsActive = 1`
-2. If no row found, return `TICKETING_AUTH_FAILED` (do not distinguish user-not-found from wrong credential)
-3. Compare `CredentialHash` to the stored hash; if mismatch, return `TICKETING_AUTH_FAILED`
-4. Generate a 64-character cryptographically random hex token
-5. `XBase-Record-Insert` → `Sessions` (`UserId`, `Token`, `ExpiresAt`: now + 8 hours)
-6. Return `UserId`, `SessionToken`, `ExpiresAt`
+1. Call XBase-Record-Select on Users filtering by Username.
+2. If no matching row is returned, return TICKETING_USER_NOT_FOUND.
+3. If the returned user's IsActive = 0, return TICKETING_USER_INACTIVE.
+4. Compute a secure one-way hash of the input Password using the same algorithm used in Ticketing-User-Register.
+5. Compare the computed hash to the stored CredentialHash; if they do not match, return TICKETING_AUTH_FAILED.
+6. Generate a cryptographically random 64-character hexadecimal SessionToken.
+7. Set ExpiresAt = now() + 24 hours.
+8. Call XBase-Record-Insert on the Sessions table with UserId, SessionToken, CreatedAt = now(), and ExpiresAt.
+9. Return SessionToken, ExpiresAt, and UserId.
+10. Never include Password or CredentialHash in outputs.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_AUTH_FAILED` | Username not found, user inactive, or credential mismatch (deliberately generic) |
+| Code | Meaning |
+|------|---------|
+| TICKETING_USER_NOT_FOUND | No user exists with the given Username |
+| TICKETING_USER_INACTIVE | User exists but has been deactivated |
+| TICKETING_AUTH_FAILED | Credential comparison failed |
+| XBASE_CONNECTION_INVALID | No active XBase connection named "ticketing" |
 
 ## Dependencies
 
-- `XBase-Record-Select`
-- `XBase-Record-Insert`
-- `XBase-Query-Filter`
+- XBase-Record-Select
+- XBase-Record-Insert

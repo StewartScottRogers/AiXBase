@@ -1,15 +1,12 @@
 # Ticketing-Ticket-Read
 
-Fetch a single ticket by ID with full related data.
+Fetch a single ticket by ID.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | no | — | Numeric ticket ID |
-| `TicketNumber` | string | no | — | Human-readable key, e.g. `TKT-0042`; provide one of `TicketId` or `TicketNumber` |
-| `IncludeComments` | bool | no | `false` | Include the comments array in the response |
-| `IncludeHistory` | bool | no | `false` | Include the change history array |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `TicketId` | int | yes | Numeric ticket ID |
 
 ## Outputs
 
@@ -21,37 +18,32 @@ Fetch a single ticket by ID with full related data.
     "TicketNumber": "TKT-0042",
     "Summary": "...",
     "Description": "...",
-    "Status": "Open",
-    "Priority": "High",
-    "Category": "Bug",
-    "ReportedBy": "Alice",
-    "AssignedTo": "Bob",
-    "Tags": ["backend", "urgent"],
-    "CreatedAt": "...",
-    "UpdatedAt": "...",
-    "Comments": [],
-    "History": []
+    "StatusId": 1,
+    "PriorityId": 2,
+    "CategoryId": 3,
+    "ReportedByUserId": 5,
+    "AssignedToUserId": 7,
+    "CreatedAt": "<ISO-8601>",
+    "UpdatedAt": "<ISO-8601>",
+    "ClosedAt": null,
+    "IsDeleted": 0
   }
 }
 ```
 
 ## Steps
 
-1. Look up by `TicketId` or `TicketNumber` (error if neither provided)
-2. `XBase-Record-Select` → `Tickets` joined to `Statuses`, `Priorities`, `Categories`, `Users` (reporter + assignee)
-3. `XBase-Record-Select` → `TicketTags` for the ticket
-4. If `IncludeComments`: `XBase-Record-Select` → `Comments` where `TicketId` matches and `IsDeleted = 0`
-5. If `IncludeHistory`: `XBase-Record-Select` → `TicketHistory` where `TicketId` matches
-6. Assemble and return the `Ticket` object
+1. Call `XBase-Record-Select` on the `Tickets` table with filter `Id = TicketId`
+2. If no row is returned, return `TICKETING_TICKET_NOT_FOUND`
+3. Return the full ticket row
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | No ticket matches the given ID or number |
+| Code | Meaning |
+|------|---------|
+| `TICKETING_TICKET_NOT_FOUND` | No ticket with the given ID |
+| `XBASE_CONNECTION_INVALID` | No active connection named `ticketing` |
 
 ## Dependencies
 
 - `XBase-Record-Select`
-- `XBase-Query-Filter`
-- `XBase-Query-Join`

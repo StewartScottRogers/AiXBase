@@ -1,237 +1,156 @@
 # XBase
 
-XBase is a native file-based database engine accessed entirely through AI Skills. It provides connection management, schema DDL, full CRUD, composite queries, index management, transactions, and backup — each operation as a single slash command. There are no third-party database libraries: the AI reads and writes structured text files directly using OS file system primitives.
+XBase is a file-backed database engine implemented exclusively as harness-agnostic AI Skills. All database interactions — connection management, schema DDL, full record CRUD, composite queries, index maintenance, transaction control, backup, and administration — are exposed as discrete, composable skills. XBase requires no external database engine, no third-party libraries, no package manager dependencies, and no network connectivity. Every byte it reads or writes goes through abstract file system operations performed by the executing AI agent.
 
 ---
 
-## Architecture
+## File Layout
 
-| Layer | Technology |
-|---|---|
-| Storage engine | Native file system — directories and DBF files |
-| Foreign key enforcement | Skill-level validation against `_schema.json` |
-| Soft deletes | `IsDeleted INTEGER DEFAULT 0` on every table |
-| Transactions | Directory snapshot workspace (`_txn_{name}/`) |
-| Client library | None — OS file system primitives only |
+A database is a named directory stored under the configured database root. Every file inside that directory is owned exclusively by XBase and managed through its skills. The directory structure for a database named `myapp` under `{DatabaseRoot}` looks like this:
 
-### Native File Format
+- `{DatabaseRoot}/`
+  - `myapp/` — the database directory
+    - `_meta.json` — database identity and version metadata
+    - `_schema.json` — all table definitions, column definitions, index definitions, and NextId counters
+    - `Products.dbf` — table data in dBASE III binary format (one fixed-length record per row)
+    - `Products.idx_SKU.ndx` — NDX B-tree index on the SKU column of Products
+    - `_txn_batch-import/` — active transaction workspace (exists only while a transaction is open)
+      - `_schema.json` — transaction-local copy of the schema
+      - `Products.dbf` — transaction-local copy of the table (lazy: only tables touched during the transaction are copied)
+      - `sp_checkpoint/` — savepoint snapshot directory
+  - `backups/` — backup copies created by XBase-Backup-Create
+    - `myapp_20260627T140000/` — a timestamped backup directory
 
-A database is a **named directory** under `XBaseFiles/`. Every piece of state is a plain text file inside that directory:
+The `_meta.json` file records the database name, XBase format version, creation timestamp, and last-updated timestamp. The `_schema.json` file records the full schema: a `Tables` array with column definitions and a `NextId` counter for each table, and an `Indexes` array with index names, target table names, and indexed column lists.
 
-```
-XBaseFiles/
-└── myapp/
-    ├── _meta.json                     Database metadata
-    ├── _schema.json                   Table and index definitions
-    ├── Products.dbf                Table data — fixed-length binary record
-    ├── Products.idx_SKU.ndx           Index — sorted key→Id entries, one per line
-    └── _txn_txn1/                     Active transaction workspace (if any)
-        ├── _schema.json               Transaction-local schema copy
-        └── Products.dbf            Transaction-local data copy (only tables touched)
-```
-
-**`_meta.json`** — database identity:
-```json
-{ "XBaseVersion": 1, "Name": "myapp", "CreatedAt": "2026-06-25T12:00:00Z", "UpdatedAt": "2026-06-25T12:00:00Z" }
-```
-
-**`_schema.json`** — all table and index definitions plus `NextId` counters.
-
-**`{TableName}.dbf`** — one complete JSON object per line, UTF-8, `\n`-terminated:
-```
-{"Id":1,"SKU":"A001","Label":"Widget","Price":9.99,"IsDeleted":0,"CreatedAt":"2026-06-25T12:00:00Z","UpdatedAt":"2026-06-25T12:00:00Z"}
-```
-
-**`{TableName}.{IndexName}.ndx`** — sorted ascending by Key, used for binary-search lookups:
-```
-{"Key":"A001","Id":1}
-{"Key":"A002","Id":2}
-```
-
-### Implicit Columns
-
-Every table created through XBase automatically receives these columns:
-
-| Column | Type | Notes |
-|---|---|---|
-| `Id` | `INTEGER` — auto-increment | Prepended unless a `PrimaryKey: true` column is supplied; value managed via `NextId` in `_schema.json` |
-| `CreatedAt` | `TEXT` | ISO-8601 timestamp; set on insert, never changed |
-| `UpdatedAt` | `TEXT` | ISO-8601 timestamp; refreshed on every update |
-| `IsDeleted` | `INTEGER DEFAULT 0` | `0` = active, `1` = soft-deleted |
-
-`XBase-Record-Select` automatically excludes rows where `IsDeleted = 1` unless `IncludeDeleted: true` is passed. `XBase-Record-Delete` sets `IsDeleted = 1` by default; pass `HardDelete: true` for physical line removal.
-
-### File System Primitives
-
-All XBase skills use only:
-
-| Primitive | Usage |
-|---|---|
-| `Directory.CreateDirectory` | New database, transaction workspace, backup |
-| `Directory.Delete(recursive)` | Drop database, rollback, clean up |
-| `Directory.Copy` | Backup, restore, transaction commit |
-| `File.ReadAllText` | Read metadata files |
-| `File.WriteAllText` | Write metadata files |
-| `File.ReadAllLines` | Read DBF and index files |
-| `File.WriteAllLines` | Rewrite DBF after update/delete |
-| `File.AppendAllText` | Append a new row to DBF |
-| `File.Move` | Atomic commit of transaction files |
-| `File.Delete` | Drop table/index files |
+Every table created through XBase automatically includes four implicit columns: `Id` (integer primary key, auto-incremented via `NextId` in `_schema.json`), `CreatedAt` (ISO-8601 text, set on insert and never changed), `UpdatedAt` (ISO-8601 text, refreshed on every update), and `IsDeleted` (integer, 0 for active rows and 1 for soft-deleted rows). `XBase-Record-Select` excludes rows where `IsDeleted = 1` by default; pass `IncludeDeleted: true` to override.
 
 ---
 
-## Quick Start
+## dBASE III Binary Format
 
-```
-# 1. Create and open a database
-/XBase-Database-Initialize  DatabaseName:"myapp"
-/XBase-Database-Connect     DatabaseName:"myapp"  ConnectionName:"main"
+### DBF Table Files
 
-# 2. Create a table
-/XBase-Schema-TableCreate
-  ConnectionName:"main"
-  TableName:"Products"
-  Columns:[
-    {"Name":"SKU",   "Type":"TEXT",    "Nullable":false, "Unique":true},
-    {"Name":"Label", "Type":"TEXT",    "Nullable":false},
-    {"Name":"Price", "Type":"REAL",    "Nullable":true}
-  ]
+Each table is stored as a `.dbf` file in the dBASE III binary format. The file begins with a fixed-size header followed by a tightly-packed array of fixed-length records.
 
-# 3. Insert rows
-/XBase-Record-Insert
-  ConnectionName:"main"
-  TableName:"Products"
-  Rows:[
-    {"SKU":"A001", "Label":"Widget", "Price":9.99},
-    {"SKU":"A002", "Label":"Gadget", "Price":19.99}
-  ]
+The header starts with a 1-byte version marker (`0x03`), a 3-byte last-updated date, a 4-byte record count stored as a uint32 little-endian integer at bytes 4–7, a 2-byte header size, and a 2-byte record size. After these fields comes the field descriptor array: one 32-byte descriptor per column, each recording the field name (null-padded to 11 bytes), field type character (`C` for text, `N` for numeric), field length, and decimal count. The header terminates with a single `0x0D` byte, and the file ends with a `0x1A` EOF marker.
 
-# 4. Query
-/XBase-Record-Select
-  ConnectionName:"main"
-  TableName:"Products"
-  Filter:{"Field":"Price", "Operator":"<", "Value":15}
-  Sort:[{"Field":"Price", "Direction":"ASC"}]
-  Limit:25
+Each record begins with a 1-byte deletion flag. The value `0x20` (an ASCII space character) marks an active record; the value `0x2A` (an ASCII asterisk) marks a soft-deleted record. Following the flag are the field bytes at positions defined by the field descriptor array — each field occupies a fixed-width byte range, with text fields padded to their declared maximum length and numeric fields stored as ASCII-encoded digits.
 
-# 5. Close
-/XBase-Database-Disconnect  ConnectionName:"main"
-```
+Skills read the header to determine record layout, then seek to each record at the byte offset `HeaderSize + (RecordIndex × RecordSize)` to read or overwrite individual records in place.
+
+### NDX Index Files
+
+Each index is stored as a `.ndx` file using the dBASE III NDX B-tree binary format. Each node entry in the B-tree associates a key value with the byte offset of the corresponding record in the `.dbf` file. For composite indexes, the key is formed by concatenating the column values with a pipe delimiter.
+
+Index files are kept in sync on every insert, update, and delete that touches an indexed column. Skills use the NDX file for O(log n) lookups when a filter targets an indexed column, avoiding full-table scans. `XBase-Index-Rebuild` regenerates the NDX B-tree from scratch by reading all active records from the live `.dbf` file.
 
 ---
 
-## Operation Groups
+## Skill Groups
 
 ### Database (4 skills)
 
-| Skill | Purpose |
-|---|---|
-| `XBase-Database-Initialize` | Create a new database directory with `_meta.json` and empty `_schema.json` |
-| `XBase-Database-Connect` | Validate an existing database and register it under a named alias |
-| `XBase-Database-Disconnect` | Deregister a connection alias (optionally rolling back open transactions) |
-| `XBase-Database-Drop` | Delete the entire database directory (`ConfirmDrop: true` required) |
+The Database group manages the lifecycle of a database directory. `XBase-Database-Initialize` creates the directory and writes the initial `_meta.json` and `_schema.json` files. `XBase-Database-Connect` validates an existing database directory and registers a named connection alias for use by all subsequent skills. `XBase-Database-Disconnect` deregisters a connection alias. `XBase-Database-Drop` deletes the entire database directory and all its contents; it requires explicit confirmation via `ConfirmDrop: true`.
 
 ### Schema (5 skills)
 
-| Skill | Purpose |
-|---|---|
-| `XBase-Schema-TableCreate` | Add a table to `_schema.json` and create an empty `.dbf` file |
-| `XBase-Schema-TableAlter` | Add columns to a table definition in `_schema.json` |
-| `XBase-Schema-TableDrop` | Remove a table from `_schema.json` and delete its `.dbf` and `.ndx` files |
-| `XBase-Schema-TableList` | Return all table names from `_schema.json` |
-| `XBase-Schema-ColumnList` | Return column definitions for a table from `_schema.json` |
+The Schema group manages table and column definitions stored in `_schema.json`. `XBase-Schema-TableCreate` adds a table entry to `_schema.json` and writes a valid empty `.dbf` file with the appropriate header and field descriptor array. `XBase-Schema-TableAlter` adds new columns to an existing table definition. `XBase-Schema-TableDrop` removes a table from `_schema.json` and deletes its `.dbf` and all associated `.ndx` files. `XBase-Schema-TableList` returns all table names. `XBase-Schema-ColumnList` returns the column definitions for a specific table.
 
 ### Record (5 skills)
 
-| Skill | Purpose |
-|---|---|
-| `XBase-Record-Insert` | Append rows to a `.dbf` file; enforce constraints; update indexes |
-| `XBase-Record-Select` | Read `.dbf`, apply filter/sort/pagination in memory; return matching rows |
-| `XBase-Record-Update` | Read `.dbf`, modify matching rows, rewrite file; update indexes |
-| `XBase-Record-Delete` | Soft-delete (default) or hard-delete rows matching a filter |
-| `XBase-Record-Upsert` | Insert or update based on conflict columns; returns `Action:"inserted"` or `"updated"` |
+The Record group performs all CRUD operations on table data. `XBase-Record-Insert` encodes rows as fixed-length dBASE III binary records, appends them to the `.dbf` file, updates the header record count and last-modified date, and updates all relevant NDX index files. `XBase-Record-Select` reads and decodes all records from the `.dbf` file, applies filter conditions, sorts, and pagination in memory, and returns the matching rows. `XBase-Record-Update` reads all records, seeks to each matching record's byte offset, and overwrites the relevant field bytes in place. `XBase-Record-Delete` performs a soft delete by default (writing the `0x2A` deletion flag and setting `IsDeleted = 1`); pass `HardDelete: true` to rewrite the `.dbf` file excluding the matching records entirely. `XBase-Record-Upsert` inserts a row if no matching record is found on the conflict columns, or updates the existing row if one is found.
+
+All Record skills enforce constraints before writing: NOT NULL fields must be present and non-null; UNIQUE fields are checked against the column's NDX index or via a full-table scan if no index exists; FOREIGN KEY references are validated by reading the referenced table; DEFAULT values are injected for absent optional fields.
 
 ### Query (5 skills)
 
-These skills compile reusable query components passed to `XBase-Record-Select` or `XBase-Query-Execute`. **No file I/O occurs at compile time** — they are pure specification builders.
+The Query group provides reusable specification builders. `XBase-Query-Filter`, `XBase-Query-Sort`, `XBase-Query-Join`, and `XBase-Query-Aggregate` each compile a specification object with no file I/O. These specification objects are passed to `XBase-Record-Select` or `XBase-Query-Execute` to drive filtering, ordering, joining, and aggregation in memory against decoded DBF rows. `XBase-Query-Execute` accepts a compound specification combining all four components and a target operation (`SELECT`, `INSERT`, `UPDATE`, or `DELETE`) in a single call.
 
-| Skill | Purpose |
-|---|---|
-| `XBase-Query-Filter` | Compile a filter specification (`=`, `!=`, `<`, `>`, `<=`, `>=`, `LIKE`, `IN`, `NOT IN`, `IS NULL`, `IS NOT NULL`; AND/OR chaining) |
-| `XBase-Query-Sort` | Compile a sort specification |
-| `XBase-Query-Join` | Compile a join specification (INNER, LEFT) |
-| `XBase-Query-Aggregate` | Compile an aggregate specification (COUNT, SUM, AVG, MIN, MAX; GROUP BY) |
-| `XBase-Query-Execute` | Execute a compound query specification (filter + sort + join + aggregate in one call) |
-
-Filters evaluate in memory against parsed DBF rows. All field names are validated as safe identifiers before use.
+Filter operators supported: `=`, `!=`, `<`, `<=`, `>`, `>=`, `LIKE`, `IN`, `NOT IN`, `IS NULL`, `IS NOT NULL`. Filters may be chained with `AND` or `OR` and nested into groups. Field names are validated as safe identifiers before use.
 
 ### Index (4 skills)
 
-| Skill | Purpose |
-|---|---|
-| `XBase-Index-Create` | Read `.dbf`, build sorted `.ndx` file, register in `_schema.json` |
-| `XBase-Index-Drop` | Delete `.ndx` file and remove from `_schema.json` |
-| `XBase-Index-Rebuild` | Re-read `.dbf`, rewrite `.ndx` file from scratch |
-| `XBase-Index-List` | Return index definitions for a table from `_schema.json` |
+The Index group manages NDX B-tree index files. `XBase-Index-Create` reads the live `.dbf` file, builds a sorted NDX B-tree, writes the `.ndx` file, and registers the index in `_schema.json`. `XBase-Index-Drop` deletes the `.ndx` file and removes the index entry from `_schema.json`. `XBase-Index-Rebuild` regenerates the `.ndx` file from scratch from the current live `.dbf` data without changing the schema definition. `XBase-Index-List` returns all index definitions for a given table from `_schema.json`.
 
 ### Transaction (4 skills)
 
-| Skill | Purpose |
-|---|---|
-| `XBase-Transaction-Begin` | Create `_txn_{name}/` workspace directory; copy `_schema.json` into it |
-| `XBase-Transaction-Commit` | Move transaction workspace files over live files; delete workspace |
-| `XBase-Transaction-Rollback` | Delete transaction workspace (all changes discarded); optionally roll back to a savepoint |
-| `XBase-Transaction-Savepoint` | Snapshot current transaction state into `_txn_{name}/sp_{savepointName}/` |
+The Transaction group implements isolation through directory snapshots — no external lock managers are used. `XBase-Transaction-Begin` creates a `_txn_{TransactionName}/` workspace directory inside the database directory and copies `_schema.json` into it. All subsequent reads and writes during the transaction operate on files inside that workspace; table `.dbf` files are copied into the workspace lazily, only when first written. `XBase-Transaction-Commit` atomically moves each modified workspace file over the corresponding live file using a same-volume file move, updates `_meta.json`, and deletes the workspace directory. `XBase-Transaction-Rollback` simply deletes the workspace directory — the live files were never touched. `XBase-Transaction-Savepoint` copies the current workspace state into a `sp_{SavepointName}/` subdirectory; rolling back to a savepoint overwrites the workspace with that snapshot.
 
-Pass `TransactionName` to any Record or Query skill to operate within an open transaction. Changes remain in the workspace until `XBase-Transaction-Commit`.
+Any Record or Query skill accepts an optional `TransactionName` input to direct its operations to the transaction workspace.
 
 ### Backup (3 skills)
 
-| Skill | Purpose |
-|---|---|
-| `XBase-Backup-Create` | Copy the database directory to `XBaseFiles/backups/{name}_{timestamp}/`; skips active transaction directories |
-| `XBase-Backup-Restore` | Replace live database directory with a backup copy (`ConfirmRestore: true` required; optionally creates a pre-restore snapshot) |
-| `XBase-Backup-Verify` | Read `_meta.json`, `_schema.json`, and all `.dbf` files; validate every JSON line; return `IntegrityOk` and `Issues` |
+The Backup group provides point-in-time copies of a database. `XBase-Backup-Create` recursively copies the database directory to `{DatabaseRoot}/backups/{DatabaseName}_{timestamp}[_{label}]/`, skipping active transaction workspaces. `XBase-Backup-Restore` replaces the live database directory with a backup copy; it requires `ConfirmRestore: true` and optionally takes a pre-restore safety backup before overwriting. `XBase-Backup-Verify` reads `_meta.json`, `_schema.json`, and every `.dbf` file in a target directory, validates the DBF header and record structure of each file, and returns `IntegrityOk` with an `Issues` array. Verify works on any valid XBase directory, not only backup copies.
+
+### Admin (3 skills)
+
+The Admin group provides orchestration-level operations that delegate all file I/O to the underlying skill layer. `XBase-Admin-Execute` invokes any named XBase skill dynamically: the caller supplies the skill name and a structured inputs object, and the skill dispatches the call and returns the result. `XBase-Admin-Inspect` reads a connected database's structure and reports tables, record counts, index counts, active transaction workspaces, and any anomalies found (missing `.dbf` files, header count mismatches, orphaned index files). `XBase-Admin-Maintain` performs routine housekeeping: packing soft-deleted records from tables, rebuilding all indexes, and verifying backup integrity — each operation individually switchable and all supporting a `DryRun` mode that reports what would be done without making changes.
+
+### Runtime (1 skill)
+
+The Runtime group contains one skill: `XBase-Runtime-Detect`. It verifies that the AI agent's execution environment can satisfy all the abstract file system primitive requirements for XBase, and confirms write access to the intended database root. It tests directory creation, text file write/read, binary file write/read, atomic file move, and directory copy, reporting each result as a boolean capability flag and collecting any gaps in an `Issues` array.
 
 ---
 
-## Error Codes
+## Harness Agnostic
 
-All XBase error codes follow the pattern `XBASE_<CATEGORY>_<REASON>`.
+XBase skills are pure specifications: numbered prose steps that describe what to do in terms of abstract file operations, logical data transformations, and calls to other named skills. They do not assume any particular programming language, operating system, shell, or AI framework.
 
-| Category | Example Codes |
-|---|---|
-| `DATABASE` | `XBASE_DATABASE_NOT_FOUND`, `XBASE_DATABASE_EXISTS`, `XBASE_DATABASE_PATH_INVALID`, `XBASE_DATABASE_CORRUPT` |
-| `CONNECTION` | `XBASE_CONNECTION_INVALID`, `XBASE_CONNECTION_NAME_IN_USE` |
-| `SCHEMA` | `XBASE_SCHEMA_TABLE_NOT_FOUND`, `XBASE_SCHEMA_TABLE_EXISTS`, `XBASE_SCHEMA_COLUMN_MISSING`, `XBASE_SCHEMA_COLUMN_INVALID`, `XBASE_SCHEMA_COLUMN_EXISTS` |
-| `RECORD` | `XBASE_RECORD_CONSTRAINT_VIOLATION`, `XBASE_RECORD_FILTER_REQUIRED` |
-| `FILTER` | `XBASE_FILTER_FIELD_INVALID`, `XBASE_FILTER_OPERATOR_UNKNOWN`, `XBASE_FILTER_VALUE_REQUIRED` |
-| `INDEX` | `XBASE_INDEX_EXISTS`, `XBASE_INDEX_NOT_FOUND` |
-| `TRANSACTION` | `XBASE_TRANSACTION_NOT_OPEN`, `XBASE_TRANSACTION_NAME_IN_USE`, `XBASE_SAVEPOINT_NOT_FOUND`, `XBASE_SAVEPOINT_NAME_IN_USE` |
-| `BACKUP` | `XBASE_BACKUP_NOT_FOUND`, `XBASE_BACKUP_CORRUPT`, `XBASE_BACKUP_IO_ERROR` |
-| `DROP` | `XBASE_DROP_NOT_CONFIRMED`, `XBASE_RESTORE_NOT_CONFIRMED` |
-| `AGGREGATE` | `XBASE_AGGREGATE_FUNCTION_UNKNOWN` |
-| `SORT` | `XBASE_SORT_DIRECTION_INVALID`, `XBASE_SORT_FIELD_INVALID` |
-| `JOIN` | `XBASE_JOIN_TYPE_INVALID`, `XBASE_JOIN_REFERENCE_INVALID` |
+Any AI agent or runtime that can follow the numbered steps, invoke other skills by name, and perform the abstract file system operations listed below can implement XBase fully. The same skill files work identically whether the executing agent uses a Claude Code harness, a custom Python agent, a .NET host, or any other environment. No adaptation or rewriting of skill files is needed to change runtimes.
 
 ---
 
-## Design Decisions
+## Abstract File Operations
 
-**Why directory-per-database instead of a single file?**
-A directory-per-database lets each table be an independent file. Updates to one table never touch another table's file, minimising the blast radius of writes. Transactions are isolated by working in a subdirectory — rollback is a directory delete; commit is a file move.
+All XBase skills express file system interactions using the following abstract operations. Implementations map these to whatever concrete API the host environment provides.
 
-**Why DBF instead of binary?**
-DBF is human-readable, trivially diffable with `git diff`, and requires no parser beyond `JSON.Parse`. Any text editor can inspect or repair a table file. Backup verification reduces to checking that every line round-trips through JSON parse.
+| Abstract Operation | Purpose in XBase |
+|--------------------|-----------------|
+| `create-directory(path)` | Create database directories, transaction workspaces, backup destinations |
+| `delete-directory-recursive(path)` | Drop a database, roll back a transaction, remove a savepoint snapshot |
+| `copy-directory-recursive(src, dest)` | Create backups, restore from backup, snapshot savepoints |
+| `list-files(path, pattern)` | Enumerate tables, list index files, find backup directories |
+| `directory-exists(path)` | Guard checks before reads and writes |
+| `file-exists(path)` | Verify `.dbf`, `.ndx`, and metadata files before access |
+| `read-text-file(path)` | Read `_meta.json` and `_schema.json` |
+| `write-text-file(path, content)` | Write `_meta.json` and `_schema.json` |
+| `read-binary-file(path)` | Read an entire `.dbf` or `.ndx` file into memory for decoding |
+| `write-binary-file(path, bytes)` | Write a new `.dbf` header or rewrite a file after a PACK or index rebuild |
+| `append-binary-record(path, bytes)` | Append one fixed-length binary record to a `.dbf` file on insert |
+| `move-file-atomic(src, dest)` | Atomically commit a transaction file over the live file (same-volume move) |
+| `copy-file(src, dest)` | Copy individual files during backup or index operations |
+| `delete-file(path)` | Remove table files, index files, and temporary test files |
 
-**Why soft deletes?**
-Soft deletes preserve audit history and allow accidental-delete recovery. Hard deletes are opt-in via `HardDelete: true`.
+---
 
-**Why is `Filter` required for Update and Delete?**
-Requiring an explicit filter prevents silent mass-updates or mass-deletes caused by omitting a condition. If you genuinely need to update all rows, pass `Filter: {"Field": "Id", "Operator": ">", "Value": 0}`.
+## Getting Started
 
-**Why does `XBase-Query-Filter` touch no files?**
-Keeping specification compilation separate from execution allows filters to be composed incrementally and reused across multiple queries without redundant file reads.
+To use XBase for the first time, call `XBase-Runtime-Detect` with the `DatabaseRoot` path where databases should be stored. This confirms the agent environment has all required capabilities. If `EnvironmentReady` is true, proceed.
 
-**How are concurrent writes handled?**
-File system `File.Move` is atomic on the same volume, so transaction commits are atomic. Concurrent agents should coordinate at the skill level (one writer at a time per database). XBase does not implement advisory locks — that coordination is the caller's responsibility.
+Create a new database by calling `XBase-Database-Initialize` with a `DatabaseName`. This creates the database directory, writes `_meta.json` with version and timestamp information, and writes an empty `_schema.json`. Then call `XBase-Database-Connect` with the same `DatabaseName` and a `ConnectionName` of your choice — all subsequent operations reference the database by this alias.
+
+Define a table by calling `XBase-Schema-TableCreate` with `ConnectionName`, a `TableName`, and a `Columns` array. Each column object specifies `Name`, `Type` (`TEXT`, `INTEGER`, or `REAL`), `Nullable`, and optionally `Unique`, `Default`, and `ForeignKey`. XBase automatically prepends an `Id` primary key column and appends `CreatedAt`, `UpdatedAt`, and `IsDeleted` columns.
+
+Insert rows by calling `XBase-Record-Insert` with `ConnectionName`, `TableName`, and a `Rows` array of key-value objects. Each row need only include the user-defined columns; XBase fills in the implicit columns automatically.
+
+Query rows by calling `XBase-Record-Select` with `ConnectionName`, `TableName`, and optionally a `Filter` specification (from `XBase-Query-Filter`), a `Sort` specification (from `XBase-Query-Sort`), and `Limit` and `Offset` values.
+
+When done, call `XBase-Database-Disconnect` with the `ConnectionName` to release the session registration.
+
+---
+
+## Error Handling
+
+Every XBase skill returns a standard error envelope on failure. The envelope always contains `Success: false`, an `ErrorCode` string following the pattern `XBASE_{CATEGORY}_{REASON}`, a human-readable `Message`, and the `SkillName` of the skill that produced the error.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Success` | bool | Always `false` on error |
+| `ErrorCode` | string | Machine-readable code in the form `XBASE_{CATEGORY}_{REASON}` |
+| `Message` | string | Human-readable description of the error and likely cause |
+| `SkillName` | string | The name of the skill that returned this error |
+
+Error code categories include `DATABASE`, `CONNECTION`, `SCHEMA`, `RECORD`, `FILTER`, `INDEX`, `TRANSACTION`, `BACKUP`, `RUNTIME`, and `ADMIN`. A full list of all error codes appears in the XBase PRD.
+
+Admin skills surface the error envelopes of the underlying skills they invoke, adding context about which operation was in progress when the error occurred.

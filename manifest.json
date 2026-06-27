@@ -1,0 +1,51 @@
+{
+  "manifest_version": "1",
+  "name": "AiXBase Skills Distribution",
+  "description": "AI Skill files for file-backed database management (XBase) and helpdesk ticketing (TicketingSystem). Skills are plain markdown; no runtime required.",
+  "version": "1.0.0",
+  "zip_url": "https://github.com/StewartScottRogers/AiXBase/releases/latest/download/skills.zip",
+  "bundles": [
+    {
+      "id": "xbase",
+      "name": "XBase",
+      "description": "Native file-backed database engine. Provides connection management, schema DDL, full CRUD, composite queries, index management, transactions with savepoints, and backup/restore.",
+      "depends_on": [],
+      "skill_count": 34,
+      "wiki": "SKILLS/XBase/XBase.wiki.md",
+      "groups": [
+        { "id": "Database",    "path": "XBase/Database",    "count": 4 },
+        { "id": "Schema",      "path": "XBase/Schema",      "count": 5 },
+        { "id": "Record",      "path": "XBase/Record",      "count": 5 },
+        { "id": "Query",       "path": "XBase/Query",       "count": 5 },
+        { "id": "Index",       "path": "XBase/Index",       "count": 4 },
+        { "id": "Transaction", "path": "XBase/Transaction", "count": 4 },
+        { "id": "Backup",      "path": "XBase/Backup",      "count": 3 },
+        { "id": "Admin",       "path": "XBase/Admin",       "count": 3 },
+        { "id": "Runtime",     "path": "XBase/Runtime",     "count": 1 }
+      ]
+    },
+    {
+      "id": "ticketing",
+      "name": "TicketingSystem",
+      "description": "Full helpdesk ticketing system built entirely on XBase skills. Covers ticket lifecycle, comments, attachments, status workflows, priorities, categories, users, reporting, and terminal display.",
+      "depends_on": ["xbase"],
+      "skill_count": 35,
+      "wiki": "SKILLS/TicketingSystem/TicketingSystem.wiki.md",
+      "groups": [
+        { "id": "Ticket",     "path": "TicketingSystem/Ticket",     "count": 9 },
+        { "id": "Comment",    "path": "TicketingSystem/Comment",    "count": 4 },
+        { "id": "Attachment", "path": "TicketingSystem/Attachment", "count": 3 },
+        { "id": "Status",     "path": "TicketingSystem/Status",     "count": 2 },
+        { "id": "Priority",   "path": "TicketingSystem/Priority",   "count": 2 },
+        { "id": "Category",   "path": "TicketingSystem/Category",   "count": 4 },
+        { "id": "User",       "path": "TicketingSystem/User",       "count": 5 },
+        { "id": "Report",     "path": "TicketingSystem/Report",     "count": 3 },
+        { "id": "Display",    "path": "TicketingSystem/Display",    "count": 3 }
+      ]
+    }
+  ],
+  "install": {
+    "contract": "Download skills.zip, extract it, place the markdown files where your AI harness loads skill definitions.",
+    "notes": "Skills are harness-agnostic and system-agnostic. The file path within the ZIP mirrors the namespace: XBase/Database/XBase-Database-Initialize.md. You may install individual groups rather than the full distribution. The TicketingSystem bundle depends on the XBase bundle."
+  }
+}

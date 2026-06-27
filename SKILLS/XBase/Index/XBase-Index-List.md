@@ -4,10 +4,10 @@ Return index definitions for a given table from `_schema.json`.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ConnectionName` | string | yes | — | Open connection alias |
-| `TableName` | string | yes | — | Table to inspect |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `ConnectionName` | string | yes | Open connection alias |
+| `TableName` | string | yes | Table to inspect |
 
 ## Outputs
 
@@ -16,26 +16,27 @@ Return index definitions for a given table from `_schema.json`.
   "Success": true,
   "TableName": "Products",
   "Indexes": [
-    { "IndexName": "idx_Products_SKU",   "Unique": true,  "Columns": ["SKU"]   },
-    { "IndexName": "idx_Products_Label", "Unique": false, "Columns": ["Label"] }
-  ]
+    { "Name": "idx_Products_SKU",   "Columns": ["SKU"],   "Unique": true  },
+    { "Name": "idx_Products_Label", "Columns": ["Label"], "Unique": false }
+  ],
+  "Count": 2
 }
 ```
 
 ## Steps
 
-1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
-2. `File.ReadAllText(_schema.json)`; parse JSON
-3. Verify `TableName` exists in the `Tables` array; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
-4. Filter the `Indexes` array to entries where `TableName` matches the input
-5. Return the filtered index definitions as the `Indexes` array
+1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`.
+2. Read `_schema.json` from the database directory using `read-text-file(path)`.
+3. Verify `TableName` exists in the `Tables` array; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`.
+4. Filter the `Indexes` array to entries where `TableName` matches the input value.
+5. Return the filtered list as `Indexes` and set `Count` to the number of entries returned.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `XBASE_CONNECTION_INVALID` | Connection not open |
-| `XBASE_SCHEMA_TABLE_NOT_FOUND` | Table does not exist in `_schema.json` |
+| Code | Meaning |
+|------|---------|
+| `XBASE_CONNECTION_INVALID` | `ConnectionName` is not registered |
+| `XBASE_SCHEMA_TABLE_NOT_FOUND` | `TableName` does not exist in `_schema.json` |
 
 ## Dependencies
 

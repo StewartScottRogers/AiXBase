@@ -1,14 +1,13 @@
 # Ticketing-Category-Assign
 
-Assign or change the category of a ticket.
+Assign a category to a ticket.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to categorize |
-| `CategoryId` | int | yes | — | Category to assign |
-| `ChangedByUserId` | int | yes | — | User making the change |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| TicketId | int | yes | Ticket to categorize |
+| CategoryId | int | yes | Category to assign |
 
 ## Outputs
 
@@ -23,19 +22,21 @@ Assign or change the category of a ticket.
 
 ## Steps
 
-1. Validate `TicketId` and `CategoryId` exist
-2. `XBase-Record-Update` → `Tickets` set `CategoryId`
-3. `XBase-Record-Insert` → `TicketHistory` (action: `CategoryChanged`)
-4. Return `CategoryName` and `UpdatedAt`
+1. Call XBase-Record-Select on Tickets where Id = TicketId and IsDeleted = 0; if no row found, return TICKETING_TICKET_NOT_FOUND.
+2. Call XBase-Record-Select on Categories where Id = CategoryId; if no row found, return TICKETING_CATEGORY_NOT_FOUND.
+3. Call XBase-Record-Update on Tickets setting CategoryId = CategoryId, UpdatedAt = now() where Id = TicketId.
+4. Call XBase-Record-Insert on TicketHistory with TicketId, Action = CategoryAssigned, ToValue = category Name, ChangedAt = now().
+5. Return CategoryName and UpdatedAt.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is deleted |
-| `TICKETING_CATEGORY_NOT_FOUND` | `CategoryId` does not exist |
+| Code | Meaning |
+|------|---------|
+| TICKETING_TICKET_NOT_FOUND | Ticket does not exist or is soft-deleted |
+| TICKETING_CATEGORY_NOT_FOUND | CategoryId does not exist |
 
 ## Dependencies
 
-- `XBase-Record-Update`
-- `XBase-Record-Insert`
+- XBase-Record-Select
+- XBase-Record-Update
+- XBase-Record-Insert

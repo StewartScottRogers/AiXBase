@@ -4,11 +4,11 @@ Transition a closed ticket back to the `Open` status.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to reopen |
-| `ReopenedByUserId` | int | yes | — | User requesting the reopen |
-| `Reason` | string | no | — | Reason for reopening, recorded in history |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `TicketId` | int | yes | Ticket to reopen |
+| `ReopenedByUserId` | int | yes | User requesting the reopen |
+| `Comment` | string | no | Reason for reopening, recorded in history |
 
 ## Outputs
 
@@ -22,22 +22,27 @@ Transition a closed ticket back to the `Open` status.
 
 ## Steps
 
-1. Validate ticket exists and `IsDeleted = 0`
-2. Verify the ticket is currently in a terminal status; if not, return `TICKETING_TICKET_NOT_CLOSED`
-3. Look up `StatusId` for `Open`
-4. `Ticketing-Status-Transition` (to `Open`, recording reason in `Comment`)
-5. `XBase-Record-Update` → `Tickets` clear `ClosedAt` (set to `NULL`)
-6. Return `ReopenedAt`
+1. Call `XBase-Record-Select` on the `Tickets` table with filter `Id = TicketId`; if no row is returned or `IsDeleted = 1`, return `TICKETING_TICKET_NOT_FOUND`; if the ticket's current status is not terminal, return `TICKETING_TICKET_NOT_CLOSED`
+2. Call `XBase-Record-Select` on the `Statuses` table with filter `Name = 'Open'`; capture the returned `Id` as the target `StatusId`
+3. Call `Ticketing-Status-Transition` with `TicketId`, `ToStatusId`, and `ChangedByUserId = ReopenedByUserId`
+4. Call `XBase-Record-Update` on the `Tickets` table with filter `Id = TicketId` setting `ClosedAt = NULL` and `UpdatedAt = now()`
+5. Call `XBase-Record-Insert` on the `TicketHistory` table with `TicketId`, `ChangedByUserId = ReopenedByUserId`, `Action = 'Reopened'`, `ChangedAt = now()`
+6. If `Comment` is provided, call `Ticketing-Comment-Add` with `TicketId`, `AuthorUserId = ReopenedByUserId`, and the comment body
+7. Return `TicketId` and `ReopenedAt` (the timestamp from step 4)
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist |
+| Code | Meaning |
+|------|---------|
+| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is soft-deleted |
 | `TICKETING_TICKET_NOT_CLOSED` | Ticket is not in a terminal status |
 | `TICKETING_STATUS_TRANSITION_INVALID` | No allowed transition from current status to Open |
+| `XBASE_CONNECTION_INVALID` | No active connection named `ticketing` |
 
 ## Dependencies
 
-- `Ticketing-Status-Transition`
+- `XBase-Record-Select`
 - `XBase-Record-Update`
+- `XBase-Record-Insert`
+- `Ticketing-Status-Transition`
+- `Ticketing-Comment-Add`

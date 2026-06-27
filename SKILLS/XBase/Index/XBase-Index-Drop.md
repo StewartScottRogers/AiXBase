@@ -4,11 +4,12 @@ Delete a named `.ndx` index file and remove its definition from `_schema.json`.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ConnectionName` | string | yes | — | Open connection alias |
-| `IndexName` | string | yes | — | Name of the index to drop |
-| `IfExists` | bool | no | `true` | Succeed silently if the index does not exist |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `ConnectionName` | string | yes | Open connection alias |
+| `TableName` | string | yes | Table that owns the index |
+| `IndexName` | string | yes | Name of the index to drop |
+| `IfExists` | bool | no (default `true`) | Succeed silently if the index does not exist |
 
 ## Outputs
 
@@ -22,21 +23,20 @@ Delete a named `.ndx` index file and remove its definition from `_schema.json`.
 
 ## Steps
 
-1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
-2. `File.ReadAllText(_schema.json)`; parse JSON; find the index entry where `Name == IndexName`:
-   - If not found and `IfExists` is `true`: return `Success: true` immediately
-   - If not found and `IfExists` is `false`: return `XBASE_INDEX_NOT_FOUND`
-3. Identify `TableName` from the index entry; resolve `{TableName}.{IndexName}.ndx`
-4. `File.Delete({TableName}.{IndexName}.ndx)` if the file exists
-5. Remove the index entry from `_schema.json Indexes`
-6. `File.WriteAllText(_schema.json, updatedSchema)`
-7. Return `DroppedAt`
+1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`.
+2. Read `_schema.json` from the database directory using `read-text-file(path)`. Search the `Indexes` array for an entry where `Name` equals `IndexName` and `TableName` matches the input:
+   - If not found and `IfExists` is `true`: return `Success: true` immediately (no-op).
+   - If not found and `IfExists` is `false`: return `XBASE_INDEX_NOT_FOUND`.
+3. Delete the file `{TableName}.{IndexName}.ndx` from the database directory if it exists.
+4. Remove the matching index entry from the `Indexes` array in `_schema.json`.
+5. Write the updated `_schema.json` back to the database directory using `write-text-file(path, content)`.
+6. Return `IndexName` and `DroppedAt`.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `XBASE_CONNECTION_INVALID` | Connection not open |
+| Code | Meaning |
+|------|---------|
+| `XBASE_CONNECTION_INVALID` | `ConnectionName` is not registered |
 | `XBASE_INDEX_NOT_FOUND` | Index does not exist and `IfExists` is `false` |
 
 ## Dependencies

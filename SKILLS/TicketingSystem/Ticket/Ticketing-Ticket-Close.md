@@ -1,14 +1,14 @@
 # Ticketing-Ticket-Close
 
-Transition a ticket to the terminal `Closed` status and ring the completion bell.
+Transition a ticket to the terminal `Closed` status and emit a completion notification.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `TicketId` | int | yes | — | Ticket to close |
-| `ClosedByUserId` | int | yes | — | User closing the ticket |
-| `Comment` | string | no | — | Closing note recorded in history |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `TicketId` | int | yes | Ticket to close |
+| `ClosedByUserId` | int | yes | User closing the ticket |
+| `Comment` | string | no | Closing note appended to history |
 
 ## Outputs
 
@@ -23,22 +23,27 @@ Transition a ticket to the terminal `Closed` status and ring the completion bell
 
 ## Steps
 
-1. Validate ticket exists, is not deleted, and is not already closed
-2. Look up `StatusId` for the `Closed` status (`IsTerminal = 1`, `Name = 'Closed'`)
-3. `Ticketing-Status-Transition` (to `Closed`, with `Comment`)
-4. `XBase-Record-Update` → `Tickets` set `ClosedAt = now`
-5. `Ticketing-Display-Complete` (passes `TicketNumber`, `Summary`, `ClosedByDisplayName`, `ClosedAt`)
+1. Call `XBase-Record-Select` on the `Tickets` table with filter `Id = TicketId`; if no row is returned or `IsDeleted = 1`, return `TICKETING_TICKET_NOT_FOUND`; if the ticket's current status is already terminal, return `TICKETING_TICKET_ALREADY_CLOSED`
+2. Call `XBase-Record-Select` on the `Statuses` table with filters `IsTerminal = 1` and `Name = 'Closed'`; capture the returned `Id` as the target `StatusId`
+3. Call `Ticketing-Status-Transition` with `TicketId`, `ToStatusId`, `ChangedByUserId = ClosedByUserId`, and `Comment`
+4. Call `XBase-Record-Update` on the `Tickets` table with filter `Id = TicketId` setting `ClosedAt = now()` and `UpdatedAt = now()`
+5. If `Comment` is provided, call `Ticketing-Comment-Add` with `TicketId`, `AuthorUserId = ClosedByUserId`, and the comment body
+6. Call `Ticketing-Display-Complete` with `TicketNumber`, `Summary`, `ClosedByDisplayName`, and `ClosedAt`
+7. Return `TicketId`, `TicketNumber`, `ClosedAt`
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is deleted |
+| Code | Meaning |
+|------|---------|
+| `TICKETING_TICKET_NOT_FOUND` | Ticket does not exist or is soft-deleted |
 | `TICKETING_TICKET_ALREADY_CLOSED` | Ticket is already in a terminal status |
 | `TICKETING_STATUS_TRANSITION_INVALID` | No allowed transition from current status to Closed |
+| `XBASE_CONNECTION_INVALID` | No active connection named `ticketing` |
 
 ## Dependencies
 
-- `Ticketing-Status-Transition`
-- `Ticketing-Display-Complete`
+- `XBase-Record-Select`
 - `XBase-Record-Update`
+- `Ticketing-Status-Transition`
+- `Ticketing-Comment-Add`
+- `Ticketing-Display-Complete`

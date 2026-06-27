@@ -1,264 +1,156 @@
 # Ticketing System
 
-A full helpdesk ticketing system implemented as AI Skills, built entirely on top of XBase. Covers the complete ticket lifecycle — creation, assignment, escalation, status transitions, comments, attachments, reporting, and a visual terminal display with audible bell notification.
+A full-featured issue-tracking system implemented exclusively as AI Skills. Every read and write routes through XBase skills — the Ticketing System performs no direct file I/O of its own. Any AI agent or runtime that has the XBase skill set installed can run the Ticketing System without modification.
 
 ---
 
-## Architecture
+## Dependency on XBase
 
-| Layer | Technology |
-|---|---|
-| Storage | XBase native file engine (`AiXBase/ticketing/` directory) |
-| Schema | 11 tables (see below) |
-| Audit trail | `TicketHistory` table; every state change appends a row |
-| Authentication | Session tokens stored in `Sessions`; generic error for all auth failures |
-| Terminal display | Unicode block-art banners + ASCII BEL (`\a`) via Display skills |
-
-### Database Tables
-
-| Table | Purpose |
-|---|---|
-| `Tickets` | Core ticket records |
-| `Comments` | Threaded comments per ticket |
-| `Attachments` | File attachment metadata per ticket |
-| `Statuses` | Configurable status definitions |
-| `StatusTransitions` | Allowed `FromStatus → ToStatus` pairs |
-| `Priorities` | Configurable priority definitions with numeric ordering |
-| `Categories` | Hierarchical category tree |
-| `Users` | Registered users with hashed passwords |
-| `TicketHistory` | Append-only audit log of all ticket changes |
-| `TicketTags` | Many-to-many tags per ticket |
-| `Sessions` | Active authentication sessions with expiry |
-
-### Ticket Number Format
-
-Tickets are assigned sequential numbers: `TKT-0001`, `TKT-0002`, … The sequence never resets, never reuses deleted numbers, and expands naturally beyond `TKT-9999` to `TKT-10000`.
+All Ticketing skills require an active XBase-Database-Connect session named "ticketing". The connection must be established before any Ticketing skill is invoked. All data access — reads, writes, queries, and transactions — routes through XBase-Record-*, XBase-Query-*, and XBase-Transaction-* skills.
 
 ---
 
-## Quick Start
+## Data Model
 
-```
-# 1. Initialise the database (XBase prerequisite)
-/XBase-Database-Initialize  DatabaseName:"ticketing"
-/XBase-Database-Connect     DatabaseName:"ticketing"  ConnectionName:"ticketing"
+| Table | Description |
+|-------|-------------|
+| Tickets | Core ticket records including summary, description, status, priority, category, reporter, assignee, and timestamps |
+| Comments | Threaded comments per ticket, with soft-delete and author tracking |
+| Attachments | File attachment metadata per ticket; stores path and filename but not file content |
+| Statuses | Configurable status definitions; terminal statuses (IsTerminal = 1) trigger the COMPLETE display banner |
+| StatusTransitions | Allowed FromStatus to ToStatus pairs; enforces the workflow graph |
+| Priorities | Configurable priority levels with a numeric Weight for ordering; one row is marked IsDefault |
+| Categories | Ticket category definitions |
+| Tags | Free-text tags associated with tickets via a TicketTags join table |
+| Users | Registered user accounts with hashed credentials and active/inactive flag |
+| Sessions | Active authentication sessions with SessionToken and ExpiresAt |
+| TicketHistory | Append-only audit log; every mutation to a ticket appends a row recording the action, actor, old value, new value, and timestamp |
 
-# 2. Create the schema (run XBase-Schema-TableCreate for each of the 11 tables)
+### Ticket Numbers
 
-# 3. Seed statuses and transitions
-/Ticketing-Status-Define  Name:"Open"        IsTerminal:false  IsDefault:true
-/Ticketing-Status-Define  Name:"In Progress" IsTerminal:false
-/Ticketing-Status-Define  Name:"Closed"      IsTerminal:true
-
-# 4. Seed priorities
-/Ticketing-Priority-Define  Name:"Critical"  NumericValue:1
-/Ticketing-Priority-Define  Name:"High"      NumericValue:2
-/Ticketing-Priority-Define  Name:"Medium"    NumericValue:3  IsDefault:true
-/Ticketing-Priority-Define  Name:"Low"       NumericValue:4
-
-# 5. Register the first admin user
-/Ticketing-User-Register
-  Username:"admin"
-  Email:"admin@example.com"
-  Password:"changeme"
-  DisplayName:"Administrator"
-  IsAdmin:true
-
-# 6. Authenticate
-/Ticketing-User-Authenticate  Username:"admin"  Password:"changeme"
-# → SessionToken:"abc123..."
-
-# 7. Create a ticket
-/Ticketing-Ticket-Create
-  Summary:"Login page crashes on mobile Safari"
-  SubmittedByUserId:"<admin-user-id>"
-
-# 8. Assign it
-/Ticketing-Ticket-Assign
-  TicketId:1
-  AssigneeId:"<user-id>"
-  AssignedByUserId:"<admin-user-id>"
-
-# 9. Close it — triggers banner + bell × 3
-/Ticketing-Ticket-Close
-  TicketId:1
-  ClosedByUserId:"<admin-user-id>"
-```
+Tickets are assigned sequential human-readable numbers: TKT-0001, TKT-0002, and so on. The sequence never resets and never reuses deleted numbers. It expands naturally beyond TKT-9999 to TKT-10000.
 
 ---
 
-## Operation Groups
+## Skill Groups
 
 ### Ticket (9 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Ticket-Create` | Create a new ticket; auto-assigns number, default status, and default priority |
-| `Ticketing-Ticket-Read` | Read a ticket by Id or TicketNumber; includes counts for comments and attachments |
-| `Ticketing-Ticket-Update` | Update Summary, Description, or Category; Status changes must go through Status-Transition |
-| `Ticketing-Ticket-Delete` | Soft-delete (default) or hard-delete a ticket |
-| `Ticketing-Ticket-Close` | Transition ticket to a terminal status, emit the COMPLETE banner, ring bell × 3 |
-| `Ticketing-Ticket-Reopen` | Move a terminal-status ticket back to Open |
-| `Ticketing-Ticket-Assign` | Set or change the assignee; emits an alert banner |
-| `Ticketing-Ticket-Escalate` | Raise the ticket's priority; emits an escalation alert |
-| `Ticketing-Ticket-Query` | Search tickets with filters (status, priority, assignee, category, tag, date range, text) |
+Ticketing-Ticket-Create, Ticketing-Ticket-Read, Ticketing-Ticket-Update, Ticketing-Ticket-Delete, Ticketing-Ticket-Close, Ticketing-Ticket-Reopen, Ticketing-Ticket-Assign, Ticketing-Ticket-Escalate, Ticketing-Ticket-Query.
+
+Create opens a new ticket and inserts the first TicketHistory row. Close transitions the ticket to a terminal status, updates ClosedAt, and calls Ticketing-Display-Complete. Assign and Escalate call Ticketing-Display-Alert after committing their changes.
 
 ### Comment (4 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Comment-Add` | Add a comment to a ticket; supports `IsInternal` flag for staff-only notes |
-| `Ticketing-Comment-Read` | Read all comments on a ticket or a single comment by Id |
-| `Ticketing-Comment-Edit` | Edit a comment body; sets `EditedAt`; restricted to author or admin |
-| `Ticketing-Comment-Delete` | Soft-delete a comment; restricted to author or admin |
+Ticketing-Comment-Add, Ticketing-Comment-Read, Ticketing-Comment-Edit, Ticketing-Comment-Delete.
+
+Comments are soft-deleted. Edit and Delete are restricted to the comment author or an administrator.
 
 ### Attachment (3 skills)
 
-Attachments store file **metadata** only — path, filename, size, uploader. Actual file storage is handled by the caller.
+Ticketing-Attachment-Add, Ticketing-Attachment-Read, Ticketing-Attachment-Remove.
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Attachment-Add` | Record a file attachment on a ticket |
-| `Ticketing-Attachment-Read` | List attachments on a ticket or read a single attachment by Id |
-| `Ticketing-Attachment-Remove` | Soft-remove an attachment; restricted to uploader or admin |
+Attachments store file metadata only — path, filename, uploader, and timestamp. Actual file content is managed by the caller outside of this skill set.
 
 ### Status (2 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Status-Define` | Create or update a status; `IsTerminal:true` marks statuses that trigger the COMPLETE display |
-| `Ticketing-Status-Transition` | Move a ticket between statuses; validates against `StatusTransitions` table; triggers Display-Complete when `IsTerminal = 1` |
+Ticketing-Status-Define, Ticketing-Status-Transition.
 
-Only transitions listed in the `StatusTransitions` table are permitted. Moving a ticket out of a terminal status must be done through `Ticketing-Ticket-Reopen`, not Status-Transition directly.
+Ticketing-Status-Define creates or updates a status definition. Ticketing-Status-Transition moves a ticket between statuses, validates the transition against the StatusTransitions table, appends a TicketHistory row, and calls Ticketing-Display-Complete when the destination status is terminal.
 
 ### Priority (2 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Priority-Define` | Create or update a priority level with a numeric value for ordering |
-| `Ticketing-Priority-Set` | Set a ticket's priority; history record created |
+Ticketing-Priority-Define, Ticketing-Priority-Set.
 
-`Ticketing-Ticket-Escalate` raises priority by one level. `Ticketing-Priority-Set` sets any priority explicitly.
+Ticketing-Priority-Define creates a priority level with a numeric Weight for ordering. Ticketing-Priority-Set changes a ticket's priority explicitly. Ticketing-Ticket-Escalate raises priority by one level.
 
 ### Category (4 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Category-Create` | Create a root or child category (hierarchical tree) |
-| `Ticketing-Category-Assign` | Assign or clear a ticket's category |
-| `Ticketing-Tag-Add` | Add a free-text tag to a ticket; idempotent |
-| `Ticketing-Tag-Remove` | Remove a tag from a ticket; hard delete (tags have no audit requirement) |
+Ticketing-Category-Create, Ticketing-Category-Assign, Ticketing-Tag-Add, Ticketing-Tag-Remove.
+
+Categories are hierarchical. Tags are free-text strings stored in a many-to-many join table. Ticketing-Tag-Add is idempotent.
 
 ### User (5 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-User-Register` | Register a new user; password hashed immediately; hash never returned |
-| `Ticketing-User-Read` | Look up a user by Id, Username, or Email |
-| `Ticketing-User-Update` | Update display name, email, or password |
-| `Ticketing-User-Deactivate` | Deactivate a user; guards against deactivating the last admin |
-| `Ticketing-User-Authenticate` | Verify credentials; returns a session token; all failure modes return the same generic error |
+Ticketing-User-Register, Ticketing-User-Read, Ticketing-User-Update, Ticketing-User-Deactivate, Ticketing-User-Authenticate.
+
+User management stores credentials as a secure one-way hash. CredentialHash is never returned in any output. Deactivated users cannot be assigned tickets or post comments.
 
 ### Report (3 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Report-Summary` | Aggregate counts by status, priority, and assignee |
-| `Ticketing-Report-Generate` | Generate a named report type (open, closed-in-period, by-assignee, overdue) |
-| `Ticketing-Report-Export` | Export ticket data to CSV or JSON |
+Ticketing-Report-Summary, Ticketing-Report-Generate, Ticketing-Report-Export.
+
+Report-Summary returns aggregate counts by status, priority, and assignee. Report-Generate produces a full record set for a date range with configurable groupings. Report-Export serializes a report object to CSV or JSON and writes it to a file.
 
 ### Display (3 skills)
 
-| Skill | Purpose |
-|---|---|
-| `Ticketing-Display-Complete` | Render a full COMPLETE banner to stdout and emit BEL characters |
-| `Ticketing-Display-Alert` | Render a compact alert banner (assignment, escalation events) and emit BEL |
-| `Ticketing-Display-Bell` | Emit N BEL characters (`\a`, ASCII 7) to stdout; max 10 |
+Ticketing-Display-Complete, Ticketing-Display-Alert, Ticketing-Display-Bell.
+
+Display skills write text and BEL characters to stdout. They have no database access and do not call XBase skills. They are leaf skills called by Ticket and Status skills at specific lifecycle events.
 
 ---
 
-## Terminal Display System
+## Authentication
 
-When a ticket reaches a terminal status (closed, cancelled), the system writes a full-width banner to stdout and rings the terminal bell so the completion is visible and audible from across the room.
-
-### COMPLETE Banner (Unicode)
-
-```
-███████╗ ██████╗ ███╗   ███╗██████╗ ██╗     ███████╗████████╗███████╗
-██╔════╝██╔═══██╗████╗ ████║██╔══██╗██║     ██╔════╝╚══██╔══╝██╔════╝
-██║     ██║   ██║██╔████╔██║██████╔╝██║     █████╗     ██║   █████╗
-██║     ██║   ██║██║╚██╔╝██║██╔═══╝ ██║     ██╔══╝     ██║   ██╔══╝
-╚██████╗╚██████╔╝██║ ╚═╝ ██║██║     ███████╗███████╗   ██║   ███████╗
- ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚═╝     ╚══════╝╚══════╝   ╚═╝   ╚══════╝
-
-  Ticket  : {TicketNumber}
-  Summary : {Summary}
-  Closed  : {ClosedAt}
-  By      : {ClosedByDisplayName}
-```
-
-Pass `UseUnicode: false` to any Display skill for the plain-ASCII fallback (compatible with all terminals).
-
-### Bell Implementation
-
-`Ticketing-Display-Bell` emits `Console.Write('\a')` once per ring — three separate calls for three audibly distinct rings. It does **not** use `Console.Beep()` (which blocks the thread and is unsupported on non-Windows platforms).
+Ticketing-User-Authenticate accepts a plaintext Password. The skill computes a secure one-way hash of the input and compares it to the stored CredentialHash — the plaintext value is never persisted or returned. On success, the skill generates a cryptographically random 64-character hex SessionToken, inserts a row into the Sessions table with an ExpiresAt value 24 hours in the future, and returns SessionToken, ExpiresAt, and UserId. On failure, TICKETING_AUTH_FAILED is returned regardless of whether the failure was a missing user, inactive user, or wrong credential.
 
 ---
 
-## Audit Trail
+## Display and Notification
 
-Every mutation to a ticket appends a row to `TicketHistory`:
+Display skills write BEL characters and text banners to stdout. A BEL character is ASCII 7 (`\a`). When emitted to a terminal, the system produces an audible alert. The Display skills are terminal-agnostic: they make no assumptions about the terminal type, operating system, or runtime.
 
-| Column | Content |
-|---|---|
-| `TicketId` | The affected ticket |
-| `ChangeType` | `"created"`, `"updated"`, `"status_changed"`, `"assigned"`, `"escalated"`, `"deleted"`, `"reopened"` |
-| `ChangedByUserId` | The acting user |
-| `OldValue` / `NewValue` | JSON representation of what changed |
-| `Note` | Optional reason or comment |
-| `ChangedAt` | ISO-8601 timestamp |
+Ticketing-Display-Bell emits N BEL characters (max 10) to stdout, one at a time with a flush after each, so the user hears distinct rings. No banner or other text is produced.
 
-History is append-only and is never soft-deleted.
+Ticketing-Display-Alert emits BEL characters and then writes a compact two-line bordered banner identifying the event, ticket number, and a detail string. Used for assignment and escalation events.
+
+Ticketing-Display-Complete emits BEL characters, writes a blank line, and then writes a full-width block-letter COMPLETE banner with ticket metadata (TicketNumber, Summary, ClosedAt, ClosedByDisplayName). Pass UseUnicode = false for a plain-ASCII fallback compatible with all terminals.
 
 ---
 
-## Authentication Design
+## Initialization Sequence
 
-`Ticketing-User-Authenticate` returns the same `TICKETING_AUTH_FAILED` error for all three failure conditions — wrong password, non-existent username, and deactivated account — with identical wording and no timing difference. This prevents user-enumeration attacks.
+When setting up a fresh Ticketing database, call skills in this order:
 
----
-
-## Error Codes
-
-All Ticketing System error codes follow the pattern `TICKETING_<CATEGORY>_<REASON>`.
-
-| Category | Example Codes |
-|---|---|
-| `TICKET` | `TICKETING_TICKET_NOT_FOUND`, `TICKETING_TICKET_ALREADY_CLOSED`, `TICKETING_TICKET_NOT_CLOSED`, `TICKETING_TICKET_SUMMARY_REQUIRED`, `TICKETING_TICKET_IDENTIFIER_REQUIRED` |
-| `COMMENT` | `TICKETING_COMMENT_NOT_FOUND`, `TICKETING_COMMENT_BODY_REQUIRED`, `TICKETING_COMMENT_EDIT_FORBIDDEN`, `TICKETING_COMMENT_DELETE_FORBIDDEN` |
-| `ATTACHMENT` | `TICKETING_ATTACHMENT_NOT_FOUND`, `TICKETING_ATTACHMENT_FILENAME_REQUIRED`, `TICKETING_ATTACHMENT_DUPLICATE`, `TICKETING_ATTACHMENT_REMOVE_FORBIDDEN` |
-| `STATUS` | `TICKETING_STATUS_NOT_FOUND`, `TICKETING_STATUS_NAME_DUPLICATE`, `TICKETING_STATUS_NAME_REQUIRED`, `TICKETING_STATUS_TRANSITION_INVALID`, `TICKETING_STATUS_ALREADY_CURRENT`, `TICKETING_STATUS_IN_USE` |
-| `PRIORITY` | `TICKETING_PRIORITY_NOT_FOUND`, `TICKETING_PRIORITY_NAME_DUPLICATE`, `TICKETING_PRIORITY_NAME_REQUIRED`, `TICKETING_PRIORITY_IN_USE`, `TICKETING_PRIORITY_ALREADY_MAX`, `TICKETING_PRIORITY_ESCALATION_INVALID`, `TICKETING_PRIORITY_VALUE_DUPLICATE` |
-| `CATEGORY` | `TICKETING_CATEGORY_NOT_FOUND`, `TICKETING_CATEGORY_NAME_DUPLICATE`, `TICKETING_CATEGORY_NAME_REQUIRED` |
-| `TAG` | `TICKETING_TAG_NAME_REQUIRED` |
-| `USER` | `TICKETING_USER_NOT_FOUND`, `TICKETING_USER_INACTIVE`, `TICKETING_USER_EMAIL_DUPLICATE`, `TICKETING_USER_USERNAME_DUPLICATE`, `TICKETING_USER_EMAIL_INVALID`, `TICKETING_USER_USERNAME_INVALID`, `TICKETING_USER_EMAIL_REQUIRED`, `TICKETING_USER_USERNAME_REQUIRED`, `TICKETING_USER_LAST_ADMIN`, `TICKETING_USER_IDENTIFIER_REQUIRED`, `TICKETING_USER_DEACTIVATION_FORBIDDEN` |
-| `AUTH` | `TICKETING_AUTH_FAILED` (one code for all auth failures) |
-| `REPORT` | `TICKETING_REPORT_TYPE_UNKNOWN`, `TICKETING_REPORT_FORMAT_UNKNOWN` |
-| `DISPLAY` | `TICKETING_DISPLAY_BELL_COUNT_EXCEEDED`, `TICKETING_DISPLAY_STDOUT_UNAVAILABLE`, `TICKETING_DISPLAY_FIELD_REQUIRED` |
-| `DELETE` | `TICKETING_DELETE_NOT_CONFIRMED` |
-| `FIELD` | `TICKETING_FIELD_NOT_UPDATABLE` |
+1. XBase-Database-Initialize — create a database named "ticketing" in {DatabaseRoot}/ticketing/
+2. XBase-Database-Connect — ConnectionName: "ticketing"
+3. XBase-Schema-TableCreate — create all 11 tables listed in the Data Model section above
+4. XBase-Index-Create — create indexes on Tickets.StatusId, Tickets.AssignedToUserId, and Tickets.CreatedAt at minimum
+5. Ticketing-Status-Define — seed default statuses: Open (IsDefault = 1), In Progress, Blocked, Closed (IsTerminal = 1)
+6. XBase-Record-Insert on StatusTransitions — populate allowed transition pairs
+7. Ticketing-Priority-Define — seed: Low, Medium (IsDefault = 1), High, Critical
+8. Ticketing-User-Register — create the first administrator user account
 
 ---
 
-## Dependencies
+## Error Handling
 
-The Ticketing System depends on XBase. The full dependency chain:
+Ticketing skill errors follow the pattern TICKETING_CATEGORY_REASON and are returned in the standard XBase error envelope:
 
-```
-Ticketing-Ticket-Close
-  └── Ticketing-Status-Transition
-        └── Ticketing-Display-Complete
-              └── Ticketing-Display-Bell
+```json
+{
+  "Success": false,
+  "ErrorCode": "TICKETING_USER_NOT_FOUND",
+  "Message": "No user exists with the given identifier.",
+  "SkillName": "Ticketing-User-Read"
+}
 ```
 
-All XBase Database, Schema, Record, Query, Index, Transaction, and Backup skills must be installed before any Ticketing skill can function.
+Key error codes used by the skills in this release:
+
+| Code | Meaning |
+|------|---------|
+| TICKETING_USER_NOT_FOUND | No user with the given ID or username |
+| TICKETING_USER_INACTIVE | User exists but is deactivated |
+| TICKETING_USER_IDENTIFIER_REQUIRED | Neither UserId nor Username was provided |
+| TICKETING_USER_USERNAME_DUPLICATE | Username is already registered |
+| TICKETING_AUTH_FAILED | Credential comparison failed (deliberately generic) |
+| TICKETING_TICKET_NOT_FOUND | No ticket with the given ID |
+| TICKETING_STATUS_TRANSITION_INVALID | Transition not in the StatusTransitions table |
+| TICKETING_COMMENT_NOT_FOUND | Comment ID not found or soft-deleted |
+| TICKETING_REPORT_DATE_RANGE_INVALID | FromDate is after ToDate |
+| TICKETING_REPORT_FORMAT_UNKNOWN | Export format is not CSV or JSON |
+| TICKETING_DISPLAY_STDOUT_UNAVAILABLE | stdout cannot be written |
+| TICKETING_DISPLAY_BELL_COUNT_EXCEEDED | BellCount or Count > 10 |
+
+XBase error codes (XBASE_CONNECTION_INVALID, XBASE_TABLE_NOT_FOUND, etc.) propagate from the underlying XBase skill calls without modification.

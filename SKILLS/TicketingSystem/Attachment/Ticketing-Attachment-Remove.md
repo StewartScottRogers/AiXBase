@@ -4,10 +4,10 @@ Soft-delete an attachment record. The physical file is not deleted.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `AttachmentId` | int | yes | — | Attachment to remove |
-| `RemovedByUserId` | int | yes | — | User requesting removal |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| AttachmentId | int | yes | Attachment to remove |
+| RemovedByUserId | int | yes | User requesting removal |
 
 ## Outputs
 
@@ -21,17 +21,19 @@ Soft-delete an attachment record. The physical file is not deleted.
 
 ## Steps
 
-1. Validate `AttachmentId` exists and `IsDeleted = 0`
-2. `XBase-Record-Update` → `Attachments` set `IsDeleted = 1`
-3. Return `RemovedAt`
+1. Call XBase-Record-Select on Attachments where Id = AttachmentId and IsDeleted = 0; if no row found, return XBASE_RECORD_CONSTRAINT_VIOLATION.
+2. Call XBase-Record-Delete (soft delete) on Attachments for AttachmentId, setting IsDeleted = 1.
+3. Call XBase-Record-Insert on TicketHistory with TicketId = attachment.TicketId, ChangedByUserId = RemovedByUserId, Action = AttachmentRemoved, ChangedAt = now().
+4. Return RemovedAt.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `TICKETING_ATTACHMENT_NOT_FOUND` | Attachment does not exist or is already removed |
+| Code | Meaning |
+|------|---------|
+| XBASE_RECORD_CONSTRAINT_VIOLATION | AttachmentId does not exist or is already soft-deleted |
 
 ## Dependencies
 
-- `XBase-Record-Update`
-- `XBase-Query-Filter`
+- XBase-Record-Select
+- XBase-Record-Delete
+- XBase-Record-Insert

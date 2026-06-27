@@ -4,17 +4,16 @@ Return column definitions for a given table from `_schema.json`.
 
 ## Inputs
 
-| Parameter | Type | Required | Default | Description |
-|---|---|---|---|---|
-| `ConnectionName` | string | yes | — | Open connection alias |
-| `TableName` | string | yes | — | Table to introspect |
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `ConnectionName` | string | Yes | Open connection alias. |
+| `TableName` | string | Yes | Name of the table to introspect. |
 
 ## Outputs
 
 ```json
 {
   "Success": true,
-  "TableName": "<name>",
   "Columns": [
     {
       "Name": "Id",
@@ -26,25 +25,26 @@ Return column definitions for a given table from `_schema.json`.
       "Default": null,
       "ForeignKey": null
     }
-  ]
+  ],
+  "Count": 6
 }
 ```
 
 ## Steps
 
-1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`
-2. Resolve the active `_schema.json` path (transaction workspace if active, otherwise live)
-3. `File.ReadAllText(_schema.json)`; parse JSON
-4. Locate the table entry where `Name == TableName`; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`
-5. Return the table's `Columns` array
+1. Validate `ConnectionName`; if not registered, return `XBASE_CONNECTION_INVALID`.
+2. Read `_schema.json` using `read-text-file(path)`.
+3. Locate the table entry where `Name` matches `TableName`; if absent, return `XBASE_SCHEMA_TABLE_NOT_FOUND`.
+4. Return the table's `Columns` array and `Count`.
 
 ## Error Codes
 
-| Code | Condition |
-|---|---|
-| `XBASE_CONNECTION_INVALID` | Connection not open |
-| `XBASE_SCHEMA_TABLE_NOT_FOUND` | `TableName` does not exist in `_schema.json` |
+| Code | Meaning |
+|------|---------|
+| `XBASE_CONNECTION_INVALID` | `ConnectionName` is not registered in the session. |
+| `XBASE_SCHEMA_TABLE_NOT_FOUND` | `TableName` does not exist in `_schema.json`. |
 
 ## Dependencies
 
-- `XBase-Database-Connect`
+- Writable local file system
+- XBase-Database-Connect

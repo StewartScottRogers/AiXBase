@@ -2,7 +2,7 @@
 
 AiXBase is a demonstration of **Ai Polymorphic Services**: software capabilities expressed as AI Skills rather than fixed API endpoints, where the AI dynamically selects, composes, and adapts behaviors based on context rather than traversing a rigid call graph.
 
-The repository ships two fully realised features — XBase and the Ticketing System — alongside 61 distributable Skill files that any Claude Code project can install and invoke as slash commands.
+The repository ships two fully realised features — XBase and the Ticketing System — alongside 69 distributable Skill files that any Claude Code project can install and invoke as slash commands.
 
 ---
 
@@ -22,13 +22,12 @@ Skills are **portable** — copy a `.md` file and the capability moves with it. 
 
 ## XBase
 
-XBase is a lightweight, file-based database engine with no external runtime dependencies. A database is a named directory; tables are newline-delimited JSON files (`.dbf`); indexes are sorted key-to-Id text files (`.ndx`); and transactions are directory snapshot workspaces that commit atomically via `File.Move`.
+XBase is a lightweight, file-based database engine with no external runtime dependencies. A database is a named directory; tables are stored as **dBASE III binary `.dbf` files** (fixed-length binary records); indexes are `.ndx` B-tree files; and transactions are directory snapshot workspaces that commit atomically via a same-volume file move.
 
-**29 skills across 8 operation groups:**
+**34 skills across 9 operation groups:**
 
 | Group | Skills | Scope |
 |---|:---:|---|
-| Runtime | 1 | Environment detection — selects PowerShell, bash, or Python |
 | Database | 4 | Initialize, connect, disconnect, drop |
 | Schema | 5 | Table and column DDL |
 | Record | 5 | Insert, select, update, delete, upsert |
@@ -36,18 +35,20 @@ XBase is a lightweight, file-based database engine with no external runtime depe
 | Index | 4 | Create, drop, rebuild, list |
 | Transaction | 4 | Begin, commit, rollback, savepoints |
 | Backup | 3 | Create, restore, verify |
+| Admin | 3 | Execute (dynamic dispatch), Inspect (health report), Maintain (pack + rebuild + verify) |
+| Runtime | 1 | Environment detection — verifies all required file system primitives |
 
-Every table receives implicit `Id` (auto-increment), `CreatedAt`, `UpdatedAt`, and `IsDeleted` columns. Soft deletes are the default; hard deletes are opt-in via `HardDelete: true`. A filter is required on Update and Delete to prevent accidental mass mutations — if you genuinely mean all rows, the filter must say so explicitly.
+Every table receives implicit `Id` (auto-increment), `CreatedAt`, `UpdatedAt`, and `IsDeleted` columns. Soft deletes are the default; hard deletes are opt-in via `HardDelete: true`. A filter is required on Update and Delete to prevent accidental mass mutations.
 
-The storage format is intentionally human-readable: every row is a complete JSON object on a single line, making tables trivially diffable with `git diff` and repairable with any text editor.
+The storage format is **dBASE III binary**: every row is a fixed-length binary record with a 1-byte deletion flag, making databases compact and seek-addressable by record index without any external engine.
 
 ---
 
 ## Ticketing System
 
-A full helpdesk ticketing system built entirely on top of XBase. It covers the complete ticket lifecycle — creation, assignment, escalation, status transitions, comments, attachments, reporting, and a Unicode terminal display with audible bell notification on completion.
+A full helpdesk ticketing system built entirely on top of XBase. It covers the complete ticket lifecycle — creation, assignment, escalation, status transitions, comments, attachments, reporting, and a terminal display with audible bell notification on completion.
 
-**33 skills across 9 operation groups:**
+**35 skills across 9 operation groups:**
 
 | Group | Skills | Scope |
 |---|:---:|---|
@@ -87,6 +88,7 @@ your-project/
         │   ├── Database/   XBase-Database-*.md
         │   ├── Schema/     XBase-Schema-*.md
         │   ├── Record/     XBase-Record-*.md
+        │   ├── Admin/      XBase-Admin-*.md
         │   └── ...
         └── TicketingSystem/
             ├── Ticket/     Ticketing-Ticket-*.md
@@ -94,4 +96,4 @@ your-project/
             └── ...
 ```
 
-All 61 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required script is generated dynamically by the AI at execution time based on what the deployment environment provides.
+All 69 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.

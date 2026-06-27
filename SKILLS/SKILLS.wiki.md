@@ -14,7 +14,7 @@ Skills do not assume any specific AI platform. They work with any AI harness tha
 
 ## Bundles
 
-### XBase (38 skills)
+### XBase (34 skills)
 
 A lightweight native file-based database engine accessed entirely through skills. No external database engine, library, or binary is required.
 
@@ -32,7 +32,7 @@ A lightweight native file-based database engine accessed entirely through skills
 
 See XBase/XBase.wiki.md for full documentation.
 
-### Ticketing System (31 skills, depends on XBase)
+### TicketingSystem (35 skills, depends on XBase)
 
 A full helpdesk ticketing system built on top of XBase. Every read and write routes through XBase skills — no direct file I/O.
 

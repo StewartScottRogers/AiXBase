@@ -5,8 +5,8 @@
     <File Path="README.md" />
     <File Path="manifest.json" />
     <File Path="llms.txt" />
-    <File Path="docs/index.md" />
   </Folder>
+  <Project Path="docs/docs.shproj" Id="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e" />
   <Project Path="ProductRequirementsDocuments/ProductRequirementsDocuments.shproj" />
   <Project Path="SKILLS/SKILLS.shproj" Id="cea07ac3-00f8-4496-a96f-b7f9dcf8d2d4" />
   <Project Path="XBaseFiles/XBaseFiles.shproj" Id="e9f8b3c4-5d6a-4e7f-8a9b-0c1d2e3f4a5b" />

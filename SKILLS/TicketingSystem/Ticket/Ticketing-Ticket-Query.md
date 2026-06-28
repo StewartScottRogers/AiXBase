@@ -11,6 +11,7 @@ Search and list tickets with filter, sort, and pagination.
 | `SortDirection` | string | no | `ASC` or `DESC`; default `DESC` |
 | `Page` | int | no | 1-based page number; default `1` |
 | `PageSize` | int | no | Rows per page; default `25`, max `200` |
+| `IncludeArchived` | bool | no | Include archived tickets (`IsArchived = 1`); default `false` |
 
 ## Outputs
 
@@ -36,11 +37,12 @@ Search and list tickets with filter, sort, and pagination.
 
 ## Steps
 
-1. For each entry in `Filters`, call `XBase-Query-Filter` with the specified `Field`, `Operator`, and `Value` to build the composite filter expression
-2. Call `XBase-Query-Sort` with `SortBy` and `SortDirection`
-3. Call `XBase-Query-Join` to join the `Tickets` table to `Statuses`, `Priorities`, and `Users` (assignee) as needed for display fields
-4. Call `XBase-Record-Select` on the `Tickets` table with the compiled filter, sort, joins, `Limit = PageSize`, and `Offset = (Page - 1) * PageSize`
-5. Return `Tickets` array, `TotalCount`, `Page`, `PageSize`
+1. If `IncludeArchived` is false (the default), prepend an implicit filter `IsArchived = 0` to the filter list before processing any caller-supplied filters.
+2. For each entry in `Filters`, call `XBase-Query-Filter` with the specified `Field`, `Operator`, and `Value` to build the composite filter expression
+3. Call `XBase-Query-Sort` with `SortBy` and `SortDirection`
+4. Call `XBase-Query-Join` to join the `Tickets` table to `Statuses`, `Priorities`, and `Users` (assignee) as needed for display fields
+5. Call `XBase-Record-Select` on the `Tickets` table with the compiled filter, sort, joins, `Limit = PageSize`, and `Offset = (Page - 1) * PageSize`
+6. Return `Tickets` array, `TotalCount`, `Page`, `PageSize`
 
 ## Error Codes
 

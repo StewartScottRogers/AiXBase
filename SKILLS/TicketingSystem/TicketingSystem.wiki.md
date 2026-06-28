@@ -23,6 +23,7 @@ All Ticketing skills require an active XBase-Database-Connect session named "tic
 | Categories | Ticket category definitions |
 | Tags | Free-text tags associated with tickets via a TicketTags join table |
 | Users | Registered user accounts with hashed credentials and active/inactive flag |
+| Tickets.IsArchived | Integer flag (0/1) on every Tickets row; set by Ticketing-Ticket-Archive; excluded from all queries by default |
 | Sessions | Active authentication sessions with SessionToken and ExpiresAt |
 | TicketHistory | Append-only audit log; every mutation to a ticket appends a row recording the action, actor, old value, new value, and timestamp |
 
@@ -34,11 +35,11 @@ Tickets are assigned sequential human-readable numbers: TKT-0001, TKT-0002, and 
 
 ## Skill Groups
 
-### Ticket (9 skills)
+### Ticket (11 skills)
 
-Ticketing-Ticket-Create, Ticketing-Ticket-Read, Ticketing-Ticket-Update, Ticketing-Ticket-Delete, Ticketing-Ticket-Close, Ticketing-Ticket-Reopen, Ticketing-Ticket-Assign, Ticketing-Ticket-Escalate, Ticketing-Ticket-Query.
+Ticketing-Ticket-Create, Ticketing-Ticket-Read, Ticketing-Ticket-Update, Ticketing-Ticket-Delete, Ticketing-Ticket-Close, Ticketing-Ticket-Reopen, Ticketing-Ticket-Assign, Ticketing-Ticket-Escalate, Ticketing-Ticket-Query, Ticketing-Ticket-Archive, Ticketing-Ticket-Unarchive.
 
-Create opens a new ticket and inserts the first TicketHistory row. Close transitions the ticket to a terminal status, updates ClosedAt, and calls Ticketing-Display-Complete. Assign and Escalate call Ticketing-Display-Alert after committing their changes.
+Create opens a new ticket and inserts the first TicketHistory row. Close transitions the ticket to a terminal status, updates ClosedAt, and calls Ticketing-Display-Complete. Assign and Escalate call Ticketing-Display-Alert after committing their changes. Archive bulk-sets `IsArchived = 1` on closed tickets older than a threshold, hiding them from default queries; Unarchive clears the flag on a single ticket.
 
 ### Comment (4 skills)
 
@@ -87,6 +88,12 @@ Report-Summary returns aggregate counts by status, priority, and assignee. Repor
 Ticketing-Display-Complete, Ticketing-Display-Alert, Ticketing-Display-Bell.
 
 Display skills write text and BEL characters to stdout. They have no database access and do not call XBase skills. They are leaf skills called by Ticket and Status skills at specific lifecycle events.
+
+### Archive (3 skills)
+
+Ticketing-Archive-Pack, Ticketing-Archive-Query, Ticketing-Archive-Restore.
+
+The Archive group handles cross-database archiving for long-running deployments. Pack moves all `IsArchived = 1` tickets and their related records (Comments, Attachments, TicketHistory, TicketTags) into a named archive XBase database (e.g. `ticketing_2026`), then hard-deletes them from the main database, keeping the main database small. Archive databases are fully valid XBase ticketing databases and can be queried with Ticketing-Archive-Query (a thin wrapper over Ticketing-Ticket-Query targeting the archive connection). Restore moves an individual ticket back from an archive database to the main database, clearing `IsArchived` so it appears in normal queries immediately.
 
 ### Session (1 skill)
 

@@ -375,7 +375,7 @@
                    },
                    {
                        "Name":  "Tickets",
-                       "NextId":  13,
+                       "NextId":  19,
                        "CreatedAt":  "2026-06-28T19:07:21Z",
                        "Columns":  [
                                        {
@@ -469,6 +469,15 @@
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
                                            "Nullable":  false,
+                                           "Default":  0
+                                       },
+                                       {
+                                           "Name":  "IsArchived",
+                                           "Type":  "INTEGER",
+                                           "PrimaryKey":  false,
+                                           "AutoIncrement":  false,
+                                           "Nullable":  false,
+                                           "Unique":  false,
                                            "Default":  0
                                        }
                                    ]
@@ -589,7 +598,7 @@
                    },
                    {
                        "Name":  "TicketHistory",
-                       "NextId":  35,
+                       "NextId":  53,
                        "CreatedAt":  "2026-06-28T19:07:21Z",
                        "Columns":  [
                                        {

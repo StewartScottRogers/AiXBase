@@ -32,13 +32,13 @@ A lightweight native file-based database engine accessed entirely through skills
 
 See XBase/XBase.wiki.md for full documentation.
 
-### TicketingSystem (36 skills, depends on XBase)
+### TicketingSystem (41 skills, depends on XBase)
 
 A full helpdesk ticketing system built on top of XBase. Every read and write routes through XBase skills — no direct file I/O.
 
 | Group | Skills | Purpose |
 |-------|--------|---------|
-| Ticket | 9 | Full ticket lifecycle |
+| Ticket | 11 | Full ticket lifecycle and archiving |
 | Comment | 4 | Threaded comments |
 | Attachment | 3 | File attachment metadata |
 | Status | 2 | Status definitions and transitions |
@@ -47,6 +47,7 @@ A full helpdesk ticketing system built on top of XBase. Every read and write rou
 | User | 5 | Registration, authentication, management |
 | Report | 3 | Summaries, generation, export |
 | Display | 3 | Terminal banners and audible bell |
+| Archive | 3 | Cross-database archive pack, query, restore |
 | Session | 1 | Guided interactive ticketing TUI |
 
 See TicketingSystem/TicketingSystem.wiki.md for full documentation.

@@ -12,6 +12,11 @@
     <None Include="$(MSBuildThisFileDirectory)SKILLS.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\TicketingSystem.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticketing-Session.md" />
+    <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Archive\Ticketing-Archive-Pack.md" />
+    <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Archive\Ticketing-Archive-Query.md" />
+    <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Archive\Ticketing-Archive-Restore.md" />
+    <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Archive.md" />
+    <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticket\Ticketing-Ticket-Unarchive.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Add.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Read.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Remove.md" />

@@ -31,12 +31,13 @@ The skill produces no structured JSON output. All interaction is conversational:
     3  New Ticket   — create a ticket
     4  Work Ticket  — view, comment, transition
     5  Reports      — summary and export
-    6  Exit
+    6  Archive      — bulk-archive closed tickets
+    7  Exit
    ═══════════════════════════════════════════════
-   Select [1-6]:
+   Select [1-7]:
    ```
 
-5. Wait for user input. Normalize: strip whitespace, map `q`/`quit`/`exit` to `6`.
+5. Wait for user input. Normalize: strip whitespace, map `q`/`quit`/`exit` to `7`.
 6. Dispatch on the selection:
 
    **Selection 1 — My Tickets:**
@@ -80,23 +81,38 @@ The skill produces no structured JSON output. All interaction is conversational:
        a  Add comment
        b  Transition status
        c  Assign to user
+       e  Archive this ticket
        d  Back
       ```
    f. Wait for sub-menu input. Dispatch:
       - **a — Add comment:** Prompt `Comment:`. Call `Ticketing-Comment-Add` with `ConnectionName`, `SessionToken`, `TicketId`, and `Body`. Display `Comment added.`. Return to sub-menu (step 6d-e).
       - **b — Transition status:** Display available statuses. Prompt `To status ID:`. Call `Ticketing-Status-Transition` with `ConnectionName`, `SessionToken`, `TicketId`, and `ToStatusId`. Display the new status or the error code if the transition is invalid. Return to sub-menu (step 6d-e).
       - **c — Assign:** Prompt `Assign to user ID:`. Call `Ticketing-Ticket-Assign` with `ConnectionName`, `SessionToken`, `TicketId`, and `AssignedToUserId`. Display `Assigned.` or the error. Return to sub-menu (step 6d-e).
+      - **e — Archive:** If the ticket's status is not terminal, display `Only closed tickets can be archived.` and return to sub-menu. Otherwise call `Ticketing-Ticket-Archive` with `TicketIds: [TicketId]`. Display `Ticket archived.`. Return to the main menu (step 4).
       - **d — Back:** Return to the main menu (step 4).
-      - Unrecognized: display `Enter a, b, c, or d.` and re-display the sub-menu.
+      - Unrecognized: display `Enter a, b, c, e, or d.` and re-display the sub-menu.
 
    **Selection 5 — Reports:**
+
    a. Call `Ticketing-Report-Summary` with `ConnectionName` and `SessionToken`.
    b. Display the summary as a markdown table: by status (Name, Count) and by priority (Name, Count).
    c. Prompt: `Export report? [y/N]:` — default to N.
    d. If yes: prompt `Format [csv/json]:` — validate; prompt `Output file path:`; call `Ticketing-Report-Export` with the chosen format and path. Display `Exported to <path>.`
    e. Return to the main menu (step 4).
 
-   **Selection 6 — Exit:**
+   **Selection 6 — Archive:**
+   a. Display a sub-prompt:
+      ```
+       Archive tickets closed more than N days ago.
+       Older than how many days? [30]:
+      ```
+      Default to 30 on empty input.
+   b. Call `Ticketing-Ticket-Archive` with `DryRun: true` and `OlderThanDays` from input. Display the count and ticket numbers that would be archived.
+   c. Prompt: `Proceed? [y/N]:` — default to N.
+   d. If yes, call `Ticketing-Ticket-Archive` with `DryRun: false`. Display `Archived <N> tickets.`
+   e. Return to the main menu (step 4).
+
+   **Selection 7 — Exit:**
    a. Display `Session ended.` and return.
 
    **Unrecognized input:**
@@ -119,3 +135,4 @@ The skill produces no structured JSON output. All interaction is conversational:
 - `Ticketing-Ticket-Assign`
 - `Ticketing-Report-Summary`
 - `Ticketing-Report-Export`
+- `Ticketing-Ticket-Archive`

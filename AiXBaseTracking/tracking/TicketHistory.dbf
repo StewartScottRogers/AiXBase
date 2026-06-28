@@ -24,3 +24,6 @@
 {"Id":23,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:31:33Z","NewValue":"Done","TicketId":4,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
 {"Id":24,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:31:33Z","NewValue":"In Progress","TicketId":5,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
 {"Id":25,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:34:34Z","NewValue":"Done","TicketId":5,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":26,"TicketId":10,"Action":"Created","ActorUserId":1,"OldValue":null,"NewValue":null,"ChangedAt":"2026-06-28T19:52:53Z","IsDeleted":0}
+{"Id":27,"TicketId":10,"Action":"StatusChanged","ActorUserId":1,"OldValue":"Backlog","NewValue":"In Progress","ChangedAt":"2026-06-28T19:53:07Z","IsDeleted":0}
+{"Id":28,"TicketId":10,"Action":"StatusChanged","ActorUserId":1,"OldValue":"In Progress","NewValue":"Done","ChangedAt":"2026-06-28T19:53:43Z","IsDeleted":0}

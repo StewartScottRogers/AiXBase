@@ -39,7 +39,7 @@ SKILLS/
 │   ├── Index/       XBase-Index-*.md          (4 skills)
 │   ├── Transaction/ XBase-Transaction-*.md    (4 skills)
 │   ├── Backup/      XBase-Backup-*.md         (3 skills)
-│   ├── Admin/       XBase-Admin-*.md          (3 skills)
+│   ├── Admin/       XBase-Admin-*.md          (4 skills)
 │   └── Runtime/     XBase-Runtime-*.md        (1 skill)
 └── TicketingSystem/
     ├── Ticket/      Ticketing-Ticket-*.md     (9 skills)
@@ -53,7 +53,7 @@ SKILLS/
     └── Display/     Ticketing-Display-*.md    (3 skills)
 ```
 
-**Total: 69 skills** across 2 bundles and 18 operation groups.
+**Total: 70 skills** across 2 bundles and 18 operation groups.
 
 Every skill file follows the same format: Inputs table, JSON Outputs example, numbered Steps, Error Codes table, Dependencies list.
 

@@ -14,7 +14,7 @@ Skills do not assume any specific AI platform. They work with any AI harness tha
 
 ## Bundles
 
-### XBase (34 skills)
+### XBase (35 skills)
 
 A lightweight native file-based database engine accessed entirely through skills. No external database engine, library, or binary is required.
 
@@ -28,7 +28,7 @@ A lightweight native file-based database engine accessed entirely through skills
 | Transaction | 4 | Begin, commit, rollback, savepoints |
 | Backup | 3 | Create, restore, verify backups |
 | Runtime | 1 | Environment detection |
-| Admin | 3 | Administrative operations |
+| Admin | 4 | Administrative operations |
 
 See XBase/XBase.wiki.md for full documentation.
 

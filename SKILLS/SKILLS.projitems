@@ -49,6 +49,8 @@
     <None Include="$(MSBuildThisFileDirectory)XBase\Admin\XBase-Admin-Execute.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\Admin\XBase-Admin-Inspect.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\Admin\XBase-Admin-Maintain.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase\Admin\connect-dogfood.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase\Admin\XBase-Admin-Session.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\Runtime\XBase-Runtime-Detect.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\XBase.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\Backup\XBase-Backup-Create.md" />

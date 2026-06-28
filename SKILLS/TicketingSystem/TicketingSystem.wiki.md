@@ -123,6 +123,92 @@ When setting up a fresh Ticketing database, call skills in this order:
 
 ---
 
+## Getting Started
+
+This walkthrough covers the complete lifecycle of a ticket from a freshly-initialized database. It assumes initialization is already done (see Initialization Sequence above) and an XBase connection named `"ticketing"` is active.
+
+### Step 1 — Authenticate
+
+```
+Ticketing-User-Authenticate
+  Username: "admin"
+  Password: "yourpassword"
+```
+
+Returns a `SessionToken` and `ExpiresAt` (24 hours from now). Keep the `SessionToken` — pass it to skills that require it for actor tracking. On failure the skill always returns `TICKETING_AUTH_FAILED` regardless of the specific reason (wrong password, inactive user, unknown user) to prevent enumeration.
+
+### Step 2 — Create a ticket
+
+```
+Ticketing-Ticket-Create
+  SessionToken: "<token>"
+  Summary: "Login page crashes on iOS 17"
+  Description: "Confirmed crash on iPhone 14 and 15 Pro running iOS 17.4. Steps: open app, tap Login."
+  PriorityId: 2
+  CategoryId: 1
+```
+
+Returns `TicketNumber: "TKT-0001"`. XBase assigns the sequential number, sets `StatusId` to the default status (the one with `IsDefault: 1`), sets `ReporterUserId` from the session token, and writes the first `TicketHistory` row with `Action: "CREATED"`.
+
+### Step 3 — Add a comment
+
+```
+Ticketing-Comment-Add
+  SessionToken: "<token>"
+  TicketId: 1
+  Body: "Reproduced on my iPhone 15. Happens consistently on the password autofill path."
+```
+
+Returns `CommentId: 1`. Comments are threaded per ticket and soft-deleted (never physically removed).
+
+### Step 4 — Assign the ticket
+
+```
+Ticketing-Ticket-Assign
+  SessionToken: "<token>"
+  TicketId: 1
+  AssignedToUserId: 2
+```
+
+Updates `AssignedToUserId` on the ticket, appends a `TicketHistory` row, and fires `Ticketing-Display-Alert` to notify the assignee.
+
+### Step 5 — Transition status
+
+```
+Ticketing-Status-Transition
+  SessionToken: "<token>"
+  TicketId: 1
+  ToStatusId: 2
+```
+
+Validates the transition against the `StatusTransitions` table. If the `FromStatus → ToStatus` pair is not registered, returns `TICKETING_STATUS_TRANSITION_INVALID`. On success, updates `StatusId`, appends a `TicketHistory` row, and fires `Ticketing-Display-Complete` if the destination status is terminal.
+
+### Step 6 — Query the backlog
+
+```
+Ticketing-Ticket-Query
+  Filters:
+    - { Field: "StatusId", Operator: "=", Value: 1 }
+  SortBy: "CreatedAt"
+  SortDirection: "ASC"
+  PageSize: 25
+```
+
+Returns a paged list with resolved `Status`, `Priority`, and `AssignedTo` display names joined from their lookup tables.
+
+### Step 7 — Close the ticket
+
+```
+Ticketing-Ticket-Close
+  SessionToken: "<token>"
+  TicketId: 1
+  ToStatusId: 4
+```
+
+Sets `ClosedAt` to now, transitions to the specified terminal status, appends a final `TicketHistory` row, and fires the `COMPLETE` banner via `Ticketing-Display-Complete`.
+
+---
+
 ## Error Handling
 
 Ticketing skill errors follow the pattern TICKETING_CATEGORY_REASON and are returned in the standard XBase error envelope:

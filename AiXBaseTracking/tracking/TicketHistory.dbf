@@ -1,0 +1,26 @@
+﻿
+{"Id":1,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Create AiXBaseTracking VS shared project and initialize dogfood ticketing database","TicketId":1,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":2,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Define and document AiXBase solution architecture PRD","TicketId":2,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":3,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Implement XBase Admin TUI guided session skill","TicketId":3,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":4,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Create the first .csproj build head for the solution","TicketId":4,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":5,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Write XBase integration tests against real DBF files","TicketId":5,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":6,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Seed AiXBase wiki with Getting Started guide","TicketId":6,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":7,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Review and harden XBase-Record-Select filter injection safety","TicketId":7,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":8,"Action":"CREATED","ChangedAt":"2026-06-28T19:08:45Z","NewValue":"Add scheduled backup skill invocation to project workflow","TicketId":8,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":9,"Action":"CREATED","ChangedAt":"2026-06-28T19:13:45Z","NewValue":"Create connect-dogfood session bootstrap prompt","TicketId":9,"IsDeleted":0,"ActorUserId":1,"OldValue":null}
+{"Id":10,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:20:20Z","NewValue":"In Progress","TicketId":9,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":11,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:20:46Z","NewValue":"Done","TicketId":9,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":12,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:21:21Z","NewValue":"In Progress","TicketId":7,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":13,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:22:44Z","NewValue":"Done","TicketId":7,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":14,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:23:01Z","NewValue":"In Progress","TicketId":6,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":15,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:24:19Z","NewValue":"Done","TicketId":6,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":16,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:24:31Z","NewValue":"In Progress","TicketId":2,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":17,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:25:50Z","NewValue":"Done","TicketId":2,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":18,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:26:00Z","NewValue":"In Progress","TicketId":3,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":19,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:26:47Z","NewValue":"Done","TicketId":3,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":20,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:26:56Z","NewValue":"In Progress","TicketId":8,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":21,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:27:46Z","NewValue":"Done","TicketId":8,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":22,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:27:59Z","NewValue":"In Progress","TicketId":4,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":23,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:31:33Z","NewValue":"Done","TicketId":4,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}
+{"Id":24,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:31:33Z","NewValue":"In Progress","TicketId":5,"IsDeleted":0,"ActorUserId":1,"OldValue":"Backlog"}
+{"Id":25,"Action":"STATUS_CHANGED","ChangedAt":"2026-06-28T19:34:34Z","NewValue":"Done","TicketId":5,"IsDeleted":0,"ActorUserId":1,"OldValue":"In Progress"}

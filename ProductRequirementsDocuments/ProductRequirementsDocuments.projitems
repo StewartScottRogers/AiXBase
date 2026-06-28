@@ -9,6 +9,7 @@
     <Import_RootNamespace>ProductRequirementsDocuments</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)AiXBase-Solution-Architecture-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)Repository-Presentation-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase-Admin-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase-Admin-Testing-PRD.md" />

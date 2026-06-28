@@ -1,0 +1,69 @@
+name: Backup dogfood tracking database
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # 02:00 UTC daily
+  workflow_dispatch:        # allow manual trigger
+
+permissions:
+  contents: write
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create timestamped backup
+        id: backup
+        run: |
+          TIMESTAMP=$(date -u +%Y%m%dT%H%M%S)
+          LABEL="daily"
+          BACKUP_DIR="AiXBaseTracking/backups/tracking_${TIMESTAMP}_${LABEL}"
+          echo "backup_dir=$BACKUP_DIR" >> "$GITHUB_OUTPUT"
+          echo "timestamp=$TIMESTAMP" >> "$GITHUB_OUTPUT"
+
+          # Copy database directory (mirrors XBase-Backup-Create behaviour:
+          # exclude active transaction workspaces matching _txn_*)
+          mkdir -p "$BACKUP_DIR"
+          rsync -a \
+            --exclude='_txn_*' \
+            AiXBaseTracking/tracking/ \
+            "$BACKUP_DIR/"
+
+          echo "Backup written to $BACKUP_DIR"
+          ls -lh "$BACKUP_DIR"
+
+      - name: Verify backup integrity
+        run: |
+          BACKUP_DIR="${{ steps.backup.outputs.backup_dir }}"
+          # Basic integrity: _meta.json and _schema.json must exist and be valid JSON
+          python3 -c "import json, sys
+          for f in ['_meta.json', '_schema.json']:
+              path = '$BACKUP_DIR/' + f
+              try:
+                  json.load(open(path))
+                  print(f'  OK: {f}')
+              except Exception as e:
+                  print(f'  FAIL: {f}: {e}')
+                  sys.exit(1)
+          "
+
+          # Count tables: each .dbf file should exist
+          DBF_COUNT=$(find "$BACKUP_DIR" -name '*.dbf' | wc -l)
+          echo "  DBF files found: $DBF_COUNT"
+          if [ "$DBF_COUNT" -lt 12 ]; then
+            echo "FAIL: expected at least 12 .dbf files, found $DBF_COUNT"
+            exit 1
+          fi
+          echo "Integrity check passed."
+
+      - name: Commit backup
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add AiXBaseTracking/backups/
+          git diff --cached --quiet && echo "Nothing to commit." && exit 0
+          git commit -m "chore: daily tracking database backup ${{ steps.backup.outputs.timestamp }}"
+          git push

@@ -126,17 +126,127 @@ All XBase skills express file system interactions using the following abstract o
 
 ## Getting Started
 
-To use XBase for the first time, call `XBase-Runtime-Detect` with the `DatabaseRoot` path where databases should be stored. This confirms the agent environment has all required capabilities. If `EnvironmentReady` is true, proceed.
+This walkthrough takes you from a blank environment to a working database with a table, records, a filter query, an index, and a clean disconnect. Every step maps to a single named XBase skill.
 
-Create a new database by calling `XBase-Database-Initialize` with a `DatabaseName`. This creates the database directory, writes `_meta.json` with version and timestamp information, and writes an empty `_schema.json`. Then call `XBase-Database-Connect` with the same `DatabaseName` and a `ConnectionName` of your choice — all subsequent operations reference the database by this alias.
+### Step 1 — Verify the environment
 
-Define a table by calling `XBase-Schema-TableCreate` with `ConnectionName`, a `TableName`, and a `Columns` array. Each column object specifies `Name`, `Type` (`TEXT`, `INTEGER`, or `REAL`), `Nullable`, and optionally `Unique`, `Default`, and `ForeignKey`. XBase automatically prepends an `Id` primary key column and appends `CreatedAt`, `UpdatedAt`, and `IsDeleted` columns.
+```
+XBase-Runtime-Detect
+  DatabaseRoot: "C:\data\myapp"
+```
 
-Insert rows by calling `XBase-Record-Insert` with `ConnectionName`, `TableName`, and a `Rows` array of key-value objects. Each row need only include the user-defined columns; XBase fills in the implicit columns automatically.
+Check that `EnvironmentReady: true` in the result. If `Issues` is non-empty, the agent environment is missing a required file-system capability. Fix those before continuing. `DatabaseRoot` becomes the directory that holds all your database subdirectories for this session.
 
-Query rows by calling `XBase-Record-Select` with `ConnectionName`, `TableName`, and optionally a `Filter` specification (from `XBase-Query-Filter`), a `Sort` specification (from `XBase-Query-Sort`), and `Limit` and `Offset` values.
+### Step 2 — Create the database
 
-When done, call `XBase-Database-Disconnect` with the `ConnectionName` to release the session registration.
+```
+XBase-Database-Initialize
+  DatabaseName: "inventory"
+```
+
+This creates `C:\data\myapp\inventory\` containing `_meta.json` (version and timestamps) and an empty `_schema.json`. The database is now on disk and ready to connect.
+
+### Step 3 — Connect
+
+```
+XBase-Database-Connect
+  DatabaseName: "inventory"
+  ConnectionName: "inv"
+```
+
+From this point forward every skill that touches the database uses `ConnectionName: "inv"`. The connection is session-scoped — it is not persisted to disk.
+
+### Step 4 — Create a table
+
+```
+XBase-Schema-TableCreate
+  ConnectionName: "inv"
+  TableName: "Products"
+  Columns:
+    - { Name: "SKU",      Type: "TEXT",    Nullable: false, Unique: true }
+    - { Name: "Name",     Type: "TEXT",    Nullable: false }
+    - { Name: "Price",    Type: "REAL",    Nullable: false, Default: 0 }
+    - { Name: "Stock",    Type: "INTEGER", Nullable: false, Default: 0 }
+```
+
+XBase automatically prepends `Id` (auto-increment integer primary key) and appends `CreatedAt`, `UpdatedAt`, and `IsDeleted` to the column list. The result is a `Products.dbf` file in the database directory.
+
+### Step 5 — Insert rows
+
+```
+XBase-Record-Insert
+  ConnectionName: "inv"
+  TableName: "Products"
+  Rows:
+    - { SKU: "WIDGET-01", Name: "Blue Widget", Price: 9.99,  Stock: 150 }
+    - { SKU: "GADGET-07", Name: "Red Gadget",  Price: 24.50, Stock: 42  }
+    - { SKU: "DOOHIC-03", Name: "Green Thing", Price: 3.75,  Stock: 0   }
+```
+
+XBase assigns sequential `Id` values, sets `CreatedAt` and `UpdatedAt` to now, and sets `IsDeleted: 0`. The result includes `InsertedCount: 3` and `LastInsertedId: 3`.
+
+### Step 6 — Build a filter and query
+
+```
+XBase-Query-Filter
+  Field: "Stock"
+  Operator: ">"
+  Value: 0
+
+→ Filter: { Field: "Stock", Operator: ">", Value: 0 }
+
+XBase-Record-Select
+  ConnectionName: "inv"
+  TableName: "Products"
+  Filter: <result from above>
+  Sort: { Columns: [{ Field: "Price", Direction: "ASC" }] }
+```
+
+Returns the two in-stock products sorted cheapest first. `TotalCount` reflects the count before any `Limit`/`Offset` are applied.
+
+### Step 7 — Update a row
+
+```
+XBase-Record-Update
+  ConnectionName: "inv"
+  TableName: "Products"
+  Filter: { Field: "SKU", Operator: "=", Value: "DOOHIC-03" }
+  Values: { Stock: 25 }
+```
+
+Seeks to the matching record's byte offset in the `.dbf` file and overwrites the `Stock` field in place. `UpdatedAt` is refreshed automatically.
+
+### Step 8 — Create an index
+
+```
+XBase-Index-Create
+  ConnectionName: "inv"
+  TableName: "Products"
+  Columns: ["SKU"]
+  IndexName: "idx_SKU"
+```
+
+Scans all active records, builds a sorted NDX B-tree on `SKU`, and registers `idx_SKU` in `_schema.json`. Subsequent `XBase-Record-Select` calls that filter on `SKU` will use this index for O(log n) lookup instead of a full scan.
+
+### Step 9 — Soft-delete a row
+
+```
+XBase-Record-Delete
+  ConnectionName: "inv"
+  TableName: "Products"
+  Filter: { Field: "SKU", Operator: "=", Value: "GADGET-07" }
+```
+
+Sets `IsDeleted: 1` on the matching record. The row remains on disk but is excluded from all future `XBase-Record-Select` results unless `IncludeDeleted: true` is passed. Pass `HardDelete: true` to physically rewrite the file without that row.
+
+### Step 10 — Disconnect
+
+```
+XBase-Database-Disconnect
+  ConnectionName: "inv"
+```
+
+Releases the session registration. The database files on disk are unaffected — reconnect any time with `XBase-Database-Connect`.
 
 ---
 

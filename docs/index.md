@@ -27,7 +27,7 @@ The TicketingSystem bundle depends on the XBase bundle.
 
 ### XBase — File-Backed Database Engine
 
-34 skills across 9 groups. Stores data in dBASE III binary format (`.dbf` + `.ndx`). No external database engine required.
+35 skills across 9 groups. Stores data in dBASE III binary format (`.dbf` + `.ndx`). No external database engine required.
 
 | Group | Skills | Description |
 |-------|--------|-------------|
@@ -38,18 +38,18 @@ The TicketingSystem bundle depends on the XBase bundle.
 | Index | 4 | Create, Drop, Rebuild, List |
 | Transaction | 4 | Begin, Commit, Rollback, Savepoint |
 | Backup | 3 | Create, Restore, Verify |
-| Admin | 3 | Execute, Inspect, Maintain |
+| Admin | 4 | Execute, Inspect, Maintain, Session |
 | Runtime | 1 | Detect (environment capability verification) |
 
 → [XBase Skill Reference](../SKILLS/XBase/XBase.wiki.md)
 
 ### TicketingSystem — Helpdesk Built on XBase
 
-35 skills across 9 groups. All file I/O routes through XBase skills — no direct file access.
+41 skills across 11 groups. All file I/O routes through XBase skills — no direct file access.
 
 | Group | Skills | Description |
 |-------|--------|-------------|
-| Ticket | 9 | Create, Read, Update, Delete, Close, Reopen, Assign, Escalate, Query |
+| Ticket | 11 | Create, Read, Update, Delete, Close, Reopen, Assign, Escalate, Query, Archive, Unarchive |
 | Comment | 4 | Add, Read, Edit, Delete |
 | Attachment | 3 | Add, Read, Remove |
 | Status | 2 | Define, Transition |
@@ -58,6 +58,8 @@ The TicketingSystem bundle depends on the XBase bundle.
 | User | 5 | Register, Read, Update, Deactivate, Authenticate |
 | Report | 3 | Summary, Generate, Export |
 | Display | 3 | Complete (banner + BEL ×3), Alert (banner + BEL ×1), Bell |
+| Archive | 3 | Pack (move archived tickets to named archive DB), Query, Restore |
+| Session | 1 | Guided interactive ticketing session with menu-driven UI |
 
 → [TicketingSystem Skill Reference](../SKILLS/TicketingSystem/TicketingSystem.wiki.md)
 

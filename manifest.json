@@ -10,7 +10,7 @@
       "name": "XBase",
       "description": "Native file-backed database engine. Provides connection management, schema DDL, full CRUD, composite queries, index management, transactions with savepoints, and backup/restore.",
       "depends_on": [],
-      "skill_count": 34,
+      "skill_count": 35,
       "wiki": "SKILLS/XBase/XBase.wiki.md",
       "groups": [
         { "id": "Database",    "path": "XBase/Database",    "count": 4 },
@@ -20,19 +20,19 @@
         { "id": "Index",       "path": "XBase/Index",       "count": 4 },
         { "id": "Transaction", "path": "XBase/Transaction", "count": 4 },
         { "id": "Backup",      "path": "XBase/Backup",      "count": 3 },
-        { "id": "Admin",       "path": "XBase/Admin",       "count": 3 },
+        { "id": "Admin",       "path": "XBase/Admin",       "count": 4 },
         { "id": "Runtime",     "path": "XBase/Runtime",     "count": 1 }
       ]
     },
     {
       "id": "ticketing",
       "name": "TicketingSystem",
-      "description": "Full helpdesk ticketing system built entirely on XBase skills. Covers ticket lifecycle, comments, attachments, status workflows, priorities, categories, users, reporting, and terminal display.",
+      "description": "Full helpdesk ticketing system built entirely on XBase skills. Covers ticket lifecycle, comments, attachments, status workflows, priorities, categories, users, reporting, two-tier archiving, terminal display, and a guided interactive session.",
       "depends_on": ["xbase"],
-      "skill_count": 35,
+      "skill_count": 41,
       "wiki": "SKILLS/TicketingSystem/TicketingSystem.wiki.md",
       "groups": [
-        { "id": "Ticket",     "path": "TicketingSystem/Ticket",     "count": 9 },
+        { "id": "Ticket",     "path": "TicketingSystem/Ticket",     "count": 11 },
         { "id": "Comment",    "path": "TicketingSystem/Comment",    "count": 4 },
         { "id": "Attachment", "path": "TicketingSystem/Attachment", "count": 3 },
         { "id": "Status",     "path": "TicketingSystem/Status",     "count": 2 },
@@ -40,7 +40,9 @@
         { "id": "Category",   "path": "TicketingSystem/Category",   "count": 4 },
         { "id": "User",       "path": "TicketingSystem/User",       "count": 5 },
         { "id": "Report",     "path": "TicketingSystem/Report",     "count": 3 },
-        { "id": "Display",    "path": "TicketingSystem/Display",    "count": 3 }
+        { "id": "Display",    "path": "TicketingSystem/Display",    "count": 3 },
+        { "id": "Archive",    "path": "TicketingSystem/Archive",    "count": 3 },
+        { "id": "Session",    "path": "TicketingSystem",            "count": 1 }
       ]
     }
   ],

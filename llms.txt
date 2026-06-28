@@ -16,8 +16,8 @@ Download the latest `skills.zip` from Releases. Extract it. Place the markdown f
 
 ## Bundles
 
-- **XBase** (34 skills, 9 groups) — file-backed database engine using dBASE III binary format. No external database engine required.
-- **TicketingSystem** (35 skills, 9 groups) — full helpdesk ticketing system built on XBase. Depends on XBase bundle.
+- **XBase** (35 skills, 9 groups) — file-backed database engine using dBASE III binary format. No external database engine required.
+- **TicketingSystem** (41 skills, 11 groups) — full helpdesk ticketing system built on XBase. Depends on XBase bundle.
 
 ## Harness Compatibility
 

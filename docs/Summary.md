@@ -2,7 +2,7 @@
 
 AiXBase is a demonstration of **Ai Polymorphic Services**: software capabilities expressed as AI Skills rather than fixed API endpoints, where the AI dynamically selects, composes, and adapts behaviors based on context rather than traversing a rigid call graph.
 
-The repository ships two fully realised features — XBase and the Ticketing System — alongside 69 distributable Skill files that any Claude Code project can install and invoke as slash commands.
+The repository ships two fully realised features — XBase and the Ticketing System — alongside 76 distributable Skill files that any Claude Code project can install and invoke as slash commands.
 
 ---
 
@@ -24,7 +24,7 @@ Skills are **portable** — copy a `.md` file and the capability moves with it. 
 
 XBase is a lightweight, file-based database engine with no external runtime dependencies. A database is a named directory; tables are stored as **dBASE III binary `.dbf` files** (fixed-length binary records); indexes are `.ndx` B-tree files; and transactions are directory snapshot workspaces that commit atomically via a same-volume file move.
 
-**34 skills across 9 operation groups:**
+**35 skills across 9 operation groups:**
 
 | Group | Skills | Scope |
 |---|:---:|---|
@@ -35,7 +35,7 @@ XBase is a lightweight, file-based database engine with no external runtime depe
 | Index | 4 | Create, drop, rebuild, list |
 | Transaction | 4 | Begin, commit, rollback, savepoints |
 | Backup | 3 | Create, restore, verify |
-| Admin | 3 | Execute (dynamic dispatch), Inspect (health report), Maintain (pack + rebuild + verify) |
+| Admin | 4 | Execute (dynamic dispatch), Inspect (health report), Maintain (pack + rebuild + verify), Session (guided interactive admin TUI) |
 | Runtime | 1 | Environment detection — verifies all required file system primitives |
 
 Every table receives implicit `Id` (auto-increment), `CreatedAt`, `UpdatedAt`, and `IsDeleted` columns. Soft deletes are the default; hard deletes are opt-in via `HardDelete: true`. A filter is required on Update and Delete to prevent accidental mass mutations.
@@ -46,13 +46,13 @@ The storage format is **dBASE III binary**: every row is a fixed-length binary r
 
 ## Ticketing System
 
-A full helpdesk ticketing system built entirely on top of XBase. It covers the complete ticket lifecycle — creation, assignment, escalation, status transitions, comments, attachments, reporting, and a terminal display with audible bell notification on completion.
+A full helpdesk ticketing system built entirely on top of XBase. It covers the complete ticket lifecycle — creation, assignment, escalation, status transitions, comments, attachments, reporting, two-tier archiving, and a terminal display with audible bell notification on completion.
 
-**35 skills across 9 operation groups:**
+**41 skills across 11 operation groups:**
 
 | Group | Skills | Scope |
 |---|:---:|---|
-| Ticket | 9 | Create, read, update, delete, close, reopen, assign, escalate, query |
+| Ticket | 11 | Create, read, update, delete, close, reopen, assign, escalate, query, archive, unarchive |
 | Comment | 4 | Threaded comments; `IsInternal` flag for staff-only notes |
 | Attachment | 3 | File attachment metadata — path, filename, size, uploader |
 | Status | 2 | Configurable statuses and a validated transition graph |
@@ -61,6 +61,8 @@ A full helpdesk ticketing system built entirely on top of XBase. It covers the c
 | User | 5 | Registration, authentication, update, deactivation |
 | Report | 3 | Aggregate summaries, named report types, CSV/JSON export |
 | Display | 3 | Unicode COMPLETE banner, alert banners, audible bell |
+| Archive | 3 | Pack (move IsArchived tickets to a named archive DB), query archive, restore to main |
+| Session | 1 | Guided interactive ticketing session with six-item menu, dispatches to all Ticketing skills |
 
 The system maintains 11 database tables. `TicketHistory` is append-only and records every mutation — status changes, assignments, escalations, reopens — making the full audit trail always available. Authentication deliberately returns a single generic error (`TICKETING_AUTH_FAILED`) for wrong password, unknown username, and deactivated account alike, preventing user enumeration.
 
@@ -96,4 +98,4 @@ your-project/
             └── ...
 ```
 
-All 69 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.
+All 76 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.

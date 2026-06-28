@@ -11,6 +11,7 @@
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)SKILLS.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\TicketingSystem.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticketing-Session.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Add.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Read.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Attachment\Ticketing-Attachment-Remove.md" />

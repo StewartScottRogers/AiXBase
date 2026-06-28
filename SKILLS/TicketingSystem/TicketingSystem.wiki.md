@@ -88,6 +88,10 @@ Ticketing-Display-Complete, Ticketing-Display-Alert, Ticketing-Display-Bell.
 
 Display skills write text and BEL characters to stdout. They have no database access and do not call XBase skills. They are leaf skills called by Ticket and Status skills at specific lifecycle events.
 
+### Session (1 skill)
+
+Ticketing-Session drives a guided interactive ticketing session in the conversation. It presents a six-item main menu (My Tickets, Browse, New Ticket, Work Ticket, Reports, Exit), dispatches each selection to the appropriate Ticketing skill, renders results as markdown, and loops until the user exits. All file I/O is delegated to the underlying Ticketing and XBase skills — Ticketing-Session contains no direct data access of its own. Inputs: `ConnectionName`, `SessionToken`, `UserId`, and optional `DisplayName`. It makes all common ticketing workflows discoverable without knowing individual skill names or parameters.
+
 ---
 
 ## Authentication

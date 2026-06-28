@@ -50,10 +50,11 @@ SKILLS/
     ├── Category/    Ticketing-{Category,Tag}-*.md (4 skills)
     ├── User/        Ticketing-User-*.md       (5 skills)
     ├── Report/      Ticketing-Report-*.md     (3 skills)
-    └── Display/     Ticketing-Display-*.md    (3 skills)
+    ├── Display/     Ticketing-Display-*.md    (3 skills)
+    └── Ticketing-Session.md                  (1 skill)
 ```
 
-**Total: 70 skills** across 2 bundles and 18 operation groups.
+**Total: 71 skills** across 2 bundles and 18 operation groups.
 
 Every skill file follows the same format: Inputs table, JSON Outputs example, numbered Steps, Error Codes table, Dependencies list.
 

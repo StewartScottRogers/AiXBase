@@ -5,6 +5,7 @@
     <File Path="README.md" />
     <File Path="manifest.json" />
     <File Path="llms.txt" />
+    <File Path="StewartScottRogers-AiXBase- X-Base implementation for Ai using Skills.url" />
   </Folder>
   <Project Path="docs/docs.shproj" Id="b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e" />
   <Project Path="ProductRequirementsDocuments/ProductRequirementsDocuments.shproj" />

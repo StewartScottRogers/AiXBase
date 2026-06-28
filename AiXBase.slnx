@@ -11,6 +11,4 @@
   <Project Path="SKILLS/SKILLS.shproj" Id="cea07ac3-00f8-4496-a96f-b7f9dcf8d2d4" />
   <Project Path="XBaseFiles/XBaseFiles.shproj" Id="e9f8b3c4-5d6a-4e7f-8a9b-0c1d2e3f4a5b" />
   <Project Path="AiXBaseTracking/AiXBaseTracking.shproj" Id="bff9b9f9-8718-4181-ae56-69d0c683afdb" />
-  <Project Path="AiXBase.Core/AiXBase.Core.csproj" Id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" />
-  <Project Path="AiXBase.Tests/AiXBase.Tests.csproj" Id="f0e1d2c3-b4a5-6789-0123-456789abcdef" />
 </Solution>

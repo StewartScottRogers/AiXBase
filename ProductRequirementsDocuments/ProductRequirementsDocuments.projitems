@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)AiXBase-Solution-Architecture-PRD.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology-Admin-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)Repository-Presentation-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase-Admin-PRD.md" />

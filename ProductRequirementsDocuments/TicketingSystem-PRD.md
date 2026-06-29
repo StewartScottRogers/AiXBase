@@ -127,7 +127,7 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 **Inputs**
 - `Summary` (string, required, max 200 chars)
 - `Description` (string, optional)
-- `ReporterUserId` (int, required)
+- `ReportedByUserId` (int, required)
 - `AssignedToUserId` (int, optional)
 - `CategoryId` (int, optional)
 - `PriorityId` (int, optional, defaults to system default priority)
@@ -216,7 +216,7 @@ Rejects the transition if no matching row in `StatusTransitions(FromStatusId, To
 
 **Inputs**
 - `Username` (string)
-- `Password` (string) — plaintext; the skill hashes it internally using a secure hash function and compares against the stored hash; the plaintext password is never persisted or returned
+- `Password` (string) — plaintext; the skill computes a SHA-256 hex digest and compares it against the stored hash; the plaintext password is never persisted or returned
 
 **Outputs**
 - `SessionToken` (string, 64-char hex)
@@ -381,7 +381,7 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 | `StatusId` | INTEGER FK | → `Statuses.Id` |
 | `PriorityId` | INTEGER FK | → `Priorities.Id` |
 | `CategoryId` | INTEGER FK | → `Categories.Id` |
-| `ReporterUserId` | INTEGER FK | → `Users.Id` |
+| `ReportedByUserId` | INTEGER FK | → `Users.Id` |
 | `AssignedToUserId` | INTEGER FK | → `Users.Id` |
 | `CreatedAt` | TEXT | ISO-8601 |
 | `UpdatedAt` | TEXT | ISO-8601 |
@@ -407,36 +407,39 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 |---|---|---|
 | `Id` | INTEGER PK | Auto-increment |
 | `UserId` | INTEGER FK | → `Users.Id` |
-| `SessionToken` | TEXT UNIQUE NOT NULL | 64-char hex |
+| `Token` | TEXT UNIQUE NOT NULL | 64-char hex session token |
 | `ExpiresAt` | TEXT NOT NULL | ISO-8601 |
 | `CreatedAt` | TEXT | ISO-8601 |
-| `IsDeleted` | INTEGER | 0/1 |
 
 **Statuses**
 
 | Column | Type | Notes |
 |---|---|---|
-| `Id` | INTEGER PK | |
-| `Name` | TEXT UNIQUE | e.g. `Open`, `In Progress`, `Closed` |
+| `Id` | INTEGER PK | Auto-increment |
+| `Name` | TEXT UNIQUE NOT NULL | e.g. `Open`, `In Progress`, `Closed` |
 | `IsTerminal` | INTEGER | 1 = closed state |
+| `CreatedAt` | TEXT | ISO-8601 |
+| `UpdatedAt` | TEXT | ISO-8601 |
+| `IsDeleted` | INTEGER | 0/1 |
 
 **StatusTransitions**
 
 | Column | Type | Notes |
 |---|---|---|
-| `Id` | INTEGER PK | Auto-increment |
-| `FromStatusId` | INTEGER FK | → `Statuses.Id` |
-| `ToStatusId` | INTEGER FK | → `Statuses.Id` |
-| `IsDeleted` | INTEGER | 0/1 |
+| `FromStatusId` | INTEGER FK | → `Statuses.Id`; part of composite PK |
+| `ToStatusId` | INTEGER FK | → `Statuses.Id`; part of composite PK |
 
 **Priorities**
 
 | Column | Type | Notes |
 |---|---|---|
-| `Id` | INTEGER PK | |
-| `Name` | TEXT UNIQUE | e.g. `Low`, `Medium`, `High`, `Critical` |
+| `Id` | INTEGER PK | Auto-increment |
+| `Name` | TEXT UNIQUE NOT NULL | e.g. `Low`, `Medium`, `High`, `Critical` |
 | `Weight` | INTEGER | Lower = higher urgency |
 | `IsDefault` | INTEGER | 1 for one row |
+| `CreatedAt` | TEXT | ISO-8601 |
+| `UpdatedAt` | TEXT | ISO-8601 |
+| `IsDeleted` | INTEGER | 0/1 |
 
 **Categories**
 
@@ -444,26 +447,17 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 |---|---|---|
 | `Id` | INTEGER PK | Auto-increment |
 | `Name` | TEXT UNIQUE NOT NULL | |
-| `ParentId` | INTEGER FK | → `Categories.Id` (self-referential, nullable) |
+| `Description` | TEXT | optional description; nullable |
 | `CreatedAt` | TEXT | ISO-8601 |
-| `IsDeleted` | INTEGER | 0/1 |
-
-**Tags**
-
-| Column | Type | Notes |
-|---|---|---|
-| `Id` | INTEGER PK | Auto-increment |
-| `Name` | TEXT UNIQUE NOT NULL | |
+| `UpdatedAt` | TEXT | ISO-8601 |
 | `IsDeleted` | INTEGER | 0/1 |
 
 **TicketTags**
 
 | Column | Type | Notes |
 |---|---|---|
-| `Id` | INTEGER PK | Auto-increment |
-| `TicketId` | INTEGER FK | → `Tickets.Id` |
-| `TagId` | INTEGER FK | → `Tags.Id` |
-| `IsDeleted` | INTEGER | 0/1 |
+| `TicketId` | INTEGER FK | → `Tickets.Id`; part of composite PK |
+| `Tag` | TEXT NOT NULL | tag string value; part of composite PK |
 
 **Users**
 
@@ -473,8 +467,7 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 | `Username` | TEXT UNIQUE NOT NULL | |
 | `DisplayName` | TEXT | |
 | `Email` | TEXT | |
-| `CredentialHash` | TEXT | |
-| `IsAdmin` | INTEGER | 0/1 |
+| `CredentialHash` | TEXT | SHA-256 hex digest of password; never plaintext |
 | `IsActive` | INTEGER | 0/1 |
 | `CreatedAt` | TEXT | |
 | `UpdatedAt` | TEXT | |
@@ -486,10 +479,10 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 |---|---|---|
 | `Id` | INTEGER PK | |
 | `TicketId` | INTEGER FK | → `Tickets.Id` |
-| `ActorUserId` | INTEGER FK | → `Users.Id` |
+| `ChangedByUserId` | INTEGER FK | → `Users.Id` |
 | `Action` | TEXT | e.g. `Created`, `StatusChanged`, `Assigned` |
-| `OldValue` | TEXT | nullable |
-| `NewValue` | TEXT | nullable |
+| `FromValue` | TEXT | nullable |
+| `ToValue` | TEXT | nullable |
 | `ChangedAt` | TEXT | ISO-8601 |
 
 **Attachments**

@@ -14,7 +14,7 @@ Skills do not assume any specific AI platform. They work with any AI harness tha
 
 ## Bundles
 
-### Ontology (3 skills)
+### Ontology (9 skills)
 
 Generates an RDF/OWL ontology from any connected XBase database schema on the fly — no pre-authored `.owl` files required.
 
@@ -22,7 +22,11 @@ Generates an RDF/OWL ontology from any connected XBase database schema on the fl
 |-------|--------|---------|
 | Namespace | 1 | Configure base IRI and prefix map |
 | Build | 1 | Introspect schema → OWL classes + properties |
+| Populate | 1 | Load records as owl:NamedIndividual instances |
+| Query | 2 | BGP pattern query and single-resource describe |
+| Validate | 2 | OWL schema consistency and individual conformance checks |
 | Export | 1 | Serialize ontology to Turtle / JSON-LD / RDF-XML / N-Triples |
+| Session | 1 | Guided interactive ontology TUI |
 
 See Ontology/Ontology.wiki.md for full documentation.
 

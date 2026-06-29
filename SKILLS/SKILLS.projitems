@@ -12,7 +12,13 @@
     <None Include="$(MSBuildThisFileDirectory)Ontology\Build\Ontology-Build-Schema.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Export\Ontology-Export-Serialize.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Namespace\Ontology-Namespace-Define.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Ontology-Session.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Ontology.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Populate\Ontology-Populate-Records.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Query\Ontology-Query-Describe.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Query\Ontology-Query-Execute.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Validate\Ontology-Validate-Individuals.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Validate\Ontology-Validate-Schema.md" />
     <None Include="$(MSBuildThisFileDirectory)SKILLS.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\TicketingSystem.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticketing-Session.md" />

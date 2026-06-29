@@ -81,3 +81,6 @@
 {"Id":80,"TicketId":27,"Action":"StatusChanged","FromValue":"In Progress","ToValue":"Done","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
 {"Id":81,"TicketId":28,"Action":"StatusChanged","FromValue":"Backlog","ToValue":"In Progress","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
 {"Id":82,"TicketId":28,"Action":"StatusChanged","FromValue":"In Progress","ToValue":"Done","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":83,"TicketId":29,"Action":"Created","FromValue":null,"ToValue":"In Progress","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":84,"TicketId":29,"Action":"StatusChanged","FromValue":"Backlog","ToValue":"In Progress","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":85,"TicketId":29,"Action":"StatusChanged","FromValue":"In Progress","ToValue":"Done","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}

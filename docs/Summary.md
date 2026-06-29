@@ -2,7 +2,7 @@
 
 AiXBase is a demonstration of **Ai Polymorphic Services**: software capabilities expressed as AI Skills rather than fixed API endpoints, where the AI dynamically selects, composes, and adapts behaviors based on context rather than traversing a rigid call graph.
 
-The repository ships three fully realised bundles — Ontology, XBase, and the Ticketing System — alongside 89 distributable Skill files that any Claude Code project can install and invoke as slash commands.
+The repository ships four fully realised bundles — XBase, XBase UniversalSQL, Ontology, and the Ticketing System — alongside 96 distributable Skill files that any Claude Code project can install and invoke as slash commands.
 
 ---
 
@@ -17,6 +17,25 @@ A Skill is a self-contained Markdown file that instructs Claude Code to perform 
 ```
 
 Skills are **portable** — copy a `.md` file and the capability moves with it. They are **composable** — skills call other skills through their declared dependency list. They are **harness-agnostic** — the same specification runs under PowerShell, bash, or Python, with the runtime detected automatically at execution time.
+
+---
+
+## XBase UniversalSQL
+
+A SQL translation layer that sits above the 35 XBase skills. It accepts a standard SQL statement as plain text, parses it into an AST, maps it to one or more XBase skill calls, and returns results in a unified envelope — no new file I/O, no storage engine changes.
+
+**7 skills across 2 operation groups:**
+
+| Group | Skills | Scope |
+|---|:---:|---|
+| UniversalSQL | 4 | Parse (AST + execution plan), Validate (syntax + semantic), Explain (annotated plan), Execute (full pipeline) |
+| UniversalSQL-Admin | 3 | REPL (interactive SQL shell), Explain (plan display), Schema (DDL extractor) |
+
+Supports SELECT, INSERT, UPDATE, DELETE, DDL (CREATE/DROP/ALTER TABLE, CREATE/DROP INDEX), TCL (BEGIN/COMMIT/ROLLBACK/SAVEPOINT), SHOW TABLES, DESCRIBE, EXPLAIN, BACKUP DATABASE, RESTORE DATABASE. Named parameter binding (`?name` placeholders). Transaction routing via `TransactionName`.
+
+Claude Code slash commands: `/sql` (interactive shell), `/explain` (execution plan), `/schema` (DDL extractor).
+
+Depends on the XBase bundle.
 
 ---
 
@@ -121,4 +140,4 @@ your-project/
             └── ...
 ```
 
-All 89 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.
+All 96 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.

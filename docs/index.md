@@ -5,7 +5,7 @@ title: AiXBase — AI Skills Distribution
 
 # AiXBase
 
-AiXBase is an AI Skills distribution that gives any AI harness a complete file-backed database engine (**XBase**) and a full helpdesk ticketing system (**TicketingSystem**) — implemented entirely as plain markdown skill files. No binaries, no SDKs, no runtime dependencies.
+AiXBase is an AI Skills distribution — 96 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a SQL translation layer (**XBase UniversalSQL**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). No binaries, no SDKs, no runtime dependencies.
 
 ---
 
@@ -18,12 +18,26 @@ Download: https://github.com/StewartScottRogers/AiXBase/releases/latest/download
 Install contract: Download skills.zip, extract it, place the markdown files
 where your AI harness loads skill definitions. No build step required.
 Partial installs are supported — you may extract individual bundle folders.
-The TicketingSystem bundle depends on the XBase bundle.
+The TicketingSystem and Ontology bundles depend on the XBase bundle.
+The XBase UniversalSQL bundle depends on the XBase bundle.
 ```
 
 ---
 
 ## Skill Bundles
+
+### XBase UniversalSQL — SQL Translation Layer
+
+7 skills across 2 groups. Accepts standard SQL, parses it into an execution plan, and dispatches to XBase skills. No new file I/O — everything routes through the XBase skill layer.
+
+| Group | Skills | Description |
+|-------|--------|-------------|
+| UniversalSQL | 4 | Parse, Validate, Explain, Execute — the core SQL pipeline |
+| UniversalSQL-Admin | 3 | Interactive REPL, execution plan inspector, SQL DDL extractor |
+
+Claude Code slash commands: `/sql` (interactive shell), `/explain` (execution plan), `/schema` (DDL extractor).
+
+Depends on the XBase bundle. → [XBase UniversalSQL Skill Reference](../SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md)
 
 ### Ontology — RDF/OWL from XBase on the Fly
 
@@ -125,4 +139,4 @@ No specific AI platform. No specific operating system. No specific programming l
 
 ---
 
-[View on GitHub](https://github.com/StewartScottRogers/AiXBase) · [manifest.json](../manifest.json) · [llms.txt](../llms.txt) · [Ontology Wiki](../SKILLS/Ontology/Ontology.wiki.md)
+[View on GitHub](https://github.com/StewartScottRogers/AiXBase) · [manifest.json](../manifest.json) · [llms.txt](../llms.txt) · [UniversalSQL Wiki](../SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md) · [Ontology Wiki](../SKILLS/Ontology/Ontology.wiki.md)

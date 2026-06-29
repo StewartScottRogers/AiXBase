@@ -1,11 +1,12 @@
 # AiXBase
 
-> AI Skills distribution for file-backed database management and helpdesk ticketing.
+> AI Skills distribution for file-backed database management, SQL, helpdesk ticketing, and RDF/OWL ontology generation.
 > All operations are plain markdown skill files; no runtime, SDK, or build step required.
 
 ## Key Resources
 
 - [Skill Manifest](manifest.json) — machine-readable catalog of all skills and bundles
+- [UniversalSQL Wiki](SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md) — SQL translation layer skill reference
 - [Ontology Wiki](SKILLS/Ontology/Ontology.wiki.md) — RDF/OWL ontology skill reference
 - [XBase Wiki](SKILLS/XBase/XBase.wiki.md) — database engine skill reference
 - [Ticketing Wiki](SKILLS/TicketingSystem/TicketingSystem.wiki.md) — ticketing system skill reference
@@ -17,6 +18,7 @@ Download the latest `skills.zip` from Releases. Extract it. Place the markdown f
 
 ## Bundles
 
+- **XBase UniversalSQL** (7 skills, 2 groups) — SQL translation layer; accepts standard SQL, parses to execution plan, dispatches to XBase skills. Includes interactive REPL, explain, and schema DDL extractor. Depends on XBase bundle.
 - **Ontology** (13 skills, 8 groups) — generates RDF/OWL from any XBase schema on the fly; includes Admin skills for inspection, comparison, and rebuild. Depends on XBase bundle.
 - **XBase** (35 skills, 9 groups) — file-backed database engine using dBASE III binary format. No external database engine required.
 - **TicketingSystem** (41 skills, 11 groups) — full helpdesk ticketing system built on XBase. Depends on XBase bundle.

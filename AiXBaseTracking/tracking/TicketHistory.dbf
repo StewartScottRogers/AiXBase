@@ -66,3 +66,10 @@
 {"Id":65,"TicketId":23,"Action":"Created","ActorUserId":1,"OldValue":null,"NewValue":null,"ChangedAt":"2026-06-28T23:30:00Z","IsDeleted":0}
 {"Id":66,"TicketId":23,"Action":"StatusChanged","ActorUserId":1,"OldValue":"Open","NewValue":"In Progress","ChangedAt":"2026-06-28T23:30:00Z","IsDeleted":0}
 {"Id":67,"TicketId":23,"Action":"StatusChanged","ActorUserId":1,"OldValue":"In Progress","NewValue":"Closed","ChangedAt":"2026-06-28T23:59:00Z","IsDeleted":0}
+{"Id":68,"TicketId":24,"Action":"Created","FromValue":null,"ToValue":"Backlog","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":69,"TicketId":25,"Action":"Created","FromValue":null,"ToValue":"Backlog","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":70,"TicketId":26,"Action":"Created","FromValue":null,"ToValue":"Backlog","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":71,"TicketId":27,"Action":"Created","FromValue":null,"ToValue":"Backlog","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":72,"TicketId":28,"Action":"Created","FromValue":null,"ToValue":"Backlog","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":73,"TicketId":24,"Action":"StatusChanged","FromValue":"Backlog","ToValue":"In Progress","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}
+{"Id":74,"TicketId":24,"Action":"StatusChanged","FromValue":"In Progress","ToValue":"Done","ChangedByUserId":1,"IsDeleted":0,"CreatedAt":"2026-06-29T00:00:00Z","UpdatedAt":"2026-06-29T00:00:00Z"}

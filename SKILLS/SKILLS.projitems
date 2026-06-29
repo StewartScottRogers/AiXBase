@@ -66,6 +66,9 @@
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Read.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Register.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\User\Ticketing-User-Update.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL-Admin\explain.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL-Admin\repl.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL-Admin\schema.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL\XBase-UniversalSQL-Execute.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL\XBase-UniversalSQL-Explain.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL\XBase-UniversalSQL-Parse.md" />

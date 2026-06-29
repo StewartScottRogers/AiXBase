@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "Write-Output '{\"systemMessage\": \"REMINDER: After committing new skills or bundles — update docs/index.md, llms.txt, docs/Summary.md, manifest.json, README.md (skill counts), and rebuild skills.zip\"}'",
+            "if": "Bash(git commit *)",
+            "shell": "powershell"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -94,4 +94,7 @@
     <None Include="$(MSBuildThisFileDirectory)XBase\Transaction\XBase-Transaction-Rollback.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\Transaction\XBase-Transaction-Savepoint.md" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Ontology\" />
+  </ItemGroup>
 </Project>

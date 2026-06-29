@@ -1,6 +1,6 @@
 # AiXBase
 
-AiXBase is an AI Skills distribution — 85 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
+AiXBase is an AI Skills distribution — 89 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
 
 ---
 
@@ -22,8 +22,9 @@ The TicketingSystem bundle depends on the XBase bundle.
 
 The Ontology bundle maps any connected XBase database into RDF/OWL format on the fly — no pre-authored `.owl` files required. It introspects a live schema, applies deterministic OWL mapping rules, and returns an in-session `OntologyDocument` that can be queried, validated, and serialized.
 
-- 9 skills across 7 groups (Namespace, Build, Populate, Query, Validate, Export, Session)
+- 13 skills across 8 groups (Admin, Namespace, Build, Populate, Query, Validate, Export, Session)
 - Tables → `owl:Class`; FK columns → `owl:ObjectProperty`; other columns → `owl:DatatypeProperty`
+- Admin skills: inspect document health, diff two documents, rebuild from live schema, guided admin session
 - BGP query evaluation; OWL schema and individual conformance validation
 - Export to Turtle, JSON-LD, RDF-XML, N-Triples
 
@@ -201,11 +202,11 @@ curl -L https://github.com/StewartScottRogers/AiXBase/releases/latest/download/s
 
 | Bundle | Skills | Groups | Wiki |
 |--------|--------|--------|------|
-| Ontology | 9 | Namespace, Build, Populate, Query, Validate, Export, Session | [Ontology.wiki.md](SKILLS/Ontology/Ontology.wiki.md) |
+| Ontology | 13 | Admin, Namespace, Build, Populate, Query, Validate, Export, Session | [Ontology.wiki.md](SKILLS/Ontology/Ontology.wiki.md) |
 | XBase | 35 | Database, Schema, Record, Query, Index, Transaction, Backup, Admin, Runtime | [XBase.wiki.md](SKILLS/XBase/XBase.wiki.md) |
 | TicketingSystem | 41 | Ticket, Comment, Attachment, Status, Priority, Category, User, Report, Display, Archive, Session | [TicketingSystem.wiki.md](SKILLS/TicketingSystem/TicketingSystem.wiki.md) |
 
-**Total: 85 skills** across 3 bundles and 27 operation groups.
+**Total: 89 skills** across 3 bundles and 28 operation groups.
 
 Machine-readable catalog: [manifest.json](manifest.json)
 

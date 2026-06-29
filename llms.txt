@@ -17,7 +17,7 @@ Download the latest `skills.zip` from Releases. Extract it. Place the markdown f
 
 ## Bundles
 
-- **Ontology** (9 skills, 7 groups) — generates RDF/OWL from any XBase schema on the fly. Depends on XBase bundle.
+- **Ontology** (13 skills, 8 groups) — generates RDF/OWL from any XBase schema on the fly; includes Admin skills for inspection, comparison, and rebuild. Depends on XBase bundle.
 - **XBase** (35 skills, 9 groups) — file-backed database engine using dBASE III binary format. No external database engine required.
 - **TicketingSystem** (41 skills, 11 groups) — full helpdesk ticketing system built on XBase. Depends on XBase bundle.
 

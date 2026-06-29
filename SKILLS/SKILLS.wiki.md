@@ -14,12 +14,13 @@ Skills do not assume any specific AI platform. They work with any AI harness tha
 
 ## Bundles
 
-### Ontology (9 skills)
+### Ontology (13 skills)
 
 Generates an RDF/OWL ontology from any connected XBase database schema on the fly — no pre-authored `.owl` files required.
 
 | Group | Skills | Purpose |
 |-------|--------|---------|
+| Admin | 4 | Inspect, compare, rebuild, and administer an OntologyDocument |
 | Namespace | 1 | Configure base IRI and prefix map |
 | Build | 1 | Introspect schema → OWL classes + properties |
 | Populate | 1 | Load records as owl:NamedIndividual instances |

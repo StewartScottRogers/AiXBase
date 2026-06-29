@@ -307,6 +307,10 @@ Line-oriented; one triple per line with fully expanded IRIs. Easiest to stream, 
 
 | Group | Skill | Description |
 |---|---|---|
+| Admin | `Ontology-Admin-Inspect` | Health and coverage report for an OntologyDocument |
+| Admin | `Ontology-Admin-Compare` | Diff two OntologyDocuments — added, removed, and changed entities |
+| Admin | `Ontology-Admin-Rebuild` | Re-introspect live schema and merge into existing document |
+| Admin | `Ontology-Admin-Session` | Guided interactive admin TUI for inspection and maintenance |
 | Namespace | `Ontology-Namespace-Define` | Configure base IRI and prefix map |
 | Build | `Ontology-Build-Schema` | Introspect XBase schema → `owl:Class` + properties |
 | Populate | `Ontology-Populate-Records` | Load XBase rows → `owl:NamedIndividual` instances |
@@ -320,6 +324,124 @@ Line-oriented; one triple per line with fully expanded IRIs. Easiest to stream, 
 ---
 
 ## Skill Specifications
+
+### Ontology-Admin-Inspect
+
+**Inputs**
+
+| Name | Type | Required |
+|---|---|---|
+| `OntologyDocument` | object | Yes |
+
+**Outputs**
+- `ClassCount`, `DatatypePropertyCount`, `ObjectPropertyCount`, `IndividualCount` (integers).
+- `FKCoverage`: `{ TotalProperties, ObjectProperties, CoveragePercent }`.
+- `PropertyDistribution`: array of `{ ClassIRI, ClassLabel, DatatypePropertyCount, ObjectPropertyCount }`.
+- `OrphanProperties`: array of `{ PropertyIRI, Domain }` — properties whose `Domain` matches no class.
+- `IsolatedClasses`: array of class IRIs that appear as neither `Domain` of any property nor `Range` of any ObjectProperty.
+- `Issues`: array of `{ Severity, Code, EntityIRI, Message }`.
+- `IssueCount` (integer).
+- `IsHealthy` (boolean) — `true` if `Issues` contains no `Error`-severity entries.
+
+**Steps**
+1. Verify `OntologyDocument` has a non-empty `Classes` array; if not, return `ONTOLOGY_ADMIN_NO_DOCUMENT`.
+2. Count all arrays; compute `FKCoverage`: `CoveragePercent = ObjectPropertyCount / (DatatypePropertyCount + ObjectPropertyCount) × 100`.
+3. Build `PropertyDistribution`: for each class, count properties whose `Domain` equals the class IRI.
+4. Find `OrphanProperties`: properties whose `Domain` IRI is not in the class set.
+5. Find `IsolatedClasses`: class IRIs not present as `Domain` in any property and not present as `Range` in any ObjectProperty.
+6. Build `Issues`: orphan properties → `Warning / ONTOLOGY_ADMIN_INSPECT_ORPHAN_PROPERTY`; isolated classes → `Info / ONTOLOGY_ADMIN_INSPECT_ISOLATED_CLASS`.
+7. Set `IsHealthy = (no Error-severity issues)`.
+8. Return full report.
+
+---
+
+### Ontology-Admin-Compare
+
+**Inputs**
+
+| Name | Type | Required | Default |
+|---|---|---|---|
+| `BaseDocument` | object | Yes | — |
+| `TargetDocument` | object | Yes | — |
+| `IncludeIndividuals` | boolean | No | `false` |
+
+**Outputs**
+- `NamespaceMismatch` (boolean).
+- `AddedClasses`, `RemovedClasses`: arrays of class objects.
+- `AddedProperties`, `RemovedProperties`: arrays of property objects with type tag.
+- `ChangedProperties`: array of `{ IRI, Changes: [{ Field, Before, After }] }`.
+- `AddedIndividuals`, `RemovedIndividuals`: arrays of individual IRIs (empty unless `IncludeIndividuals = true`).
+- `Summary`: `{ ClassesAdded, ClassesRemoved, PropertiesAdded, PropertiesRemoved, PropertiesChanged, IndividualsAdded, IndividualsRemoved }`.
+- `HasChanges` (boolean).
+
+**Steps**
+1. Verify both documents are present; if either missing return `ONTOLOGY_ADMIN_NO_DOCUMENT`.
+2. Set `NamespaceMismatch = (BaseDocument.Namespace.BaseIRI ≠ TargetDocument.Namespace.BaseIRI)`.
+3. Build IRI-keyed maps for both documents (classes and all properties).
+4. Compute Added/Removed/Changed sets by IRI.
+5. For `ChangedProperties`: compare `Type`, `Domain`, and `Range` fields.
+6. If `IncludeIndividuals = true`: compute Individual IRI sets and diff.
+7. Build `Summary`; set `HasChanges`.
+8. Return result.
+
+---
+
+### Ontology-Admin-Rebuild
+
+**Inputs**
+
+| Name | Type | Required | Default |
+|---|---|---|---|
+| `ConnectionName` | string | Yes | — |
+| `OntologyDocument` | object | Yes | — |
+| `Namespace` | object | Yes | — |
+| `PreserveIndividuals` | boolean | No | `true` |
+
+**Outputs**
+- `OntologyDocument`: the refreshed document.
+- `RebuildSummary`: `{ ClassesAdded, ClassesRemoved, ClassesUnchanged, PropertiesAdded, PropertiesRemoved, PropertiesChanged, IndividualsPreserved, IndividualsDiscarded }`.
+
+**Steps**
+1. Verify `ConnectionName` is registered; if not return `ONTOLOGY_ADMIN_REBUILD_NOT_CONNECTED`.
+2. Verify `OntologyDocument` has a `Classes` array; if not return `ONTOLOGY_ADMIN_NO_DOCUMENT`.
+3. Verify `Namespace` has `BaseIRI`; if not return `ONTOLOGY_ADMIN_NO_NAMESPACE`.
+4. Call `Ontology-Build-Schema` → `FreshDocument`.
+5. Call `Ontology-Admin-Compare` (`BaseDocument = OntologyDocument`, `TargetDocument = FreshDocument`) → `Diff`.
+6. Derive `RebuildSummary` from `Diff.Summary`.
+7. Apply `PreserveIndividuals`: copy existing `Individuals` into `FreshDocument` or discard; update counts.
+8. Return `FreshDocument` as `OntologyDocument` with `RebuildSummary`.
+
+---
+
+### Ontology-Admin-Session
+
+**Inputs**
+
+| Name | Type | Required |
+|---|---|---|
+| `ConnectionName` | string | Yes |
+| `OntologyDocument` | object | No |
+| `Namespace` | object | No |
+
+**Outputs**
+- `ExitReason` (string: `"UserExit"`).
+- `FinalDocument` (the `OntologyDocument` as it stood at exit, or null if never loaded).
+
+**Menu**
+```
+[1] Inspect Document
+[2] Save Snapshot for Compare
+[3] Compare with Saved Snapshot
+[4] Rebuild from Live Schema
+[5] Validate Schema
+[6] Validate Individuals
+[7] Export Current Document
+[8] Exit
+```
+
+Options 1–3, 5–7 require a loaded document; option 4 can both create and replace the current document. The session holds `OntologyDocument`, `Namespace`, and `SavedDocument` (snapshot for Compare) across iterations. All delegated skill errors are rendered as readable markdown before returning to the menu.
+
+---
 
 ### Ontology-Namespace-Define
 
@@ -580,6 +702,22 @@ State held across iterations: `Namespace` object and current `OntologyDocument`.
 
 ## Error Code Catalog
 
+### Admin (skill-level)
+
+| Code | Condition |
+|---|---|
+| `ONTOLOGY_ADMIN_NO_DOCUMENT` | `OntologyDocument` is null, missing, or has no `Classes` array |
+| `ONTOLOGY_ADMIN_NO_NAMESPACE` | `Namespace` is null or missing `BaseIRI` (Rebuild only) |
+| `ONTOLOGY_ADMIN_REBUILD_NOT_CONNECTED` | `ConnectionName` is not registered in the session (Rebuild only) |
+| `ONTOLOGY_ADMIN_NO_SNAPSHOT` | Compare-with-snapshot selected in Admin Session before a snapshot was saved |
+
+### Admin (issue codes returned inside `Issues` array from Inspect)
+
+| Code | Severity | Meaning |
+|---|---|---|
+| `ONTOLOGY_ADMIN_INSPECT_ORPHAN_PROPERTY` | Warning | Property `Domain` IRI matches no class in the document |
+| `ONTOLOGY_ADMIN_INSPECT_ISOLATED_CLASS` | Info | Class has no property domains and is not the range of any ObjectProperty |
+
 ### Namespace
 
 | Code | Condition |
@@ -648,8 +786,10 @@ State held across iterations: `Namespace` object and current `OntologyDocument`.
 
 ## Dependencies
 
-- An open XBase connection (`XBase-Database-Connect` already called) is required before `Ontology-Build-Schema` and `Ontology-Populate-Records`.
+- An open XBase connection (`XBase-Database-Connect` already called) is required before `Ontology-Build-Schema`, `Ontology-Populate-Records`, and `Ontology-Admin-Rebuild`.
 - All other Ontology skills operate on the in-session `OntologyDocument` — no XBase connection is needed once the document is built.
+- `Ontology-Admin-Rebuild` calls `Ontology-Build-Schema` and `Ontology-Admin-Compare` internally.
+- `Ontology-Admin-Session` calls `Ontology-Admin-Inspect`, `Ontology-Admin-Compare`, `Ontology-Admin-Rebuild`, `Ontology-Validate-Schema`, `Ontology-Validate-Individuals`, `Ontology-Export-Serialize`, and `Ontology-Namespace-Define`.
 - No external RDF libraries, triple-store engines, SPARQL processors, or network connectivity are required.
 - All skill inputs and outputs are JSON-serializable.
 - Harness-agnostic: any AI agent that can follow the numbered skill steps and perform a single `write-text-file` operation can implement the full bundle.

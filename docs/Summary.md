@@ -2,7 +2,7 @@
 
 AiXBase is a demonstration of **Ai Polymorphic Services**: software capabilities expressed as AI Skills rather than fixed API endpoints, where the AI dynamically selects, composes, and adapts behaviors based on context rather than traversing a rigid call graph.
 
-The repository ships three fully realised bundles — Ontology, XBase, and the Ticketing System — alongside 85 distributable Skill files that any Claude Code project can install and invoke as slash commands.
+The repository ships three fully realised bundles — Ontology, XBase, and the Ticketing System — alongside 89 distributable Skill files that any Claude Code project can install and invoke as slash commands.
 
 ---
 
@@ -24,10 +24,11 @@ Skills are **portable** — copy a `.md` file and the capability moves with it. 
 
 The Ontology bundle maps any connected XBase database into RDF/OWL format on the fly. Given an open XBase connection, the skills introspect the schema and optionally the records, produce a standards-compliant `OntologyDocument`, and either return it for downstream query and validation or serialize it to one of four RDF interchange formats.
 
-**9 skills across 7 operation groups:**
+**13 skills across 8 operation groups:**
 
 | Group | Skills | Scope |
 |---|:---:|---|
+| Admin | 4 | Inspect document health; compare two documents; rebuild from live schema; guided admin session |
 | Namespace | 1 | Configure base IRI and prefix map |
 | Build | 1 | Schema introspection → OWL classes and properties |
 | Populate | 1 | Load records as owl:NamedIndividual instances |
@@ -120,4 +121,4 @@ your-project/
             └── ...
 ```
 
-All 85 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.
+All 89 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.

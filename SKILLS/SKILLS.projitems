@@ -9,6 +9,10 @@
     <Import_RootNamespace>SKILLS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Admin\Ontology-Admin-Compare.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Admin\Ontology-Admin-Inspect.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Admin\Ontology-Admin-Rebuild.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Admin\Ontology-Admin-Session.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Build\Ontology-Build-Schema.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Export\Ontology-Export-Serialize.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Namespace\Ontology-Namespace-Define.md" />

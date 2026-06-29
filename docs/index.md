@@ -27,10 +27,11 @@ The TicketingSystem bundle depends on the XBase bundle.
 
 ### Ontology — RDF/OWL from XBase on the Fly
 
-9 skills across 7 groups. Introspects any connected XBase database and produces a standards-compliant OWL ontology — no pre-authored `.owl` files required.
+13 skills across 8 groups. Introspects any connected XBase database and produces a standards-compliant OWL ontology — no pre-authored `.owl` files required.
 
 | Group | Skills | Description |
 |-------|--------|-------------|
+| Admin | 4 | Inspect, compare, rebuild, and administer OntologyDocuments |
 | Namespace | 1 | Define base IRI, prefix, and PrefixMap |
 | Build | 1 | Schema → OWL classes and properties |
 | Populate | 1 | Load rows as owl:NamedIndividual instances |

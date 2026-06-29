@@ -10,9 +10,10 @@
       "name": "Ontology",
       "description": "Generates an RDF/OWL ontology from any connected XBase database schema on the fly. Maps tables to owl:Class, columns to owl:DatatypeProperty or owl:ObjectProperty (via ForeignKey), and rows to owl:NamedIndividual. Supports BGP queries, OWL validation, and serialization to Turtle, JSON-LD, RDF-XML, and N-Triples.",
       "depends_on": ["xbase"],
-      "skill_count": 9,
+      "skill_count": 13,
       "wiki": "SKILLS/Ontology/Ontology.wiki.md",
       "groups": [
+        { "id": "Admin",     "path": "Ontology/Admin",     "count": 4 },
         { "id": "Namespace", "path": "Ontology/Namespace", "count": 1 },
         { "id": "Build",     "path": "Ontology/Build",     "count": 1 },
         { "id": "Populate",  "path": "Ontology/Populate",  "count": 1 },

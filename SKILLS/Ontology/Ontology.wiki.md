@@ -39,6 +39,16 @@ All properties follow `{BaseIRI}{TableName}_{ColumnName}`, making IRIs unambiguo
 
 ## Skill Groups
 
+### Admin (4 skills)
+
+`Ontology-Admin-Inspect` analyzes an `OntologyDocument` in place and returns a coverage and health report: class and property counts, FK coverage ratio (ObjectProperties as a fraction of all properties), per-class property distribution, orphan properties (Domain IRI not matching any class), and isolated classes (no properties use them as Domain or Range). Returns an `IsHealthy` flag and an `Issues` array.
+
+`Ontology-Admin-Compare` diffs two `OntologyDocument` objects and reports added, removed, and changed classes and properties between them. The `ChangedProperties` array details which field changed (Type, Domain, or Range) and its before/after values. Optionally includes Individual-level diff. Use this to detect schema drift or audit ontology changes.
+
+`Ontology-Admin-Rebuild` re-introspects a live XBase schema (via `Ontology-Build-Schema`) and merges the result into an existing `OntologyDocument`. Returns the refreshed document and a `RebuildSummary` with counts of added, removed, and changed classes and properties. Existing `Individuals` can be preserved or discarded via `PreserveIndividuals`.
+
+`Ontology-Admin-Session` drives a guided interactive admin loop in the conversation. Its menu focuses on inspection and maintenance: Inspect Document, Save Snapshot, Compare with Snapshot, Rebuild from Live Schema, Validate Schema, Validate Individuals, Export, and Exit. It holds `OntologyDocument`, `Namespace`, and a `SavedDocument` snapshot across iterations. Distinct from `Ontology-Session`, which covers user-facing query and population workflows.
+
 ### Namespace (1 skill)
 
 `Ontology-Namespace-Define` configures the base IRI and prefix for the session. It builds the full `PrefixMap` including the four standard semantic-web prefixes (`owl`, `rdf`, `rdfs`, `xsd`) plus the user-defined prefix. Call this once before `Ontology-Build-Schema`. The resulting `Namespace` object is passed as an input to all downstream Ontology skills.

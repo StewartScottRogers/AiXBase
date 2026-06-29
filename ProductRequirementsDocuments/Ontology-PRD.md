@@ -115,6 +115,8 @@ The `OntologyDocument` is the in-session object that all Ontology skills read fr
 
 When a column has `ForeignKey = "ReferencedTable.ReferencedColumn"`, the property `Range` is set to `{BaseIRI}{ReferencedTable}`. The referenced column (always `Id`) is not included in the range IRI — the range is the class, not the column.
 
+**Important — FK declaration required:** `Ontology-Build-Schema` emits an `owl:ObjectProperty` **only** for columns that carry an explicit `ForeignKey` field in `_schema.json`. Columns that reference other tables by name convention (e.g. `StatusId`) but lack a `"ForeignKey"` declaration are emitted as `owl:DatatypeProperty` with range `xsd:integer`. Ensure every relationship column in `_schema.json` has `"ForeignKey": "Table.Column"` for the ontology to represent it accurately. The `XBase-Schema-TableCreate` and `XBase-Schema-TableAlter` skills accept a `ForeignKey` property on column definitions; it must be supplied at table-creation time or added via alter.
+
 ### Property IRI Convention
 
 All properties follow `{BaseIRI}{TableName}_{ColumnName}`. This approach is deliberately mechanical:

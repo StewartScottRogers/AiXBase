@@ -226,14 +226,16 @@
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Statuses.Id"
                                        },
                                        {
                                            "Name":  "ToStatusId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Statuses.Id"
                                        },
                                        {
                                            "Name":  "IsDeleted",
@@ -324,7 +326,8 @@
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
                                            "Nullable":  true,
-                                           "Default":  null
+                                           "Default":  null,
+                                           "ForeignKey":  "Categories.Id"
                                        },
                                        {
                                            "Name":  "CreatedAt",
@@ -375,7 +378,7 @@
                    },
                    {
                        "Name":  "Tickets",
-                       "NextId":  22,
+                       "NextId":  23,
                        "CreatedAt":  "2026-06-28T19:07:21Z",
                        "Columns":  [
                                        {
@@ -412,35 +415,40 @@
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Statuses.Id"
                                        },
                                        {
                                            "Name":  "PriorityId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Priorities.Id"
                                        },
                                        {
                                            "Name":  "CategoryId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  true
+                                           "Nullable":  true,
+                                           "ForeignKey":  "Categories.Id"
                                        },
                                        {
                                            "Name":  "ReporterUserId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Users.Id"
                                        },
                                        {
                                            "Name":  "AssignedToUserId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  true
+                                           "Nullable":  true,
+                                           "ForeignKey":  "Users.Id"
                                        },
                                        {
                                            "Name":  "ClosedAt",
@@ -499,14 +507,16 @@
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Tickets.Id"
                                        },
                                        {
                                            "Name":  "AuthorUserId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Users.Id"
                                        },
                                        {
                                            "Name":  "Body",
@@ -556,14 +566,16 @@
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Tickets.Id"
                                        },
                                        {
                                            "Name":  "UploaderUserId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Users.Id"
                                        },
                                        {
                                            "Name":  "FilePath",
@@ -598,7 +610,7 @@
                    },
                    {
                        "Name":  "TicketHistory",
-                       "NextId":  62,
+                       "NextId":  65,
                        "CreatedAt":  "2026-06-28T19:07:21Z",
                        "Columns":  [
                                        {
@@ -613,7 +625,8 @@
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Tickets.Id"
                                        },
                                        {
                                            "Name":  "Action",
@@ -627,7 +640,8 @@
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Users.Id"
                                        },
                                        {
                                            "Name":  "OldValue",
@@ -677,14 +691,16 @@
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Tickets.Id"
                                        },
                                        {
                                            "Name":  "TagId",
                                            "Type":  "INTEGER",
                                            "PrimaryKey":  false,
                                            "AutoIncrement":  false,
-                                           "Nullable":  false
+                                           "Nullable":  false,
+                                           "ForeignKey":  "Tags.Id"
                                        },
                                        {
                                            "Name":  "IsDeleted",

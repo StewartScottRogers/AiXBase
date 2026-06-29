@@ -29,6 +29,8 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 | `Ticketing-Ticket-Assign` | Assign or reassign the ticket owner |
 | `Ticketing-Ticket-Escalate` | Raise priority and notify assigned user |
 | `Ticketing-Ticket-Query` | Search tickets with filter, sort, and pagination |
+| `Ticketing-Ticket-Archive` | Mark a ticket as archived (`IsArchived = 1`) |
+| `Ticketing-Ticket-Unarchive` | Reverse an archive, restoring the ticket to active |
 
 ### Comment Operations
 
@@ -96,6 +98,20 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 | `Ticketing-Display-Alert` | Emit BEL × 1 then render a compact alert banner for assignment or escalation events |
 | `Ticketing-Display-Bell` | Emit N BEL characters (ASCII 7, `\a`) to stdout — no banner |
 
+### Archive Operations
+
+| Skill | Description |
+|---|---|
+| `Ticketing-Archive-Pack` | Export a filtered set of closed tickets into a standalone archive database |
+| `Ticketing-Archive-Query` | Query a packed archive without restoring it to the live database |
+| `Ticketing-Archive-Restore` | Re-import archived tickets back into the live ticketing database |
+
+### Session
+
+| Skill | Description |
+|---|---|
+| `Ticketing-Session` | Guided interactive TUI loop for common ticketing operations |
+
 ---
 
 ## Skill Specifications
@@ -111,7 +127,7 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 **Inputs**
 - `Summary` (string, required, max 200 chars)
 - `Description` (string, optional)
-- `ReportedByUserId` (int, required)
+- `ReporterUserId` (int, required)
 - `AssignedToUserId` (int, optional)
 - `CategoryId` (int, optional)
 - `PriorityId` (int, optional, defaults to system default priority)
@@ -184,7 +200,7 @@ Example: `Ticketing-Ticket-Create`, `Ticketing-Comment-Edit`
 **Inputs**
 - `TicketId` (int)
 - `ToStatusId` (int)
-- `ChangedByUserId` (int)
+- `ActorUserId` (int)
 - `Comment` (string, optional)
 
 **Behavior**
@@ -365,12 +381,13 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 | `StatusId` | INTEGER FK | → `Statuses.Id` |
 | `PriorityId` | INTEGER FK | → `Priorities.Id` |
 | `CategoryId` | INTEGER FK | → `Categories.Id` |
-| `ReportedByUserId` | INTEGER FK | → `Users.Id` |
+| `ReporterUserId` | INTEGER FK | → `Users.Id` |
 | `AssignedToUserId` | INTEGER FK | → `Users.Id` |
 | `CreatedAt` | TEXT | ISO-8601 |
 | `UpdatedAt` | TEXT | ISO-8601 |
 | `ClosedAt` | TEXT | ISO-8601, nullable |
 | `IsDeleted` | INTEGER | 0/1 |
+| `IsArchived` | INTEGER | 0/1 |
 
 **Comments**
 
@@ -384,6 +401,17 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 | `UpdatedAt` | TEXT | |
 | `IsDeleted` | INTEGER | |
 
+**Sessions**
+
+| Column | Type | Notes |
+|---|---|---|
+| `Id` | INTEGER PK | Auto-increment |
+| `UserId` | INTEGER FK | → `Users.Id` |
+| `SessionToken` | TEXT UNIQUE NOT NULL | 64-char hex |
+| `ExpiresAt` | TEXT NOT NULL | ISO-8601 |
+| `CreatedAt` | TEXT | ISO-8601 |
+| `IsDeleted` | INTEGER | 0/1 |
+
 **Statuses**
 
 | Column | Type | Notes |
@@ -396,8 +424,10 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 
 | Column | Type | Notes |
 |---|---|---|
-| `FromStatusId` | INTEGER FK | |
-| `ToStatusId` | INTEGER FK | |
+| `Id` | INTEGER PK | Auto-increment |
+| `FromStatusId` | INTEGER FK | → `Statuses.Id` |
+| `ToStatusId` | INTEGER FK | → `Statuses.Id` |
+| `IsDeleted` | INTEGER | 0/1 |
 
 **Priorities**
 
@@ -408,6 +438,33 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 | `Weight` | INTEGER | Lower = higher urgency |
 | `IsDefault` | INTEGER | 1 for one row |
 
+**Categories**
+
+| Column | Type | Notes |
+|---|---|---|
+| `Id` | INTEGER PK | Auto-increment |
+| `Name` | TEXT UNIQUE NOT NULL | |
+| `ParentId` | INTEGER FK | → `Categories.Id` (self-referential, nullable) |
+| `CreatedAt` | TEXT | ISO-8601 |
+| `IsDeleted` | INTEGER | 0/1 |
+
+**Tags**
+
+| Column | Type | Notes |
+|---|---|---|
+| `Id` | INTEGER PK | Auto-increment |
+| `Name` | TEXT UNIQUE NOT NULL | |
+| `IsDeleted` | INTEGER | 0/1 |
+
+**TicketTags**
+
+| Column | Type | Notes |
+|---|---|---|
+| `Id` | INTEGER PK | Auto-increment |
+| `TicketId` | INTEGER FK | → `Tickets.Id` |
+| `TagId` | INTEGER FK | → `Tags.Id` |
+| `IsDeleted` | INTEGER | 0/1 |
+
 **Users**
 
 | Column | Type | Notes |
@@ -417,19 +474,22 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 | `DisplayName` | TEXT | |
 | `Email` | TEXT | |
 | `CredentialHash` | TEXT | |
+| `IsAdmin` | INTEGER | 0/1 |
 | `IsActive` | INTEGER | 0/1 |
 | `CreatedAt` | TEXT | |
+| `UpdatedAt` | TEXT | |
+| `IsDeleted` | INTEGER | 0/1 |
 
 **TicketHistory**
 
 | Column | Type | Notes |
 |---|---|---|
 | `Id` | INTEGER PK | |
-| `TicketId` | INTEGER FK | |
-| `ChangedByUserId` | INTEGER FK | |
+| `TicketId` | INTEGER FK | → `Tickets.Id` |
+| `ActorUserId` | INTEGER FK | → `Users.Id` |
 | `Action` | TEXT | e.g. `Created`, `StatusChanged`, `Assigned` |
-| `FromValue` | TEXT | nullable |
-| `ToValue` | TEXT | nullable |
+| `OldValue` | TEXT | nullable |
+| `NewValue` | TEXT | nullable |
 | `ChangedAt` | TEXT | ISO-8601 |
 
 **Attachments**
@@ -437,12 +497,12 @@ Emit exactly `Count` BEL characters (ASCII 7) to stdout, one at a time, flushing
 | Column | Type | Notes |
 |---|---|---|
 | `Id` | INTEGER PK | |
-| `TicketId` | INTEGER FK | |
-| `FileName` | TEXT NOT NULL | |
+| `TicketId` | INTEGER FK | → `Tickets.Id` |
+| `UploaderUserId` | INTEGER FK | → `Users.Id` |
 | `FilePath` | TEXT NOT NULL | path relative to `{DatabaseRoot}/attachments/` (or an absolute path — consumer's convention) |
-| `UploadedByUserId` | INTEGER FK | |
-| `UploadedAt` | TEXT | |
-| `IsDeleted` | INTEGER | |
+| `FileName` | TEXT NOT NULL | |
+| `CreatedAt` | TEXT | ISO-8601 |
+| `IsDeleted` | INTEGER | 0/1 |
 
 ---
 

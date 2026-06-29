@@ -6,6 +6,23 @@
   "zip_url": "https://github.com/StewartScottRogers/AiXBase/releases/latest/download/skills.zip",
   "bundles": [
     {
+      "id": "ontology",
+      "name": "Ontology",
+      "description": "Generates an RDF/OWL ontology from any connected XBase database schema on the fly. Maps tables to owl:Class, columns to owl:DatatypeProperty or owl:ObjectProperty (via ForeignKey), and rows to owl:NamedIndividual. Supports BGP queries, OWL validation, and serialization to Turtle, JSON-LD, RDF-XML, and N-Triples.",
+      "depends_on": ["xbase"],
+      "skill_count": 9,
+      "wiki": "SKILLS/Ontology/Ontology.wiki.md",
+      "groups": [
+        { "id": "Namespace", "path": "Ontology/Namespace", "count": 1 },
+        { "id": "Build",     "path": "Ontology/Build",     "count": 1 },
+        { "id": "Populate",  "path": "Ontology/Populate",  "count": 1 },
+        { "id": "Query",     "path": "Ontology/Query",     "count": 2 },
+        { "id": "Validate",  "path": "Ontology/Validate",  "count": 2 },
+        { "id": "Export",    "path": "Ontology/Export",    "count": 1 },
+        { "id": "Session",   "path": "Ontology",           "count": 1 }
+      ]
+    },
+    {
       "id": "xbase",
       "name": "XBase",
       "description": "Native file-backed database engine. Provides connection management, schema DDL, full CRUD, composite queries, index management, transactions with savepoints, and backup/restore.",

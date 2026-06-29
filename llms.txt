@@ -6,6 +6,7 @@
 ## Key Resources
 
 - [Skill Manifest](manifest.json) — machine-readable catalog of all skills and bundles
+- [Ontology Wiki](SKILLS/Ontology/Ontology.wiki.md) — RDF/OWL ontology skill reference
 - [XBase Wiki](SKILLS/XBase/XBase.wiki.md) — database engine skill reference
 - [Ticketing Wiki](SKILLS/TicketingSystem/TicketingSystem.wiki.md) — ticketing system skill reference
 - [Latest Release](https://github.com/StewartScottRogers/AiXBase/releases/latest) — versioned ZIP download
@@ -16,6 +17,7 @@ Download the latest `skills.zip` from Releases. Extract it. Place the markdown f
 
 ## Bundles
 
+- **Ontology** (9 skills, 7 groups) — generates RDF/OWL from any XBase schema on the fly. Depends on XBase bundle.
 - **XBase** (35 skills, 9 groups) — file-backed database engine using dBASE III binary format. No external database engine required.
 - **TicketingSystem** (41 skills, 11 groups) — full helpdesk ticketing system built on XBase. Depends on XBase bundle.
 

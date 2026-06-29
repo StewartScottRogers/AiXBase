@@ -1,6 +1,6 @@
 # AiXBase
 
-AiXBase is an AI Skills distribution that gives any AI harness a complete file-backed database engine (**XBase**) and a full helpdesk ticketing system (**TicketingSystem**) — implemented entirely as plain markdown skill files. There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
+AiXBase is an AI Skills distribution — 85 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
 
 ---
 
@@ -18,15 +18,28 @@ The TicketingSystem bundle depends on the XBase bundle.
 
 ---
 
+## What is Ontology
+
+The Ontology bundle maps any connected XBase database into RDF/OWL format on the fly — no pre-authored `.owl` files required. It introspects a live schema, applies deterministic OWL mapping rules, and returns an in-session `OntologyDocument` that can be queried, validated, and serialized.
+
+- 9 skills across 7 groups (Namespace, Build, Populate, Query, Validate, Export, Session)
+- Tables → `owl:Class`; FK columns → `owl:ObjectProperty`; other columns → `owl:DatatypeProperty`
+- BGP query evaluation; OWL schema and individual conformance validation
+- Export to Turtle, JSON-LD, RDF-XML, N-Triples
+
+Depends on the XBase bundle. → [Ontology Skill Reference](SKILLS/Ontology/Ontology.wiki.md)
+
+---
+
 ## What is XBase
 
 XBase is a skill-based, file-backed database engine. Every database operation — schema management, record CRUD, queries, indexes, transactions, backups — is a discrete markdown skill file. XBase stores data in **dBASE III binary format** (`.dbf` files and `.ndx` B-tree indexes) using only OS file system primitives.
 
 **No external database engine. No ORM. No package dependencies.**
 
-- 30 core skills across 7 groups (Database, Schema, Record, Query, Index, Transaction, Backup)
-- 3 admin skills (Execute, Inspect, Maintain)
-- 1 runtime environment verification skill
+- 35 skills across 9 groups (Database, Schema, Record, Query, Index, Transaction, Backup, Admin, Runtime)
+- Full DDL, CRUD, composite queries, transactions with savepoints, backup/restore
+- 4 admin skills: dynamic dispatch, health inspection, maintenance, guided interactive session
 
 → [XBase Skill Reference](SKILLS/XBase/XBase.wiki.md)
 
@@ -36,12 +49,13 @@ XBase is a skill-based, file-backed database engine. Every database operation �
 
 The Ticketing System is a full-featured helpdesk issue tracker built entirely on XBase skills. It has no direct file I/O — every read and write routes through XBase skills.
 
-- 35 skills across 9 groups (Ticket, Comment, Attachment, Status, Priority, Category, User, Report, Display)
+- 41 skills across 11 groups (Ticket, Comment, Attachment, Status, Priority, Category, User, Report, Display, Archive, Session)
 - Full ticket lifecycle with history, assignments, escalation, and status workflows
+- Two-tier archiving: pack archived tickets to a named archive database; restore on demand
 - User authentication with internal credential hashing and session tokens
 - Terminal display with BEL notifications and ASCII art completion banners
 
-→ [TicketingSystem Skill Reference](SKILLS/TicketingSystem/TicketingSystem.wiki.md)
+Depends on the XBase bundle. → [TicketingSystem Skill Reference](SKILLS/TicketingSystem/TicketingSystem.wiki.md)
 
 ---
 
@@ -90,12 +104,12 @@ Ticketing-User-Authenticate  Username:"alice"  Password:"secret"
 Ticketing-Ticket-Create
   Summary:"Checkout page times out on mobile"
   Description:"Reproducible on iOS 17 / Safari 17. Occurs after entering card details."
-  ReportedByUserId:<alice-id>
+  ReporterUserId:<alice-id>
 # → TicketId:1  TicketNumber:"TKT-0001"
 
 # Work the ticket
 Ticketing-Ticket-Assign      TicketId:1  AssignToUserId:<alice-id>  AssignedByUserId:<alice-id>
-Ticketing-Status-Transition  TicketId:1  ToStatusId:<in-progress-id>  ChangedByUserId:<alice-id>
+Ticketing-Status-Transition  TicketId:1  ToStatusId:<in-progress-id>  ActorUserId:<alice-id>
 Ticketing-Comment-Add        TicketId:1  AuthorUserId:<alice-id>
                               Body:"Traced to missing timeout on payment gateway. Fix in progress."
 
@@ -133,11 +147,30 @@ Ticketing-Report-Generate  FromDate:"2026-01-01"  ToDate:"2026-06-30"
 Ticketing-Report-Export    Format:"CSV"  OutputPath:"report-h1-2026.csv"
 ```
 
-### Example 4 — AI agent autonomous install
+### Example 4 — Ontology from a live database
 
 ```
-# Agent reads manifest.json → discovers two bundles; ticketing depends_on xbase
-# Agent downloads skills.zip, extracts XBase/ and TicketingSystem/ folders
+# Connect to an existing XBase database
+XBase-Database-Connect   DatabaseName:"ticketing"  ConnectionName:"ticketing"
+
+# Define the namespace
+Ontology-Namespace-Define  DatabaseName:"ticketing"
+# → Namespace object: BaseIRI, Prefix, PrefixMap
+
+# Build the schema ontology
+Ontology-Build-Schema   ConnectionName:"ticketing"  Namespace:<above>
+# → OntologyDocument with Classes, DatatypeProperties, ObjectProperties
+
+# Validate and export
+Ontology-Validate-Schema   OntologyDocument:<above>
+Ontology-Export-Serialize  OntologyDocument:<above>  Format:"Turtle"  OutputPath:"ticketing.ttl"
+```
+
+### Example 5 — AI agent autonomous install
+
+```
+# Agent reads manifest.json → discovers three bundles; ontology and ticketing depend_on xbase
+# Agent downloads skills.zip, extracts all three bundle folders
 # Agent configures its harness to load the extracted skill files
 # Agent runs Example 1 setup sequence above
 # System is now operational — no human wrote any code
@@ -168,10 +201,11 @@ curl -L https://github.com/StewartScottRogers/AiXBase/releases/latest/download/s
 
 | Bundle | Skills | Groups | Wiki |
 |--------|--------|--------|------|
-| XBase | 34 | Database, Schema, Record, Query, Index, Transaction, Backup, Admin, Runtime | [XBase.wiki.md](SKILLS/XBase/XBase.wiki.md) |
-| TicketingSystem | 35 | Ticket, Comment, Attachment, Status, Priority, Category, User, Report, Display | [TicketingSystem.wiki.md](SKILLS/TicketingSystem/TicketingSystem.wiki.md) |
+| Ontology | 9 | Namespace, Build, Populate, Query, Validate, Export, Session | [Ontology.wiki.md](SKILLS/Ontology/Ontology.wiki.md) |
+| XBase | 35 | Database, Schema, Record, Query, Index, Transaction, Backup, Admin, Runtime | [XBase.wiki.md](SKILLS/XBase/XBase.wiki.md) |
+| TicketingSystem | 41 | Ticket, Comment, Attachment, Status, Priority, Category, User, Report, Display, Archive, Session | [TicketingSystem.wiki.md](SKILLS/TicketingSystem/TicketingSystem.wiki.md) |
 
-**Total: 69 skills** across 2 bundles and 18 operation groups.
+**Total: 85 skills** across 3 bundles and 27 operation groups.
 
 Machine-readable catalog: [manifest.json](manifest.json)
 
@@ -179,6 +213,6 @@ Machine-readable catalog: [manifest.json](manifest.json)
 
 ## Extending the Distribution
 
-Adding a new skill bundle requires only: create skill files under `SKILLS/{BundleName}/{Group}/`, write a `{BundleName}.wiki.md`, add an entry to `manifest.json`, register files in `SKILLS.projitems`, and cut a new release.
+Adding a new skill bundle requires only: create skill files under `SKILLS/{BundleName}/{Group}/`, write a `{BundleName}.wiki.md`, add an entry to `manifest.json`, register files in `SKILLS.projitems`, and cut a new release. See the Ontology bundle as a worked example of a bundle that depends on XBase.
 
 The skill file format — Inputs table, JSON Outputs example, numbered Steps, Error Codes table, Dependencies list — is the stable interface contract. Any consumer can depend on it. See [Repository-Presentation-PRD.md](ProductRequirementsDocuments/Repository-Presentation-PRD.md) for the full extensibility model.

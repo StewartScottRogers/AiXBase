@@ -25,6 +25,22 @@ The TicketingSystem bundle depends on the XBase bundle.
 
 ## Skill Bundles
 
+### Ontology — RDF/OWL from XBase on the Fly
+
+9 skills across 7 groups. Introspects any connected XBase database and produces a standards-compliant OWL ontology — no pre-authored `.owl` files required.
+
+| Group | Skills | Description |
+|-------|--------|-------------|
+| Namespace | 1 | Define base IRI, prefix, and PrefixMap |
+| Build | 1 | Schema → OWL classes and properties |
+| Populate | 1 | Load rows as owl:NamedIndividual instances |
+| Query | 2 | BGP pattern query and single-resource describe |
+| Validate | 2 | OWL schema consistency and individual conformance |
+| Export | 1 | Serialize to Turtle / JSON-LD / RDF-XML / N-Triples |
+| Session | 1 | Guided interactive ontology TUI |
+
+Depends on the XBase bundle. → [Ontology Skill Reference](../SKILLS/Ontology/Ontology.wiki.md)
+
 ### XBase — File-Backed Database Engine
 
 35 skills across 9 groups. Stores data in dBASE III binary format (`.dbf` + `.ndx`). No external database engine required.
@@ -41,7 +57,7 @@ The TicketingSystem bundle depends on the XBase bundle.
 | Admin | 4 | Execute, Inspect, Maintain, Session |
 | Runtime | 1 | Detect (environment capability verification) |
 
-→ [XBase Skill Reference](../SKILLS/XBase/XBase.wiki.md)
+Depends on nothing. → [XBase Skill Reference](../SKILLS/XBase/XBase.wiki.md)
 
 ### TicketingSystem — Helpdesk Built on XBase
 
@@ -61,7 +77,7 @@ The TicketingSystem bundle depends on the XBase bundle.
 | Archive | 3 | Pack (move archived tickets to named archive DB), Query, Restore |
 | Session | 1 | Guided interactive ticketing session with menu-driven UI |
 
-→ [TicketingSystem Skill Reference](../SKILLS/TicketingSystem/TicketingSystem.wiki.md)
+Depends on XBase. → [TicketingSystem Skill Reference](../SKILLS/TicketingSystem/TicketingSystem.wiki.md)
 
 ---
 
@@ -108,4 +124,4 @@ No specific AI platform. No specific operating system. No specific programming l
 
 ---
 
-[View on GitHub](https://github.com/StewartScottRogers/AiXBase) · [manifest.json](../manifest.json) · [llms.txt](../llms.txt)
+[View on GitHub](https://github.com/StewartScottRogers/AiXBase) · [manifest.json](../manifest.json) · [llms.txt](../llms.txt) · [Ontology Wiki](../SKILLS/Ontology/Ontology.wiki.md)

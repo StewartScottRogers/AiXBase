@@ -2,7 +2,7 @@
 
 AiXBase is a demonstration of **Ai Polymorphic Services**: software capabilities expressed as AI Skills rather than fixed API endpoints, where the AI dynamically selects, composes, and adapts behaviors based on context rather than traversing a rigid call graph.
 
-The repository ships two fully realised features — XBase and the Ticketing System — alongside 76 distributable Skill files that any Claude Code project can install and invoke as slash commands.
+The repository ships three fully realised bundles — Ontology, XBase, and the Ticketing System — alongside 85 distributable Skill files that any Claude Code project can install and invoke as slash commands.
 
 ---
 
@@ -17,6 +17,28 @@ A Skill is a self-contained Markdown file that instructs Claude Code to perform 
 ```
 
 Skills are **portable** — copy a `.md` file and the capability moves with it. They are **composable** — skills call other skills through their declared dependency list. They are **harness-agnostic** — the same specification runs under PowerShell, bash, or Python, with the runtime detected automatically at execution time.
+
+---
+
+## Ontology
+
+The Ontology bundle maps any connected XBase database into RDF/OWL format on the fly. Given an open XBase connection, the skills introspect the schema and optionally the records, produce a standards-compliant `OntologyDocument`, and either return it for downstream query and validation or serialize it to one of four RDF interchange formats.
+
+**9 skills across 7 operation groups:**
+
+| Group | Skills | Scope |
+|---|:---:|---|
+| Namespace | 1 | Configure base IRI and prefix map |
+| Build | 1 | Schema introspection → OWL classes and properties |
+| Populate | 1 | Load records as owl:NamedIndividual instances |
+| Query | 2 | BGP pattern evaluation; single-resource describe |
+| Validate | 2 | OWL schema consistency; individual conformance |
+| Export | 1 | Serialize to Turtle / JSON-LD / RDF-XML / N-Triples |
+| Session | 1 | Guided interactive ontology TUI |
+
+Tables become `owl:Class`. Non-PK columns without a declared `ForeignKey` become `owl:DatatypeProperty` with an XSD range. Non-PK columns with `ForeignKey` become `owl:ObjectProperty` with the referenced table as range. Rows become `owl:NamedIndividual`.
+
+Depends on the XBase bundle.
 
 ---
 
@@ -98,4 +120,4 @@ your-project/
             └── ...
 ```
 
-All 76 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.
+All 85 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.

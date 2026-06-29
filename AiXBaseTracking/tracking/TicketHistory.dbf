@@ -56,3 +56,4 @@
 {"Id":55,"TicketId":19,"Action":"StatusChanged","ActorUserId":1,"OldValue":"In Progress","NewValue":"Done","ChangedAt":"2026-06-28T21:10:00Z","IsDeleted":0}
 {"Id":56,"TicketId":20,"Action":"Created","ActorUserId":1,"OldValue":null,"NewValue":null,"ChangedAt":"2026-06-28T21:30:00Z","IsDeleted":0}
 {"Id":57,"TicketId":20,"Action":"StatusChanged","ActorUserId":1,"OldValue":"Backlog","NewValue":"In Progress","ChangedAt":"2026-06-28T21:30:00Z","IsDeleted":0}
+{"Id":58,"TicketId":20,"Action":"StatusChanged","ActorUserId":1,"OldValue":"In Progress","NewValue":"Done","ChangedAt":"2026-06-28T21:45:00Z","IsDeleted":0}

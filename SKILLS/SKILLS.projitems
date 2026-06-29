@@ -69,6 +69,7 @@
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL-Admin\explain.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL-Admin\repl.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL-Admin\schema.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL\XBase-UniversalSQL.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL\XBase-UniversalSQL-Execute.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL\XBase-UniversalSQL-Explain.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase\UniversalSQL\XBase-UniversalSQL-Parse.md" />

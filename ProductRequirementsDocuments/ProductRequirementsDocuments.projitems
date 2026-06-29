@@ -17,6 +17,10 @@
     <None Include="$(MSBuildThisFileDirectory)XBase-Admin-Testing-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)XBase-Testing-PRD.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase-UniversalSQL-Admin-PRD.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase-UniversalSQL-Admin-Testing-PRD.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase-UniversalSQL-PRD.md" />
+    <None Include="$(MSBuildThisFileDirectory)XBase-UniversalSQL-Testing-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem-PRD.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem-Testing-PRD.md" />
   </ItemGroup>

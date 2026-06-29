@@ -1,6 +1,6 @@
 # AiXBase
 
-AiXBase is an AI Skills distribution — 89 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
+AiXBase is an AI Skills distribution — 96 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a SQL translation layer (**XBase UniversalSQL**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
 
 ---
 
@@ -15,6 +15,20 @@ where your AI harness loads skill definitions. No build step required.
 Partial installs are supported — you may extract individual bundle folders.
 The TicketingSystem bundle depends on the XBase bundle.
 ```
+
+---
+
+## What is XBase UniversalSQL
+
+XBase UniversalSQL is a SQL translation layer that sits above the 35 XBase skills. It accepts a standard SQL statement as plain text, parses it into an AST, maps it to one or more XBase skill calls, and returns results in a unified envelope — no new file I/O primitives, no storage engine changes.
+
+- 7 skills across 2 groups (UniversalSQL core, UniversalSQL-Admin)
+- Supports SELECT, INSERT, UPDATE, DELETE, DDL, TCL, SHOW TABLES, DESCRIBE, EXPLAIN, BACKUP/RESTORE
+- Named parameter binding (`?name` placeholders), transaction routing, pre-execution validation
+- Admin skills: interactive SQL REPL, execution plan inspector, SQL DDL extractor
+- Claude Code slash commands: `/sql`, `/explain`, `/schema`
+
+Depends on the XBase bundle. → [XBase UniversalSQL Skill Reference](SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md)
 
 ---
 
@@ -202,11 +216,12 @@ curl -L https://github.com/StewartScottRogers/AiXBase/releases/latest/download/s
 
 | Bundle | Skills | Groups | Wiki |
 |--------|--------|--------|------|
+| XBase UniversalSQL | 7 | UniversalSQL, UniversalSQL-Admin | [XBase-UniversalSQL.wiki.md](SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md) |
 | Ontology | 13 | Admin, Namespace, Build, Populate, Query, Validate, Export, Session | [Ontology.wiki.md](SKILLS/Ontology/Ontology.wiki.md) |
 | XBase | 35 | Database, Schema, Record, Query, Index, Transaction, Backup, Admin, Runtime | [XBase.wiki.md](SKILLS/XBase/XBase.wiki.md) |
 | TicketingSystem | 41 | Ticket, Comment, Attachment, Status, Priority, Category, User, Report, Display, Archive, Session | [TicketingSystem.wiki.md](SKILLS/TicketingSystem/TicketingSystem.wiki.md) |
 
-**Total: 89 skills** across 3 bundles and 28 operation groups.
+**Total: 96 skills** across 4 bundles and 30 operation groups.
 
 Machine-readable catalog: [manifest.json](manifest.json)
 

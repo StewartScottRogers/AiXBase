@@ -6,6 +6,18 @@
   "zip_url": "https://github.com/StewartScottRogers/AiXBase/releases/latest/download/skills.zip",
   "bundles": [
     {
+      "id": "universalsql",
+      "name": "XBase UniversalSQL",
+      "description": "SQL translation layer for XBase. Accepts standard SQL, parses it into an execution plan, and dispatches to the appropriate XBase skills. Includes an interactive REPL, execution plan inspector, and schema DDL extractor. No new file I/O — all operations delegate to the XBase skill layer.",
+      "depends_on": ["xbase"],
+      "skill_count": 7,
+      "wiki": "SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md",
+      "groups": [
+        { "id": "UniversalSQL",       "path": "XBase/UniversalSQL",       "count": 4 },
+        { "id": "UniversalSQL-Admin", "path": "XBase/UniversalSQL-Admin", "count": 3 }
+      ]
+    },
+    {
       "id": "ontology",
       "name": "Ontology",
       "description": "Generates an RDF/OWL ontology from any connected XBase database schema on the fly. Maps tables to owl:Class, columns to owl:DatatypeProperty or owl:ObjectProperty (via ForeignKey), and rows to owl:NamedIndividual. Supports BGP queries, OWL validation, and serialization to Turtle, JSON-LD, RDF-XML, and N-Triples.",

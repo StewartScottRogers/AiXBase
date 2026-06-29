@@ -31,6 +31,10 @@ The `SKILLS/` folder is the GitHub ZIP distribution artifact. Its layout mirrors
 
 ```
 SKILLS/
+├── Ontology/
+│   ├── Namespace/   Ontology-Namespace-*.md   (1 skill)
+│   ├── Build/       Ontology-Build-*.md        (1 skill)
+│   └── Export/      Ontology-Export-*.md       (1 skill)
 ├── XBase/
 │   ├── Database/    XBase-Database-*.md       (4 skills)
 │   ├── Schema/      XBase-Schema-*.md         (5 skills)
@@ -55,7 +59,7 @@ SKILLS/
     └── Ticketing-Session.md                  (1 skill)
 ```
 
-**Total: 76 skills** across 2 bundles and 18 operation groups.
+**Total: 79 skills** across 3 bundles and 21 operation groups.
 
 Every skill file follows the same format: Inputs table, JSON Outputs example, numbered Steps, Error Codes table, Dependencies list.
 

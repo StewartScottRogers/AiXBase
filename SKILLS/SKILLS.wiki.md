@@ -14,6 +14,18 @@ Skills do not assume any specific AI platform. They work with any AI harness tha
 
 ## Bundles
 
+### Ontology (3 skills)
+
+Generates an RDF/OWL ontology from any connected XBase database schema on the fly — no pre-authored `.owl` files required.
+
+| Group | Skills | Purpose |
+|-------|--------|---------|
+| Namespace | 1 | Configure base IRI and prefix map |
+| Build | 1 | Introspect schema → OWL classes + properties |
+| Export | 1 | Serialize ontology to Turtle / JSON-LD / RDF-XML / N-Triples |
+
+See Ontology/Ontology.wiki.md for full documentation.
+
 ### XBase (35 skills)
 
 A lightweight native file-based database engine accessed entirely through skills. No external database engine, library, or binary is required.

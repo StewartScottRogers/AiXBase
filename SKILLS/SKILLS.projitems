@@ -10,6 +10,10 @@
   </PropertyGroup>
   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)SKILLS.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Ontology.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Namespace\Ontology-Namespace-Define.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Build\Ontology-Build-Schema.md" />
+    <None Include="$(MSBuildThisFileDirectory)Ontology\Export\Ontology-Export-Serialize.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\TicketingSystem.wiki.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Ticketing-Session.md" />
     <None Include="$(MSBuildThisFileDirectory)TicketingSystem\Archive\Ticketing-Archive-Pack.md" />

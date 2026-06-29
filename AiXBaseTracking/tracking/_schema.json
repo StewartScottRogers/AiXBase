@@ -99,7 +99,7 @@
                    },
                    {
                        "Name":  "Sessions",
-                       "NextId":  1,
+                       "NextId":  3,
                        "CreatedAt":  "2026-06-28T19:07:21Z",
                        "Columns":  [
                                        {
@@ -375,7 +375,7 @@
                    },
                    {
                        "Name":  "Tickets",
-                       "NextId":  19,
+                       "NextId":  20,
                        "CreatedAt":  "2026-06-28T19:07:21Z",
                        "Columns":  [
                                        {
@@ -598,7 +598,7 @@
                    },
                    {
                        "Name":  "TicketHistory",
-                       "NextId":  53,
+                       "NextId":  55,
                        "CreatedAt":  "2026-06-28T19:07:21Z",
                        "Columns":  [
                                        {

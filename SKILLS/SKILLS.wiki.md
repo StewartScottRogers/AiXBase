@@ -14,6 +14,18 @@ Skills do not assume any specific AI platform. They work with any AI harness tha
 
 ## Bundles
 
+### Agent (5 skills, depends on XBase)
+
+The composition layer. Turns any set of skills into a single live composable application: a behavior manifest of skills, an external state store that carries identity across calls, a determinism boundary that delegates correctness-critical leaf operations to deterministic skills, and a supervision role for teams of sub-agents. Enacted by AI emulation and never compiled to native code. Composes over any bundle.
+
+| Group | Skills | Purpose |
+|-------|--------|---------|
+| Application | 2 | Compose a descriptor, and enact a single request against it |
+| Capability | 1 | Publish an application discovery manifest so supervisors can find it by capability |
+| Team | 2 | Route a request to a sub-agent (static or emulated), and run a guided interactive supervisor session |
+
+See Agent/Agent.wiki.md for full documentation.
+
 ### Ontology (13 skills)
 
 Generates an RDF/OWL ontology from any connected XBase database schema on the fly — no pre-authored `.owl` files required.

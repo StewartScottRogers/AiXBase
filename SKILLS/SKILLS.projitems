@@ -9,6 +9,12 @@
     <Import_RootNamespace>SKILLS</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Agent\Agent.wiki.md" />
+    <None Include="$(MSBuildThisFileDirectory)Agent\Application\Agent-Application-Compose.md" />
+    <None Include="$(MSBuildThisFileDirectory)Agent\Application\Agent-Application-Enact.md" />
+    <None Include="$(MSBuildThisFileDirectory)Agent\Capability\Agent-Capability-Publish.md" />
+    <None Include="$(MSBuildThisFileDirectory)Agent\Team\Agent-Team-Route.md" />
+    <None Include="$(MSBuildThisFileDirectory)Agent\Team\Agent-Team-Session.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Admin\Ontology-Admin-Compare.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Admin\Ontology-Admin-Inspect.md" />
     <None Include="$(MSBuildThisFileDirectory)Ontology\Admin\Ontology-Admin-Rebuild.md" />

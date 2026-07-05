@@ -5,7 +5,7 @@ title: AiXBase — AI Skills Distribution
 
 # AiXBase
 
-AiXBase is an AI Skills distribution — 96 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a SQL translation layer (**XBase UniversalSQL**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). No binaries, no SDKs, no runtime dependencies.
+AiXBase is an AI Skills distribution — 101 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a SQL translation layer (**XBase UniversalSQL**), a full helpdesk ticketing system (**TicketingSystem**), an on-the-fly RDF/OWL ontology generator (**Ontology**), and an AI-enacted application composition layer (**Agent**). No binaries, no SDKs, no runtime dependencies.
 
 ---
 
@@ -19,12 +19,24 @@ Install contract: Download skills.zip, extract it, place the markdown files
 where your AI harness loads skill definitions. No build step required.
 Partial installs are supported — you may extract individual bundle folders.
 The TicketingSystem and Ontology bundles depend on the XBase bundle.
-The XBase UniversalSQL bundle depends on the XBase bundle.
+The XBase UniversalSQL and Agent bundles depend on the XBase bundle.
 ```
 
 ---
 
 ## Skill Bundles
+
+### Agent — AI-Enacted Application Composition
+
+5 skills across 3 groups. Turns a set of skills into a live, never-compiled application: a behavior manifest of skills, an external state store that carries identity across calls, a determinism boundary that delegates correctness-critical leaf operations to deterministic skills, and a supervision role for teams of sub-agents. The application is enacted by AI emulation, not compiled to native code.
+
+| Group | Skills | Description |
+|-------|--------|-------------|
+| Application | 2 | Compose a descriptor, and enact a single request against it |
+| Team | 2 | Route a request to a sub-agent, and run a guided supervisor session |
+| Capability | 1 | Publish an application's discovery manifest |
+
+Depends on the XBase bundle; composes over any bundle. → [Agent Skill Reference](../SKILLS/Agent/Agent.wiki.md)
 
 ### XBase UniversalSQL — SQL Translation Layer
 
@@ -139,4 +151,4 @@ No specific AI platform. No specific operating system. No specific programming l
 
 ---
 
-[View on GitHub](https://github.com/StewartScottRogers/AiXBase) · [manifest.json](../manifest.json) · [llms.txt](../llms.txt) · [UniversalSQL Wiki](../SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md) · [Ontology Wiki](../SKILLS/Ontology/Ontology.wiki.md)
+[View on GitHub](https://github.com/StewartScottRogers/AiXBase) · [manifest.json](../manifest.json) · [llms.txt](../llms.txt) · [Agent Wiki](../SKILLS/Agent/Agent.wiki.md) · [UniversalSQL Wiki](../SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md) · [Ontology Wiki](../SKILLS/Ontology/Ontology.wiki.md)

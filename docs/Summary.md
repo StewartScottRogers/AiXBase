@@ -2,7 +2,7 @@
 
 AiXBase is a demonstration of **Ai Polymorphic Services**: software capabilities expressed as AI Skills rather than fixed API endpoints, where the AI dynamically selects, composes, and adapts behaviors based on context rather than traversing a rigid call graph.
 
-The repository ships four fully realised bundles — XBase, XBase UniversalSQL, Ontology, and the Ticketing System — alongside 96 distributable Skill files that any Claude Code project can install and invoke as slash commands.
+The repository ships five fully realised bundles — XBase, XBase UniversalSQL, Ontology, the Ticketing System, and Agent — alongside 101 distributable Skill files that any Claude Code project can install and invoke as slash commands.
 
 ---
 
@@ -17,6 +17,22 @@ A Skill is a self-contained Markdown file that instructs Claude Code to perform 
 ```
 
 Skills are **portable** — copy a `.md` file and the capability moves with it. They are **composable** — skills call other skills through their declared dependency list. They are **harness-agnostic** — the same specification runs under PowerShell, bash, or Python, with the runtime detected automatically at execution time.
+
+---
+
+## Agent
+
+The composition layer of AiXBase. It turns a set of skills into a single **composable application** — a live unit an AI enacts by emulation rather than compiling to native code. The same primitive is at once an application, an agent, and a component: a behavior manifest of skills, an external state store that carries its identity across stateless calls, a determinism boundary that hands correctness-critical leaf operations to deterministic skills, and a supervision role that lets units compose into teams of sub-agents.
+
+**5 skills across 3 operation groups:**
+
+| Group | Skills | Scope |
+|---|:---:|---|
+| Application | 2 | Compose a descriptor from behavior + state store + determinism boundary + role; enact a single request against it |
+| Team | 2 | Route a request to a sub-agent; run a guided interactive supervisor session |
+| Capability | 1 | Publish an application's discovery manifest |
+
+Depends on the XBase bundle (default state store and capability registry); composes over any bundle.
 
 ---
 
@@ -140,4 +156,4 @@ your-project/
             └── ...
 ```
 
-All 96 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.
+All 101 skills are plain Markdown files. Database operations are performed through OS file system primitives; the required mechanism is generated dynamically by the AI at execution time based on what the deployment environment provides.

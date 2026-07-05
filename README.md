@@ -1,6 +1,6 @@
 # AiXBase
 
-AiXBase is an AI Skills distribution — 96 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a SQL translation layer (**XBase UniversalSQL**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**). There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
+AiXBase is an AI Skills distribution — 97 plain markdown skill files that give any AI harness a file-backed database engine (**XBase**), a SQL translation layer (**XBase UniversalSQL**), a full helpdesk ticketing system (**TicketingSystem**), and an on-the-fly RDF/OWL ontology generator (**Ontology**), and a composition layer that assembles skills into live applications and teams of agents (**Agent**). There are no binaries, no SDKs, no runtime dependencies. The AI reads and writes structured binary files directly using OS file system primitives described in the skill steps.
 
 ---
 
@@ -15,6 +15,20 @@ where your AI harness loads skill definitions. No build step required.
 Partial installs are supported — you may extract individual bundle folders.
 The TicketingSystem bundle depends on the XBase bundle.
 ```
+
+---
+
+## What is the Agent Layer
+
+The Agent bundle is the composition layer. It turns any set of skills into a single **composable application** -- a live unit an AI enacts by emulation rather than compiling to native code. The same primitive is at once an application, an agent, and a component.
+
+- 5 skills across 3 groups (Application, Capability, Team)
+- A composed application has three parts: a **behavior** manifest of skills, an **external state store** addressed by a stable IdentityKey that carries identity across calls, and the **AI emulator** that enacts it
+- **Determinism boundary**: correctness-critical leaf operations (join, aggregate, record arithmetic, authentication) delegate to deterministic skills instead of being emulated
+- **Supervision role** (Standalone / Supervisor / SubAgent) plus a discoverable capability manifest let composed units form teams of sub-agents; RoutingMode chooses a fixed capability table or per-request emulated routing
+- Never compiled -- the ApplicationDescriptor *is* the application, enacted live via receive -> load-state -> delegate-or-emulate -> persist -> respond
+
+Depends on the XBase bundle (for the default state store). Composes over any bundle. -> [Agent Skill Reference](SKILLS/Agent/Agent.wiki.md)
 
 ---
 
@@ -184,7 +198,7 @@ Ontology-Export-Serialize  OntologyDocument:<above>  Format:"Turtle"  OutputPath
 ### Example 5 — AI agent autonomous install
 
 ```
-# Agent reads manifest.json → discovers three bundles; ontology and ticketing depend_on xbase
+# Agent reads manifest.json → discovers all bundles; ontology, ticketing, universalsql, and agent depend_on xbase
 # Agent downloads skills.zip, extracts all three bundle folders
 # Agent configures its harness to load the extracted skill files
 # Agent runs Example 1 setup sequence above
@@ -216,12 +230,13 @@ curl -L https://github.com/StewartScottRogers/AiXBase/releases/latest/download/s
 
 | Bundle | Skills | Groups | Wiki |
 |--------|--------|--------|------|
+| Agent | 5 | Application, Capability, Team | [Agent.wiki.md](SKILLS/Agent/Agent.wiki.md) |
 | XBase UniversalSQL | 7 | UniversalSQL, UniversalSQL-Admin | [XBase-UniversalSQL.wiki.md](SKILLS/XBase/UniversalSQL/XBase-UniversalSQL.wiki.md) |
 | Ontology | 13 | Admin, Namespace, Build, Populate, Query, Validate, Export, Session | [Ontology.wiki.md](SKILLS/Ontology/Ontology.wiki.md) |
 | XBase | 35 | Database, Schema, Record, Query, Index, Transaction, Backup, Admin, Runtime | [XBase.wiki.md](SKILLS/XBase/XBase.wiki.md) |
 | TicketingSystem | 41 | Ticket, Comment, Attachment, Status, Priority, Category, User, Report, Display, Archive, Session | [TicketingSystem.wiki.md](SKILLS/TicketingSystem/TicketingSystem.wiki.md) |
 
-**Total: 96 skills** across 4 bundles and 30 operation groups.
+**Total: 101 skills** across 5 bundles and 33 operation groups.
 
 Machine-readable catalog: [manifest.json](manifest.json)
 

@@ -6,6 +6,19 @@
   "zip_url": "https://github.com/StewartScottRogers/AiXBase/releases/latest/download/skills.zip",
   "bundles": [
     {
+      "id": "agent",
+      "name": "Agent",
+      "description": "Composition layer. Turns a set of skills into a live, never-compiled application: a behavior manifest of skills, an external state store that carries identity across calls, a determinism boundary that delegates correctness-critical leaf operations to deterministic skills, and a supervision role for teams of sub-agents. The application is enacted by AI emulation, not compiled to native code. Composes over any bundle.",
+      "depends_on": ["xbase"],
+      "skill_count": 5,
+      "wiki": "SKILLS/Agent/Agent.wiki.md",
+      "groups": [
+        { "id": "Application", "path": "Agent/Application", "count": 2 },
+        { "id": "Team",        "path": "Agent/Team",        "count": 2 },
+        { "id": "Capability",  "path": "Agent/Capability",  "count": 1 }
+      ]
+    },
+    {
       "id": "universalsql",
       "name": "XBase UniversalSQL",
       "description": "SQL translation layer for XBase. Accepts standard SQL, parses it into an execution plan, and dispatches to the appropriate XBase skills. Includes an interactive REPL, execution plan inspector, and schema DDL extractor. No new file I/O — all operations delegate to the XBase skill layer.",
@@ -78,6 +91,6 @@
   ],
   "install": {
     "contract": "Download skills.zip, extract it, place the markdown files where your AI harness loads skill definitions.",
-    "notes": "Skills are harness-agnostic and system-agnostic. The file path within the ZIP mirrors the namespace: XBase/Database/XBase-Database-Initialize.md. You may install individual groups rather than the full distribution. The TicketingSystem bundle depends on the XBase bundle."
+    "notes": "Skills are harness-agnostic and system-agnostic. The file path within the ZIP mirrors the namespace: XBase/Database/XBase-Database-Initialize.md. You may install individual groups rather than the full distribution. The TicketingSystem, Ontology, UniversalSQL, and Agent bundles depend on the XBase bundle."
   }
 }

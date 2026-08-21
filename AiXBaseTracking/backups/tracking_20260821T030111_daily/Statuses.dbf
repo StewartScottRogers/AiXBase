@@ -1,0 +1,7 @@
+﻿
+{"Id":1,"Name":"Backlog","IsTerminal":0,"IsDefault":1,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z","UpdatedAt":"2026-06-28T19:07:51Z"}
+{"Id":2,"Name":"In Progress","IsTerminal":0,"IsDefault":0,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z","UpdatedAt":"2026-06-28T19:07:51Z"}
+{"Id":3,"Name":"In Review","IsTerminal":0,"IsDefault":0,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z","UpdatedAt":"2026-06-28T19:07:51Z"}
+{"Id":4,"Name":"Blocked","IsTerminal":0,"IsDefault":0,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z","UpdatedAt":"2026-06-28T19:07:51Z"}
+{"Id":5,"Name":"Done","IsTerminal":1,"IsDefault":0,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z","UpdatedAt":"2026-06-28T19:07:51Z"}
+{"Id":6,"Name":"Cancelled","IsTerminal":1,"IsDefault":0,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z","UpdatedAt":"2026-06-28T19:07:51Z"}

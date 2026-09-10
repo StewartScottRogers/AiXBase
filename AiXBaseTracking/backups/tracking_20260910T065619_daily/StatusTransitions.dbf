@@ -1,0 +1,10 @@
+﻿
+{"FromStatusId":1,"Id":1,"IsDeleted":0,"ToStatusId":2}
+{"FromStatusId":1,"Id":2,"IsDeleted":0,"ToStatusId":6}
+{"FromStatusId":2,"Id":3,"IsDeleted":0,"ToStatusId":3}
+{"FromStatusId":2,"Id":4,"IsDeleted":0,"ToStatusId":4}
+{"FromStatusId":2,"Id":5,"IsDeleted":0,"ToStatusId":5}
+{"FromStatusId":3,"Id":6,"IsDeleted":0,"ToStatusId":2}
+{"FromStatusId":3,"Id":7,"IsDeleted":0,"ToStatusId":5}
+{"FromStatusId":4,"Id":8,"IsDeleted":0,"ToStatusId":2}
+{"FromStatusId":4,"Id":9,"IsDeleted":0,"ToStatusId":6}

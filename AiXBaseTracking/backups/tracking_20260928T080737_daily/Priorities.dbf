@@ -1,0 +1,5 @@
+﻿
+{"Id":1,"Name":"Critical","IsDefault":0,"Weight":1,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"Id":2,"Name":"High","IsDefault":0,"Weight":2,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"Id":3,"Name":"Medium","IsDefault":1,"Weight":3,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"Id":4,"Name":"Low","IsDefault":0,"Weight":4,"IsDeleted":0,"CreatedAt":"2026-06-28T19:07:51Z"}

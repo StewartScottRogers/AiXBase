@@ -1,0 +1,7 @@
+﻿
+{"IsDeleted":0,"Name":"Feature","Id":1,"ParentId":null,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"IsDeleted":0,"Name":"Bug","Id":2,"ParentId":null,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"IsDeleted":0,"Name":"Infrastructure","Id":3,"ParentId":null,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"IsDeleted":0,"Name":"Documentation","Id":4,"ParentId":null,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"IsDeleted":0,"Name":"Testing","Id":5,"ParentId":null,"CreatedAt":"2026-06-28T19:07:51Z"}
+{"IsDeleted":0,"Name":"Research","Id":6,"ParentId":null,"CreatedAt":"2026-06-28T19:07:51Z"}
